@@ -1,0 +1,5 @@
+"0","# Ambient data"
+"0",""
+"0","# Arrange the order of parturition categories for visualizations & tests"
+"0","Ambient_Samples$Consensus_Brood_Condition <- ordered(Ambient_Samples$Consensus_Brood_Condition, levels = c(""Excellent"", ""Normal"", ""Low"", ""Atresia""))"
+"0",""

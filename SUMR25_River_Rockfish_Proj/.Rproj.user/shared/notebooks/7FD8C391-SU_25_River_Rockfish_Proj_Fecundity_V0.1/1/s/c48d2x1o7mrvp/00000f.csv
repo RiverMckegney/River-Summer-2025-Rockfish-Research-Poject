@@ -1,0 +1,7 @@
+"0","# Fecundity data "
+"0",""
+"0","#unique(Fecundity_Samples$Fecundity_Class)"
+"0",""
+"0","# Arrange the order of parturition categories for visualizations & tests"
+"0","Fecundity_Samples$Fecundity_Class <- ordered(Fecundity_Samples$Fecundity_Class, levels = c(""High (>50,000)"", ""Low (~1,000s)"", ""Atresia""))"
+"0",""
