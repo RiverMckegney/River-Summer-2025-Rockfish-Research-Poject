@@ -1,0 +1,134 @@
+"0","# pH"
+"0","# Parametric Assumptions:"
+"0",""
+"0","# Assessing Normality"
+"0",""
+"0","# Summary of model"
+"0","summary(pH_primary_lmer)"
+"1","Linear mixed model fit by REML. t-tests use
+  Satterthwaite's method [lmerModLmerTest]
+Formula: 
+pH ~ Ambient.Or.OAH * Pregnant.Or.Atresia + (1 | Pregnant.Or.Atresia)
+   Data: Primary_Samples
+
+REML criterion at convergence: -51.8
+
+Scaled residuals: 
+     Min       1Q   Median       3Q      Max 
+-1.87869 -0.50277 -0.05889  0.69152  2.79004 
+
+Random effects:
+ Groups              Name        Variance Std.Dev.
+ Pregnant.Or.Atresia (Intercept) 0.010070 0.10035 
+ Residual                        0.006349 0.07968 
+Number of obs: 32, groups:  Pregnant.Or.Atresia, 2
+
+Fixed effects:
+                                       Estimate
+(Intercept)                             7.36977
+Ambient.Or.OAH.L                       -0.04723
+Pregnant.Or.Atresia.L                  -0.08092
+Ambient.Or.OAH.L:Pregnant.Or.Atresia.L -0.06149
+                                       Std. Error
+(Intercept)                               0.07289
+Ambient.Or.OAH.L                          0.02359
+Pregnant.Or.Atresia.L                     0.10309
+Ambient.Or.OAH.L:Pregnant.Or.Atresia.L    0.03336
+                                             df t value
+(Intercept)                            28.00000 101.104
+Ambient.Or.OAH.L                       28.00000  -2.002
+Pregnant.Or.Atresia.L                  28.00000  -0.785
+Ambient.Or.OAH.L:Pregnant.Or.Atresia.L 28.00000  -1.843
+                                       Pr(>|t|)    
+(Intercept)                              <2e-16 ***
+Ambient.Or.OAH.L                         0.0550 .  
+Pregnant.Or.Atresia.L                    0.4391    
+Ambient.Or.OAH.L:Pregnant.Or.Atresia.L   0.0759 .  
+---
+Signif. codes:  
+0 ‘***’ 0.001 ‘**’ 0.01 ‘*’ 0.05 ‘.’ 0.1 ‘ ’ 1
+
+Correlation of Fixed Effects:
+            (Intr) Am.O.OAH.L P.O.A.
+Amb.O.OAH.L  0.119                  
+Prgnn.O.A.L -0.011 -0.039           
+A.O.OAH.L:P -0.039 -0.210      0.119
+"
+"0","summary(pH_primary_lmer2)"
+"1","Linear mixed model fit by REML. t-tests use
+  Satterthwaite's method [lmerModLmerTest]
+Formula: 
+pH ~ Pregnant.Or.Atresia * Ambient.Or.OAH + (1 | Pregnant.Or.Atresia) +  
+    (1 | Ambient.Or.OAH)
+   Data: Primary_Samples
+
+REML criterion at convergence: -51.8
+
+Scaled residuals: 
+     Min       1Q   Median       3Q      Max 
+-1.87869 -0.50277 -0.05889  0.69152  2.79004 
+
+Random effects:
+ Groups              Name        Variance Std.Dev.
+ Pregnant.Or.Atresia (Intercept) 0.001988 0.04459 
+ Ambient.Or.OAH      (Intercept) 0.004548 0.06744 
+ Residual                        0.006349 0.07968 
+Number of obs: 32, groups:  
+Pregnant.Or.Atresia, 2; Ambient.Or.OAH, 2
+
+Fixed effects:
+                                       Estimate
+(Intercept)                             7.36977
+Pregnant.Or.Atresia.L                  -0.08092
+Ambient.Or.OAH.L                       -0.04723
+Pregnant.Or.Atresia.L:Ambient.Or.OAH.L -0.06149
+                                       Std. Error
+(Intercept)                               0.05955
+Pregnant.Or.Atresia.L                     0.05044
+Ambient.Or.OAH.L                          0.07145
+Pregnant.Or.Atresia.L:Ambient.Or.OAH.L    0.03336
+                                             df t value
+(Intercept)                            28.00000 123.754
+Pregnant.Or.Atresia.L                  28.00000  -1.604
+Ambient.Or.OAH.L                       28.00000  -0.661
+Pregnant.Or.Atresia.L:Ambient.Or.OAH.L 28.00000  -1.843
+                                       Pr(>|t|)    
+(Intercept)                              <2e-16 ***
+Pregnant.Or.Atresia.L                    0.1199    
+Ambient.Or.OAH.L                         0.5140    
+Pregnant.Or.Atresia.L:Ambient.Or.OAH.L   0.0759 .  
+---
+Signif. codes:  
+0 ‘***’ 0.001 ‘**’ 0.01 ‘*’ 0.05 ‘.’ 0.1 ‘ ’ 1
+
+Correlation of Fixed Effects:
+            (Intr) Pr.O.A.L A.O.OA
+Prgnn.O.A.L -0.028                
+Amb.O.OAH.L  0.048 -0.026         
+P.O.A.L:A.O -0.048  0.244   -0.069
+"
+"0","# Suss residuals of model"
+"0","pH_primary_res_lmer <- residuals(pH_primary_lmer)"
+"0",""
+"0","pH_primary_res_lmer2 <- residuals(pH_primary_lmer2)"
+"0",""
+"0","# Shapiro test"
+"0","shapiro.test(pH_primary_res_lmer)"
+"1","
+	Shapiro-Wilk normality test
+
+data:  pH_primary_res_lmer
+W = 0.96696, p-value = 0.4199
+
+"
+"0","shapiro.test(pH_primary_res_lmer2)"
+"1","
+	Shapiro-Wilk normality test
+
+data:  pH_primary_res_lmer2
+W = 0.96696, p-value = 0.4199
+
+"
+"0","# pH simulated residuals plot"
+"0","pH_primary_simres_plot <- simulateResiduals(fittedModel = pH_primary_lmer)"
+"0","plot(pH_primary_simres_plot)"

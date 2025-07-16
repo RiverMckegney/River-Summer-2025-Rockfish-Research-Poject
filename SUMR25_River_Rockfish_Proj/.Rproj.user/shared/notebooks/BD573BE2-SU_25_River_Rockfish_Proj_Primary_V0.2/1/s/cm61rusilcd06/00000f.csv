@@ -1,0 +1,19 @@
+"0","sodium_tukey_test <- TukeyHSD(sodium_primary_aov_additive)
+print(sodium_tukey_test)
+"
+"1","  Tukey multiple comparisons of means
+    95% family-wise confidence level
+
+Fit: aov(formula = Na...mmol.L. ~ Pregnant.Or.Atresia + Ambient.Or.OAH, data = Primary_Samples)
+
+$Pregnant.Or.Atresia
+                             diff    lwr      upr
+Atresia-Post Parturition 2.222222 -3.551 7.995444
+                             p adj
+Atresia-Post Parturition 0.4375241
+
+$Ambient.Or.OAH
+                 diff       lwr      upr     p adj
+OAH-Ambient -4.018519 -10.63258 2.595538 0.2239603
+
+"

@@ -1,0 +1,3 @@
+"0",""
+"0","pH_primary_simres_plot3 <- simulateResiduals(fittedModel = pH_primary_lmer3)"
+"0","plot(pH_primary_simres_plot3)"

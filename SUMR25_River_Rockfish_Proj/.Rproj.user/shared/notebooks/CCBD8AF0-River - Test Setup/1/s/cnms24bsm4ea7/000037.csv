@@ -1,0 +1,5 @@
+"0","# visualize(pH_primary_lmerB, plot = ""model"", sample = 50) "
+"0","# code doesn't work.."
+"0","visualize(pH_primary_lmer2, plot = ""model"", sample = 50)"
+"2","[38;5;255mJoining with `by = join_by(pH)`[39m
+"

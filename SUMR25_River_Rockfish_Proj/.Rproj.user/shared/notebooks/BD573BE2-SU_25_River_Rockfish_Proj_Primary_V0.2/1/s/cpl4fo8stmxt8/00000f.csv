@@ -1,0 +1,30 @@
+"0","# glucose"
+"0",""
+"0","# test with lmer"
+"0","bartlett.test(glucose_primary_res_lmer ~ Primary_Samples$Ambient.Or.OAH)"
+"1","
+	Bartlett test of homogeneity of variances
+
+data:  glucose_primary_res_lmer by Primary_Samples$Ambient.Or.OAH
+Bartlett's K-squared = 0.25985, df = 1, p-value =
+0.6102
+
+"
+"0","bartlett.test(Glu..mmol.L. ~ Ambient.Or.OAH, Primary_Samples)"
+"1","
+	Bartlett test of homogeneity of variances
+
+data:  Glu..mmol.L. by Ambient.Or.OAH
+Bartlett's K-squared = 0.04214, df = 1, p-value =
+0.8374
+
+"
+"0","bartlett.test(Glu..mmol.L. ~ Pregnant.Or.Atresia, Primary_Samples) "
+"1","
+	Bartlett test of homogeneity of variances
+
+data:  Glu..mmol.L. by Pregnant.Or.Atresia
+Bartlett's K-squared = 1.5965, df = 1, p-value =
+0.2064
+
+"

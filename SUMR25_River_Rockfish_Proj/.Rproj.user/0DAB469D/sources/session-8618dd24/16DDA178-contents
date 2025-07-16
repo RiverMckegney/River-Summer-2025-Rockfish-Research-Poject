@@ -1,0 +1,469 @@
+---
+title: "River - Test Setup"
+author: "River Mckegney"
+date: "`r Sys.Date()`"
+output: html_document
+---
+
+## Setup, and Packages
+
+```{r setup, include=FALSE}
+# Setup
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+Code Packages:
+```{r packages}
+# Load packages
+library(gridExtra) # For using grid.table to save tables as images
+library(flextable) # Alternative method to save df as image
+library(tidyverse)
+library(zoo)
+library(lme4)
+library(lmerTest)
+library(rlang)
+library(nortest) # For ad.test
+library(car) # For homogeneity of variance with leveneTest
+library(rcompanion) # For scheirerRayHare test
+library(pastecs) # For stat.desc
+library(ggpubr) # For assumption plots
+library(conover.test) # For the conover.Iman() test function
+library(DescTools) # Contain alternative ConoverTest function
+library(rstatix) # tidyverse adapted stat tests and mshapiro_test() functions
+library(DHARMa) # For multi-level lm models and shapiro test
+library(patchwork) # For combining ggplots
+```
+
+## Data Entry: Read-in data
+
+```{r}
+# Read and call data into df
+
+# Primary samples df
+ABL90 <- read.csv("Raw_Data/ABL90_Raw.csv")
+
+# River's Parturition metadata
+partuition_subcat <- read.csv("Raw_Data/River's_Rockfish_Metadata_Parturition_V7.csv")
+```
+
+
+## Data Filtering
+
+```{r}
+# Data sifting: ABL90 dataset
+
+# Step 1: Remove missing info
+ABL_set1 <- ABL90 %>%
+  filter(Patient.ID_edited != "") 
+  
+
+# Step 2: Separate Patient.ID into columns of sample types: blood plasma and instant freeze plasma 
+ABL_set2 <- separate(ABL_set1, 'Patient.ID_edited', into = c("Patient.ID_edited", "Sample_Type"), sep = ",")  
+
+
+# Step 3:
+# Convert Patient.ID_edited column data to character type
+ABL_set2$Patient.ID_edited <- as.character(ABL_set2$Patient.ID_edited) 
+
+
+```
+
+
+```{r}
+# Step 4 & 5: Sussing out specific sample errors  
+
+# Remove insufficient samples
+ABL_set3 <- ABL_set2 %>%
+  filter(!is.na("Type")) %>%
+  filter(!str_detect(Errors.detected.during.measurement, "Insufficient sample"))
+
+# Remove inhomogeneous samples
+ABL_set3 <- ABL_set3 %>%
+  filter(!is.na("Type")) %>%
+  filter(!str_detect(Errors.detected.during.measurement, "Inhomogeneous sample"))
+
+# Step 6: Filter for only blood samples
+ABL_b_samp <- ABL_set3 %>%
+  filter(Sample_Type == "b")
+
+```
+
+
+## Merge Datasets:
+
+Join ABL90 df with parturition_subcat df: Making ABL_merged
+```{r}
+# Rename columns to match: Change 'ID' in parturition_subcat to 'Patient.ID_edited' so it is ready to join with ABL90 df
+
+# Please note the 'Treatment' col in parturition_subcat does not match with the finalized 'Ambient.Or.OAH' col in metadata_atresia_guide or ABL90_merged df
+
+# Rename 'ID' col to 'patient.ID_edited'
+partuition_subcat <- partuition_subcat %>%
+  rename(Patient.ID_edited = ID)
+
+```
+
+```{r}
+# Connect main ABL90 dataset with my (River's) sub categorized parturition metadata 
+# ABL_merged <- partuition_subcat %>%
+# left_join(ABL_b_samp, by = "Patient.ID_edited")
+
+ABL_merged <- ABL_b_samp %>%
+inner_join(partuition_subcat, by = "Patient.ID_edited")
+```
+
+Rename Columns Neatly:
+```{r}
+# Rename Treatment & Parturition Outcome
+ABL_merged <- ABL_merged %>%
+  rename(Ambient.Or.OAH = Consensus_General_Treatment,
+         Pregnant.Or.Atresia = Consensus_Atresia_Or_Pregnant)
+         
+```
+
+
+## Remove Samples: Mortalities, NA's, or Missing Info, and Replicates
+
+Remove Replicate ID's
+```{r}
+# Cross Check all Columns: Cross validation to suss correct replicate row
+check_params <- ABL_merged %>%
+  select(Patient.ID_edited, Time, Sample.., Measuring.Mode, Ambient.Or.OAH, Pregnant.Or.Atresia, pH, Glu..mmol.L., Hct...., Na...mmol.L., Cl...mmol.L., K...mmol.L., Ca....mmol.L., pCO2..mmHg.) %>%
+  filter(Patient.ID_edited == "9782D")
+print(check_params)
+
+check_params <- ABL_merged %>%
+  select(Patient.ID_edited, Time, Sample.., Measuring.Mode, Ambient.Or.OAH, Pregnant.Or.Atresia, pH, Glu..mmol.L., Hct...., Na...mmol.L., Cl...mmol.L., K...mmol.L., Ca....mmol.L., pCO2..mmHg.) %>%
+  filter(Patient.ID_edited == "9783D")
+print(check_params)
+
+# Removed replicates: 9782D (2x) and 9783D (2x)
+ABL_merged <- ABL_merged %>%
+  filter(Sample.. != "863",
+         Sample.. != "934")
+
+```
+
+
+Remove Motalities and No info IDs and assign analysis ready data-frames:
+```{r}
+
+# New df with Moralities removed: Note none of these samples made it into ABL90 df anyway, so looks like they are already filtered out.
+ Live_Samples <- ABL_merged %>%
+  filter(Patient.ID_edited != "9780C", # Mortality
+         Patient.ID_edited != "777AE", # Mortality
+         Patient.ID_edited != "777CA") # Mortality after parturition
+
+
+# New df with mortality and 'No info' Id's removed
+ Primary_Samples <- Live_Samples %>%
+   filter(Patient.ID_edited != "777A0", # No info
+           Patient.ID_edited != "9782F", # No info
+           Patient.ID_edited != "777B3", # No info
+           Patient.ID_edited != "777AA", # No info
+           Patient.ID_edited != "777DE", # No info
+           Patient.ID_edited != "777CE", # No info
+           Patient.ID_edited != "777A6") # No info
+ 
+ 
+# New df of Only Ambient Treatment: For testing parturition success
+ Ambient_Samples <- Primary_Samples %>%
+   filter(Ambient.Or.OAH == "Ambient")
+ 
+# New df of Fecundity Samples: For Background Correlative Evidence To Compare with Brood Condition Categorization
+ Fecundity_Samples <- Primary_Samples %>%
+   filter(Fecundity_Class != "NA")
+ 
+```
+
+
+
+Change Data Types:
+```{r}
+# Change Continuous Data to type to numeric, double, or factor
+
+# Change data type of ions to factor or numeric
+#glimpse(General_Samples)
+#glimpse(Ambient_Samples)
+ 
+Primary_Samples <- Primary_Samples %>%
+  mutate(across(c(pH, Hct...., Glu..mmol.L., Na...mmol.L., Cl...mmol.L., K...mmol.L., Ca....mmol.L.), as.numeric))
+
+Ambient_Samples <- Ambient_Samples %>%
+  mutate(across(c(pH, Hct...., Glu..mmol.L., Na...mmol.L., Cl...mmol.L., K...mmol.L., Ca....mmol.L.), as.numeric))
+
+Fecundity_Samples <- Fecundity_Samples %>%
+  mutate(across(c(Fecundity_Or_Brood_Count, pH, Hct...., Glu..mmol.L., Na...mmol.L., Cl...mmol.L., K...mmol.L., Ca....mmol.L.), as.numeric))
+
+# glimpse(Primary_Samples)
+# glimpse(Ambient_Samples)
+# glimpse(Fecundity_Samples)
+```
+
+
+Order Factor Levels
+```{r}
+# Primary data
+
+# Arrange the order of parturition categories for visualizations & tests
+Primary_Samples$Ambient.Or.OAH <- ordered(Primary_Samples$Ambient.Or.OAH, levels = c("Ambient", "OAH"))
+
+Primary_Samples$Pregnant.Or.Atresia <- ordered(Primary_Samples$Pregnant.Or.Atresia, levels = c("Post Parturition", "Atresia"))
+
+```
+
+
+## Sample Size: n
+```{r}
+# Sample Size
+
+# Primary data: 
+primary_sample_table <- Primary_Samples %>%
+  group_by(Ambient.Or.OAH, Pregnant.Or.Atresia) %>%
+  summarise(n_size = n_distinct(Patient.ID_edited), .groups = "drop")
+print(primary_sample_table)
+
+ pdf("data-images/primary_sample_table.pdf")
+ grid.table(primary_sample_table)
+ dev.off()
+ 
+ png("data-images/primary_sample_table.png")
+ grid.table(primary_sample_table)
+ dev.off()
+
+```
+
+
+Sample Size Barplot:
+```{r}
+# View Sample Distributions
+
+# Sample Size barplot
+
+# Primary Samples
+primary_sample_barplot <- Primary_Samples %>%
+  group_by(Pregnant.Or.Atresia, Ambient.Or.OAH) %>% 
+  summarise(n_size = n_distinct(Patient.ID_edited), .groups = "drop") %>%
+  ggplot(aes(x = Pregnant.Or.Atresia, y = n_size, fill = Pregnant.Or.Atresia)) +
+  geom_bar(stat = "identity" ) +
+  scale_y_continuous(expand = c(0, 0), limits = c(0, 15.5), breaks = c(0, 3, 6, 9, 12, 15)) +
+  facet_grid(~ Ambient.Or.OAH) +
+  labs(title = "Primary Sample Size",
+        x = "Parturition Status & Treatment Type",
+        y = "Sample Size (n)") +
+  guides(fill = guide_legend((title = "Reproductive State"))) +
+  theme_classic(base_size = 10)
+
+print(primary_sample_barplot)
+
+ggsave(filename = "data-images/.png", plot = primary_sample_barplot, device = "png")
+ggsave(filename = "data-images/primary_sample_barplot.pdf", plot = primary_sample_barplot, device = "pdf")
+
+```
+
+
+# pH
+
+pH Boxplot
+```{r}
+# pH boxplot
+
+# Primary samples
+pH_primary_boxplot <- ggplot(data = Primary_Samples, aes(x = Pregnant.Or.Atresia, y = pH, fill = Ambient.Or.OAH)) +
+  geom_boxplot(aes(x = Pregnant.Or.Atresia, y = pH, fill = Ambient.Or.OAH)) +
+  geom_point(aes(color = Ambient.Or.OAH), position = position_dodge(width = 0.75), alpha = 0.3, color = "black") +
+  labs(title = "Primary pH", x = "Parturition Type", y = "pH") +
+  guides(fill = guide_legend((title = "Treatment Type"))) + 
+  scale_fill_manual(values = c("Ambient" = "#189bff", "OAH" = "#598c78")) +
+  theme_classic() +
+  theme(panel.background = element_rect(fill = "white"),
+        plot.background = element_rect(fill = "white"),
+        legend.background = element_rect(fill = "white", color = "black"),
+        title = element_text(size = 12),
+        plot.title = element_text(size = 30, hjust = 0.5),
+        axis.text.x = element_text(size = 10),
+        axis.text.y = element_text(size = 20),
+        axis.title.x = element_text(size = 20),
+        axis.title.y = element_text(size = 20))
+
+print(pH_primary_boxplot)
+
+ggsave(filename = "data-images/pH_primary_boxplot.pdf", plot = pH_primary_boxplot, device = "pdf")
+ggsave(filename = "data-images/pH_primary_boxplot.png", plot = pH_primary_boxplot, device = "png")
+
+```
+
+
+pH Parametric Assessment
+Data Distribution
+```{r}
+# pH
+# Parametric Assumptions
+
+# Data Distribution
+
+# Frequency Histograms
+
+hist(Primary_Samples$pH)
+
+
+# Density vs normality curve histograms
+
+Primary_Samples %>%
+  ggplot(aes(x = pH)) +
+  geom_histogram(binwidth = 0.01) +
+  stat_function(fun = dnorm, args = c(mean = mean(Primary_Samples$pH), sd = sd(Primary_Samples$pH)), aes(col = "Normal Distribution"), show.legend = TRUE) +
+  geom_density(aes(col = "Sample Density"), show.legend = TRUE) +
+  labs(title = "pH Primary Sample Distribution") +
+  scale_color_manual("Distribution", values = c("Normal Distribution" = "green", "Sample Density" = "black"))
+
+```
+
+pH Parametric Assessment
+
+Model Design
+```{r}
+
+# Best guess method: Treatment fixed, 
+# lm model of primary data
+pH_primary_lmerA <- lmer(pH ~ Ambient.Or.OAH * Pregnant.Or.Atresia + (1|Pregnant.Or.Atresia), data = Primary_Samples)
+
+# If above looks good, then wouldn't I have to also test the opposite?
+pH_primary_lmerB <- lmer(pH ~ Pregnant.Or.Atresia * Ambient.Or.OAH  + (1|Pregnant.Or.Atresia), data = Primary_Samples)
+# For some reason I can't visulize this one...
+
+# Second best guess method:
+pH_primary_lmer2 <- lmer(pH ~ Ambient.Or.OAH * Pregnant.Or.Atresia + (1|Pregnant.Or.Atresia), data = Primary_Samples)
+
+# Third option
+pH_primary_lmer3 <- lmer(pH ~ Pregnant.Or.Atresia * Ambient.Or.OAH + (1|Pregnant.Or.Atresia) + (1|Ambient.Or.OAH), data = Primary_Samples)
+
+# What's up with that wierd intersept (why does clusters either start or finish at same location, they should both be fixed right?)
+
+visualize(pH_primary_lmerA, plot = "model", sample = 50)
+# visualize(pH_primary_lmerB, plot = "model", sample = 50) 
+# code doesn't work..
+visualize(pH_primary_lmer2, plot = "model", sample = 50)
+visualize(pH_primary_lmer3, plot = "model", sample = 50)
+
+```
+
+
+
+Normality Residual QQplot
+```{r}
+# pH
+# Parametric Assumptions:
+
+# Assessing Normality
+
+# Summary of model
+summary(pH_primary_lmerA)
+
+summary(pH_primary_lmer2)
+
+summary(pH_primary_lmer3)
+
+# Suss residuals of model
+pH_primary_res_lmer <- residuals(pH_primary_lmerA)
+
+pH_primary_res_lmer2 <- residuals(pH_primary_lmer2)
+
+pH_primary_res_lmer3 <- residuals(pH_primary_lmer3)
+
+# Shapiro test
+shapiro.test(pH_primary_res_lmerA)
+
+shapiro.test(pH_primary_res_lmer2)
+
+shapiro.test(pH_primary_res_lmer3)
+
+# pH simulated residuals plot
+pH_primary_simres_plot <- simulateResiduals(fittedModel = pH_primary_lmerA)
+plot(pH_primary_simres_plot)
+
+pH_primary_simres_plot2 <- simulateResiduals(fittedModel = pH_primary_lmer2)
+plot(pH_primary_simres_plot2)
+
+pH_primary_simres_plot3 <- simulateResiduals(fittedModel = pH_primary_lmer3)
+plot(pH_primary_simres_plot3)
+
+# Qqplot of model
+# pH_primary_res_qqplot <- ggqqplot(residuals(pH_primary_lmerA)) +
+# labs(title = "Primary pH Interactive Residual QQplot",
+#      subtitle = "lmer(pH ~ Pregnant.Or.Atresia + (1|Ambient.Or.OAH), data = Primary_Samples)",
+#                                x = "pH Theoretical Quantiles (Predicted values)",
+#                                y = "pH Sample Quantiles") +
+#   theme(plot.title = element_text(hjust = 0.5),
+#         plot.subtitle = element_text(hjust = 0.5))
+# print(pH_primary_res_int_qqplot)
+```
+
+
+pH Parametric Assessment
+Testing Scedasticity:
+```{r}
+# pH
+
+# Primary samples
+
+# test with lmer
+bartlett.test(pH_primary_res_lmer ~ Primary_Samples$Ambient.Or.OAH)
+
+bartlett.test(pH_primary_res_lmer ~ Primary_Samples$Pregnant.Or.Atresia)
+
+bartlett.test(pH ~ Ambient.Or.OAH, Primary_Samples)
+bartlett.test(pH ~ Pregnant.Or.Atresia, Primary_Samples) # Significant
+
+leveneTest(pH ~ Pregnant.Or.Atresia, Primary_Samples) # Slightly not significant
+```
+
+
+pH Parametric Assumptions Assessment: 
+
+- Primary Data normally distributed?
+
+- Primary Data equal variance across factors?
+
+
+# pH Stat Tests
+```{r}
+# pH Analysis
+# ANOVA Tests
+
+# Testing primary factor differences: Treatment & Parturition Outcome
+
+# Two-Way Interactive ANOVA
+pH_primary_aov_int <- aov(pH ~ Pregnant.Or.Atresia * Ambient.Or.OAH, data = Primary_Samples)
+summary(pH_primary_aov_int)
+
+# If interaction not significant (p-value > 0.05), use additive model
+
+pH_primary_aov_additive <- aov(pH ~ Pregnant.Or.Atresia + Ambient.Or.OAH, data = Primary_Samples)
+summary(pH_primary_aov_additive)
+
+# Post-Hoc Test: If parametric Tukeys, if nonparametric Aligned Ranked Transformation ANOVA (ART)
+
+# How do I interpret that...
+pH_tukey_test <- TukeyHSD(pH_primary_aov_int)
+print(pH_tukey_test)
+
+#pH_primary_aov_int %>% tukey_hsd()
+```
+pH Results:
+
+Interaction significant?
+
+- Treatment (alone) OAH vs Ambient: (p adj = )
+
+- Pregnancy (alone) Post-parturition vs Atresia: (p adj = )
+
+- Post parturition vs OAH: (p adj = )
+
+- Post Parturition vs Ambient: (p adj = )
+
+- Atresia vs Ambient: (p adj = )
+
+- Atresia vs OAH: (p adj = )
+
+

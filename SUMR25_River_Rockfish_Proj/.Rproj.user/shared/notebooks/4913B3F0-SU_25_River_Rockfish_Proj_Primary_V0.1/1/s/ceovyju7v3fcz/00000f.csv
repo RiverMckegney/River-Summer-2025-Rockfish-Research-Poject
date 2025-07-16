@@ -11,8 +11,12 @@
 "0","  mutate(across(c(pH, Hct...., Glu..mmol.L., Na...mmol.L., Cl...mmol.L., K...mmol.L., Ca....mmol.L.), as.numeric))"
 "0",""
 "0","Fecundity_Samples <- Fecundity_Samples %>%"
-"0","  mutate(across(c(pH, Hct...., Glu..mmol.L., Na...mmol.L., Cl...mmol.L., K...mmol.L., Ca....mmol.L.), as.numeric))"
-"0",""
+"0","  mutate(across(c(Fecundity_Or_Brood_Count, pH, Hct...., Glu..mmol.L., Na...mmol.L., Cl...mmol.L., K...mmol.L., Ca....mmol.L.), as.numeric))"
+"2","G2;H2;Warningh: [38;5;255mThere was 1 warning in `mutate()`.[39m
+[38;5;255m[36mℹ[38;5;255m In argument: `across(...)`.[39m
+Caused by warning:
+[33m![39m NAs introduced by coerciong
+"
 "0","# glimpse(Primary_Samples)"
 "0","# glimpse(Ambient_Samples)"
 "0","# glimpse(Fecundity_Samples)"

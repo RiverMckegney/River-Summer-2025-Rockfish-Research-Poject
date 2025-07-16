@@ -1,0 +1,27 @@
+"0",""
+"0","# Best guess method: Treatment fixed, "
+"0","# lm model of primary data"
+"0","pH_primary_lmerA <- lmer(pH ~ Ambient.Or.OAH * Pregnant.Or.Atresia + (1|Pregnant.Or.Atresia), data = Primary_Samples)"
+"2","G2;H2;Warningh in as_lmerModLT(model, devfun) :
+  Model may not have converged with 1 eigenvalue close to zero: 4.1e-10g
+"
+"0","# If above looks good, then wouldn't I have to also test the opposite?"
+"0","pH_primary_lmerB <- lmer(pH ~ Pregnant.Or.Atresia * Ambient.Or.OAH  + (1|Pregnant.Or.Atresia), data = Primary_Samples)"
+"2","G2;H2;Warningh in as_lmerModLT(model, devfun) :
+  Model may not have converged with 1 eigenvalue close to zero: 4.1e-10g
+"
+"0","# Second best guess method:"
+"0","pH_primary_lmer2 <- lmer(pH ~ Ambient.Or.OAH * Pregnant.Or.Atresia + (1|Pregnant.Or.Atresia), data = Primary_Samples)"
+"2","G2;H2;Warningh in as_lmerModLT(model, devfun) :
+  Model may not have converged with 1 eigenvalue close to zero: 4.1e-10g
+"
+"0","# Third option"
+"0","pH_primary_lmer3 <- lmer(pH ~ Pregnant.Or.Atresia * Ambient.Or.OAH + (1|Pregnant.Or.Atresia) + (1|Ambient.Or.OAH), data = Primary_Samples)"
+"2","G2;H2;Warningh in as_lmerModLT(model, devfun) :
+  Model may not have converged with 2 eigenvalues close to zero: 3.4e-10 -5.3e-10g
+"
+"0","# What's up with that wierd intersept (why does clusters either start or finish at same location, they should both be fixed right?)"
+"0",""
+"0","visualize(pH_primary_lmerA, plot = ""model"", sample = 50)"
+"2","[38;5;255mJoining with `by = join_by(pH)`[39m
+"

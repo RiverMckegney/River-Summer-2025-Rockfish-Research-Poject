@@ -1,0 +1,69 @@
+"0","# pH Analysis"
+"0","# ANOVA Tests"
+"0",""
+"0","# Testing primary factor differences: Treatment & Parturition Outcome"
+"0",""
+"0","# Two-Way Interactive ANOVA"
+"0","pH_primary_aov_int <- aov(pH ~ Pregnant.Or.Atresia * Ambient.Or.OAH, data = Primary_Samples)"
+"0","summary(pH_primary_aov_int)"
+"1","                                   Df  Sum Sq Mean Sq F value  Pr(>F)
+Pregnant.Or.Atresia                 1 0.06022 0.06022   9.485 0.00461
+Ambient.Or.OAH                      1 0.03793 0.03793   5.974 0.02107
+Pregnant.Or.Atresia:Ambient.Or.OAH  1 0.02157 0.02157   3.398 0.07588
+Residuals                          28 0.17777 0.00635                
+                                     
+Pregnant.Or.Atresia                **
+Ambient.Or.OAH                     * 
+Pregnant.Or.Atresia:Ambient.Or.OAH . 
+Residuals                            
+---
+Signif. codes:  0 ‘***’ 0.001 ‘**’ 0.01 ‘*’ 0.05 ‘.’ 0.1 ‘ ’ 1
+"
+"0","# If interaction not significant (p-value > 0.05), use additive model"
+"0",""
+"0","pH_primary_aov_additive <- aov(pH ~ Pregnant.Or.Atresia + Ambient.Or.OAH, data = Primary_Samples)"
+"0","summary(pH_primary_aov_additive)"
+"1","                    Df  Sum Sq Mean Sq"
+"1"," F value  Pr(>F)   
+Pregnant.Or.Atresia  1 0.06022 0.06022   8.760 0.00608 **
+Ambient.Or.OAH       1 0.03793 0.03793   5.518 0.02585 * 
+Residuals           29 0.19934 0.00687                   
+---
+Signif. codes:  0 ‘***’ 0.001 ‘**’ 0.01 ‘*’ 0.05 ‘.’ 0.1 ‘ ’ 1
+"
+"0","# Post-Hoc Test: If parametric Tukeys, if nonparametric Aligned Ranked Transformation ANOVA (ART)"
+"0",""
+"0","# How do I interpret that..."
+"0","pH_tukey_test <- TukeyHSD(pH_primary_aov_int)"
+"0","print(pH_tukey_test)"
+"1","  Tukey multiple comparisons of means
+    95% family-wise confidence level
+
+Fit: aov(formula = pH ~ Pregnant.Or.Atresia * Ambient.Or.OAH, data = Primary_Samples)
+
+$Pregnant.Or.Atresia
+                                diff        lwr         upr     p adj
+Atresia-Post Parturition -0.08744444 -0.1456059 -0.02928298 0.0046074
+
+$Ambient.Or.OAH
+                  diff        lwr         upr     p adj
+OAH-Ambient -0.0792963 -0.1459286 -0.01266397 0.0213849
+
+$`Pregnant.Or.Atresia:Ambient.Or.OAH`
+                                                     diff         lwr
+Atresia:Ambient-Post Parturition:Ambient      -0.05294406 -0.14206795
+Post Parturition:OAH-Post Parturition:Ambient -0.00530303 -0.14700099
+Atresia:OAH-Post Parturition:Ambient          -0.18123636 -0.29857342
+Post Parturition:OAH-Atresia:Ambient           0.04764103 -0.09170168
+Atresia:OAH-Atresia:Ambient                   -0.12829231 -0.24277402
+Atresia:OAH-Post Parturition:OAH              -0.17593333 -0.33480846
+                                                      upr     p adj
+Atresia:Ambient-Post Parturition:Ambient       0.03617984 0.3831032
+Post Parturition:OAH-Post Parturition:Ambient  0.13639493 0.9996083
+Atresia:OAH-Post Parturition:Ambient          -0.06389931 0.0012680
+Post Parturition:OAH-Atresia:Ambient           0.18698373 0.7872387
+Atresia:OAH-Atresia:Ambient                   -0.01381059 0.0236087
+Atresia:OAH-Post Parturition:OAH              -0.01705821 0.0257006
+
+"
+"0","#pH_primary_aov_int %>% tukey_hsd()"

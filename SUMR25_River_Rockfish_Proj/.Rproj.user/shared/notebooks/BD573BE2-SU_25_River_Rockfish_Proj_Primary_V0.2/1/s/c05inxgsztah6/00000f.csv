@@ -1,0 +1,61 @@
+"0","# hct Analysis"
+"0","# ANOVA Tests"
+"0",""
+"0","# Testing primary factor differences: Treatment & Parturition Outcome"
+"0",""
+"0","# Two-Way Interactive ANOVA"
+"0","hct_primary_aov_int <- aov(Hct.... ~ Pregnant.Or.Atresia * Ambient.Or.OAH, data = Primary_Samples)"
+"0","summary(hct_primary_aov_int) "
+"1","                                   Df Sum Sq Mean Sq
+Pregnant.Or.Atresia                 1 103.69  103.69
+Ambient.Or.OAH                      1  35.16   35.16
+Pregnant.Or.Atresia:Ambient.Or.OAH  1   3.60    3.60
+Residuals                          28 286.57   10.23
+                                   F value  Pr(>F)   
+Pregnant.Or.Atresia                 10.131 0.00356 **
+Ambient.Or.OAH                       3.435 0.07439 . 
+Pregnant.Or.Atresia:Ambient.Or.OAH   0.351 0.55811   
+Residuals                                            
+---
+Signif. codes:  
+0 ‘***’ 0.001 ‘**’ 0.01 ‘*’ 0.05 ‘.’ 0.1 ‘ ’ 1
+"
+"0","# If interaction not significant (p-value > 0.05), use additive model"
+"0",""
+"0","hct_primary_aov_additive <- aov(Hct.... ~ Pregnant.Or.Atresia + Ambient.Or.OAH, data = Primary_Samples)"
+"0","summary(pH_primary_aov_additive)"
+"1","                    Df  Sum Sq Mean Sq F value  Pr(>F)
+Pregnant.Or.Atresia  1 0.06022 0.06022   8.760 0.00608
+Ambient.Or.OAH       1 0.03793 0.03793   5.518 0.02585
+Residuals           29 0.19934 0.00687                
+                      
+Pregnant.Or.Atresia **
+Ambient.Or.OAH      * 
+Residuals             
+---
+Signif. codes:  
+0 ‘***’ 0.001 ‘**’ 0.01 ‘*’ 0.05 ‘.’ 0.1 ‘ ’ 1
+"
+"0","# Post-Hoc Test: "
+"0","hct_tukey_test <- TukeyHSD(hct_primary_aov_additive)"
+"0","print(hct_tukey_test)"
+"1","  Tukey multiple comparisons of means
+    95% family-wise confidence level
+
+Fit: aov(formula = Hct.... ~ Pregnant.Or.Atresia + Ambient.Or.OAH, data = Primary_Samples)
+
+$Pregnant.Or.Atresia
+                             diff      lwr      upr
+Atresia-Post Parturition 3.628571 1.323184 5.933959
+                             p adj
+Atresia-Post Parturition 0.0031603
+
+$Ambient.Or.OAH
+                diff        lwr      upr     p adj
+OAH-Ambient 2.414286 -0.2268677 5.055439 0.0716743
+
+"
+"0","# TukeyHSD(hct_tukey_test, which = ""Pregnant.Or.Atresia"")"
+"0","# print()"
+"0",""
+"0","#hct_primary_aov_int %>% tukey_hsd()"

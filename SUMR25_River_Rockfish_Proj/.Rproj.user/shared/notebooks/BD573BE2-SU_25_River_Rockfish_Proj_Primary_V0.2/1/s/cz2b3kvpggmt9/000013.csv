@@ -1,0 +1,78 @@
+"0","# hct"
+"0","# Parametric Assumptions:"
+"0",""
+"0","# Assessing Normality"
+"0",""
+"0",""
+"0","# Best guess method: Treatment fixed, "
+"0","# lm model of primary data"
+"0","hct_primary_lmer <- lmer(Hct.... ~ Ambient.Or.OAH * Pregnant.Or.Atresia + (1|Pregnant.Or.Atresia), data = Primary_Samples)"
+"2","G2;H2;Warningh in as_lmerModLT(model, devfun) :
+  Model may not have converged with 1 eigenvalue close to zero: -8.2e-10g
+"
+"0","# Summary of model"
+"0","summary(hct_primary_lmer)"
+"1","Linear mixed model fit by REML. t-tests use
+  Satterthwaite's method [lmerModLmerTest]
+Formula: 
+Hct.... ~ Ambient.Or.OAH * Pregnant.Or.Atresia + (1 | Pregnant.Or.Atresia)
+   Data: Primary_Samples
+
+REML criterion at convergence: 155
+
+Scaled residuals: 
+    Min      1Q  Median      3Q     Max 
+-1.5629 -0.5349 -0.2344  0.6692  2.2989 
+
+Random effects:
+ Groups              Name        Variance Std.Dev.
+ Pregnant.Or.Atresia (Intercept)  3.262   1.806   
+ Residual                        10.235   3.199   
+Number of obs: 32, groups:  Pregnant.Or.Atresia, 2
+
+Fixed effects:
+                                       Estimate
+(Intercept)                             17.5697
+Ambient.Or.OAH.L                         1.8342
+Pregnant.Or.Atresia.L                    2.1642
+Ambient.Or.OAH.L:Pregnant.Or.Atresia.L  -0.7939
+                                       Std. Error
+(Intercept)                                1.4420
+Ambient.Or.OAH.L                           0.9471
+Pregnant.Or.Atresia.L                      2.0394
+Ambient.Or.OAH.L:Pregnant.Or.Atresia.L     1.3394
+                                            df t value
+(Intercept)                            28.0000  12.184
+Ambient.Or.OAH.L                       28.0000   1.937
+Pregnant.Or.Atresia.L                  28.0000   1.061
+Ambient.Or.OAH.L:Pregnant.Or.Atresia.L 28.0000  -0.593
+                                       Pr(>|t|)    
+(Intercept)                            1.04e-12 ***
+Ambient.Or.OAH.L                         0.0629 .  
+Pregnant.Or.Atresia.L                    0.2977    
+Ambient.Or.OAH.L:Pregnant.Or.Atresia.L   0.5581    
+---
+Signif. codes:  
+0 ‘***’ 0.001 ‘**’ 0.01 ‘*’ 0.05 ‘.’ 0.1 ‘ ’ 1
+
+Correlation of Fixed Effects:
+            (Intr) Am.O.OAH.L P.O.A.
+Amb.O.OAH.L  0.242                  
+Prgnn.O.A.L -0.045 -0.079           
+A.O.OAH.L:P -0.079 -0.210      0.242
+"
+"0","# Suss residuals of model"
+"0","hct_primary_res_lmer <- residuals(hct_primary_lmer)"
+"0",""
+"0","# Shapiro test"
+"0","shapiro.test(hct_primary_res_lmer)"
+"1","
+	Shapiro-Wilk normality test
+
+data:  hct_primary_res_lmer
+W = 0.97061, p-value = 0.5164
+
+"
+"0","# hct simulated residuals plot"
+"0","hct_primary_simres_plot <- simulateResiduals(fittedModel = hct_primary_lmer)"
+"0","plot(hct_primary_simres_plot)"

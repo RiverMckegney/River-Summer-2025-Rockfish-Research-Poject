@@ -1,0 +1,33 @@
+"0","# hct"
+"0",""
+"0","# Primary samples"
+"0",""
+"0","# test with lmer"
+"0","bartlett.test(hct_primary_res_lmer ~ Primary_Samples$Ambient.Or.OAH)"
+"1","
+"
+"1","	Bartlett test of homogeneity of variances
+
+data:  hct_primary_res_lmer by Primary_Samples$Ambient.Or.OAH
+Bartlett's K-squared = 0.91747, df = 1, p-value =
+0.3381
+
+"
+"0","bartlett.test(Hct.... ~ Ambient.Or.OAH, Primary_Samples)"
+"1","
+	Bartlett test of homogeneity of variances
+
+data:  Hct.... by Ambient.Or.OAH
+Bartlett's K-squared = 0.20205, df = 1, p-value =
+0.6531
+
+"
+"0","bartlett.test(Hct.... ~ Pregnant.Or.Atresia, Primary_Samples) "
+"1","
+	Bartlett test of homogeneity of variances
+
+data:  Hct.... by Pregnant.Or.Atresia
+Bartlett's K-squared = 0.39728, df = 1, p-value =
+0.5285
+
+"

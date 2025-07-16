@@ -1,0 +1,8 @@
+"0",""
+"0",""
+"0","# Qqplot of model"
+"0","hct_primary_res_lmer_qqplot <- ggqqplot(hct_primary_res_lmer) +"
+"0"," labs(title = ""Primary Hct Interactive Residual QQplot"","
+"0","      subtitle = ""lmer(Hct.... ~ Ambient.Or.OAH * Pregnant.Or.Atresia + (1|Pregnant.Or.Atresia), data = Primary_Samples)"", x = ""Hct Theoretical Quantiles (Predicted values)"", y = ""HCt Sample Quantiles"") + theme(plot.title = element_text(hjust = 0.5), plot.subtitle = element_text(hjust = 0.5, size = 7))"
+"0",""
+"0","print(hct_primary_res_lmer_qqplot)"

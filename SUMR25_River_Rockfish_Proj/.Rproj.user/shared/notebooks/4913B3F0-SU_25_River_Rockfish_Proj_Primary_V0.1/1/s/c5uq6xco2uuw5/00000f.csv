@@ -1,0 +1,7 @@
+"0","# Primary data"
+"0",""
+"0","# Arrange the order of parturition categories for visualizations & tests"
+"0","Primary_Samples$Ambient.Or.OAH <- ordered(Primary_Samples$Ambient.Or.OAH, levels = c(""Ambient"", ""OAH""))"
+"0",""
+"0","Primary_Samples$Pregnant.Or.Atresia <- ordered(Primary_Samples$Pregnant.Or.Atresia, levels = c(""Post Parturition"", ""Atresia""))"
+"0",""
