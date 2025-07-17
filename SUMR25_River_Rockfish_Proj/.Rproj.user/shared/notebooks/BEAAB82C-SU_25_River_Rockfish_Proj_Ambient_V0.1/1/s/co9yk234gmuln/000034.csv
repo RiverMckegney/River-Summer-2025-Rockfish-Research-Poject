@@ -1,0 +1,12 @@
+"0","Ambient_Samples %>%
+  ggplot(aes(x = Hct...., y = )) +
+  geom_histogram(after_stat(density)) +
+  stat_function(fun = dnorm, args = c(mean = mean(Ambient_Samples$Hct....), sd = sd(Ambient_Samples$Hct....)), aes(col = ""Normal Distribution""), show.legend = TRUE) +
+  geom_density(aes(col = ""Sample Density""), show.legend = TRUE) +
+  labs(title = ""Hct Ambient Sample Distribution"") +
+  scale_color_manual(""Distribution"", values = c(""Normal Distribution"" = ""green"", ""Sample Density"" = ""black""))
+"
+"2","G1;[1m[33mError[39m in `geom_histogram()`:[22m
+[38;5;255m[33m![38;5;255m `mapping` must be created by `aes()`.[39m
+[90mRun `]8;;x-r-run:rlang::last_trace()rlang::last_trace()]8;;` to see where the error occurred.[39m
+g"

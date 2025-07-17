@@ -498,6 +498,10 @@ pH Parametric Assessment
 Model Design
 ```{r}
 
+# Install flexplot
+# devtools::install_github("dustinfife/flexplot", ref="development")
+require(flexplot)
+
 # Best guess method: Treatment fixed, 
 # lm model of primary data
 pH_primary_lmer <- lmer(pH ~ Ambient.Or.OAH * Pregnant.Or.Atresia + (1|Pregnant.Or.Atresia), data = Primary_Samples)

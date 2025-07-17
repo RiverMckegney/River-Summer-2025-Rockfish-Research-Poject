@@ -33,6 +33,8 @@ library(ggpubr) # For assumption plots
 library(conover.test) # For the conover.Iman() test function
 library(DescTools) # Contain alternative ConoverTest function
 library(rstatix) # tidyverse adapted stat tests and mshapiro_test() functions
+library(DHARMa) # For multi-level lm models and shapiro test
+library(patchwork) # For combining ggplots
 ```
 
 
@@ -461,7 +463,7 @@ pH_ambient_boxplot <- ggplot(data = Ambient_Samples) +
         legend.background = element_rect(fill = "white", color = "black"),
         title = element_text(size = 12),
         plot.title = element_text(size = 30, hjust = 0.5),
-        axis.text.x = element_text(size = 20),
+        axis.text.x = element_text(size = 18),
         axis.text.y = element_text(size = 20),
         axis.title.x = element_text(size = 20),
         axis.title.y = element_text(size = 20))
@@ -495,6 +497,7 @@ Data Distribution
 # Frequency Histogram
 hist(Ambient_Samples$pH)
 
+plotNormalHistogram(Ambient_Samples$pH) 
 
 # Density vs normality curve histograms
 Ambient_Samples %>%
@@ -504,6 +507,30 @@ Ambient_Samples %>%
   geom_density(aes(col = "Sample Density"), show.legend = TRUE) +
   labs(title = "pH Ambient Sample Distribution") +
   scale_color_manual("Distribution", values = c("Normal Distribution" = "green", "Sample Density" = "black"))
+
+# More accurate density curve?
+Ambient_Samples %>%
+  ggplot(aes(x = pH)) +
+  geom_histogram(aes(x = pH, y = after_stat(density))) +
+  stat_function(fun = dnorm, args = c(mean = mean(Ambient_Samples$pH), sd = sd(Ambient_Samples$pH)), aes(col = "Normal Distribution"), show.legend = TRUE) +
+  geom_density(aes(col = "Sample Density"), show.legend = TRUE) +
+  labs(title = "pH Ambient Sample Distribution") +
+  scale_color_manual("Distribution", values = c("Normal Distribution" = "green", "Sample Density" = "black"))
+
+# Density Plot with normal density
+Ambient_Samples %>%
+  ggplot(aes(x = pH)) +
+  stat_function(fun = dnorm, args = c(mean = mean(Ambient_Samples$pH), sd = sd(Ambient_Samples$pH)), aes(col = "Normal Distribution"), show.legend = TRUE) +
+  geom_density(aes(col = "Sample Density"), show.legend = TRUE) +
+  labs(title = "pH Ambient Sample Distribution") +
+  scale_color_manual("Distribution", values = c("Normal Distribution" = "green", "Sample Density" = "black"))
+
+# Density by brood condition
+Ambient_Samples %>%
+ggplot(aes(x = pH)) +
+  geom_density(aes(x = pH, fill = Consensus_Brood_Condition), alpha = 0.5)
+
+plotNormalDensity(Ambient_Samples$pH)
 ```
 
 
@@ -511,6 +538,10 @@ Ambient_Samples %>%
 Model Design:
 ```{r}
 # pH ambient data
+
+# Install flexplot
+# devtools::install_github("dustinfife/flexplot", ref="development")
+require(flexplot)
 
 pH_ambient_lmer <- lmer(pH ~ Consensus_Brood_Condition + (1|Consensus_Brood_Condition), data = Ambient_Samples)
 
@@ -600,5 +631,217 @@ TukeyHSD(pH_aov_ambient)
 
 ```
 
+pH Ambient Results
 
+Which brood condition significantly different (if any)?
+
+
+# Hct : Hematocrit
+
+Hematocrit Summary Stats
+```{r}
+# hct
+# Summary stats
+
+# Ambient data
+Ambient_Samples %>%
+  group_by(Ambient.Or.OAH, Consensus_Brood_Condition) %>%
+  summarize(count = n(),
+            median = round(median(Hct....), 3),
+            mean = round(mean(Hct....), 3),
+            sd = round(sd(Hct....), 3),
+            cv = round(sd(Hct....)/mean(Hct....), 3)) %>%
+  ungroup()
+```
+
+
+Hematocrit Boxplot
+```{r}
+# hct boxplot
+
+# Ambient Samples
+hct_ambient_boxplot <- ggplot(data = Ambient_Samples) + 
+  geom_boxplot(aes(x = Consensus_Brood_Condition, y = Hct....)) +
+  geom_point(aes(x = Consensus_Brood_Condition, y = Hct....), alpha = 0.5, colour = "black") +
+  labs(title = "Hematocrit", x = "Parturition Success", y = "Hct (%)") +
+  facet_wrap(~ Ambient.Or.OAH) +
+  theme_classic() +
+  theme(panel.background = element_rect(fill = "white"),
+        plot.background = element_rect(fill = "white"),
+        legend.background = element_rect(fill = "white", color = "black"),
+        title = element_text(size = 12),
+        plot.title = element_text(size = 30, hjust = 0.5),
+        axis.text.x = element_text(size = 18),
+        axis.text.y = element_text(size = 20),
+        axis.title.x = element_text(size = 20),
+        axis.title.y = element_text(size = 20))
+
+print(hct_ambient_boxplot)
+
+ggsave(filename = "data-images/hct_ambient_boxplot.pdf", plot = hct_ambient_boxplot, device = "pdf")
+ggsave(filename = "data-images/hct_ambient_boxplot.png", plot = hct_ambient_boxplot, device = "png")
+
+```
+
+
+
+Test Outliers
+```{r}
+# hct
+# Ambient
+
+# Test outliers
+
+```
+
+
+Hct Parametric Assessment
+Data Distribution
+```{r}
+# Hct
+# Parametric Assumptions
+
+# Data Distribution
+
+# Frequency Histogram
+hct_ambient_hist <- hist(Ambient_Samples$Hct....)
+print(hct_ambient_hist)
+
+plotNormalHistogram(Ambient_Samples$Hct....)
+
+# Density vs normality curve histograms
+Ambient_Samples %>%
+  ggplot(aes(x = Hct....)) +
+  geom_histogram(aes(x = Hct...., y = after_stat(density))) +
+  stat_function(fun = dnorm, args = c(mean = mean(Ambient_Samples$Hct....), sd = sd(Ambient_Samples$Hct....)), aes(col = "Normal Distribution"), show.legend = TRUE) +
+  geom_density(aes(col = "Sample Density"), show.legend = TRUE) +
+  labs(title = "Hct Ambient Sample Distribution") +
+  scale_color_manual("Distribution", values = c("Normal Distribution" = "green", "Sample Density" = "black"))
+
+# Density Plot with normal density
+Ambient_Samples %>%
+  ggplot(aes(x = Hct....)) +
+  stat_function(fun = dnorm, args = c(mean = mean(Ambient_Samples$Hct....), sd = sd(Ambient_Samples$Hct....)), aes(col = "Normal Distribution"), show.legend = TRUE) +
+  geom_density(aes(col = "Sample Density"), show.legend = TRUE) +
+  labs(title = "Hct Ambient Sample Distribution") +
+  scale_color_manual("Distribution", values = c("Normal Distribution" = "green", "Sample Density" = "black"))
+
+
+# Density by brood condition
+Ambient_Samples %>%
+ggplot(aes(x = Hct....)) +
+  geom_density(aes(x = Hct...., fill = Consensus_Brood_Condition), alpha = 0.5)
+
+
+plotNormalDensity(Ambient_Samples$Hct....) +
+  rug(jitter(Ambient_Samples$Hct....))
+
+```
+
+
+
+
+Model Design:
+```{r}
+# hct ambient data
+
+hct_ambient_lmer <- lmer(Hct.... ~ Consensus_Brood_Condition + (1|Consensus_Brood_Condition), data = Ambient_Samples)
+
+visualize(hct_ambient_lmer, plot = "model", sample = 50)
+
+```
+
+
+Normality Residual QQplot
+```{r}
+# hct
+# Parametric Assumptions:
+
+# Assessing Normality
+
+# Summary of model
+summary(hct_ambient_lmer)
+
+# Suss residuals of model
+hct_ambient_res_lmer <- residuals(hct_ambient_lmer)
+
+# Shapiro test
+shapiro.test(hct_ambient_res_lmer)
+
+# hct simulated residuals plot
+hct_ambient_simres_plot <- simulateResiduals(fittedModel = hct_ambient_lmer)
+plot(hct_ambient_simres_plot)
+
+# Qqplot of model
+hct_ambient_res_qqplot <- ggqqplot(residuals(hct_ambient_lmer)) +
+labs(title = "Ambient Hct Interactive Residual QQplot",
+     subtitle = "lmer(Hct ~ Consensus_Brood_Condition + (1|Consensus_Brood_Condition), data = Ambient_Samples)",
+                               x = "Hct Theoretical Quantiles (Predicted values)",
+                               y = "Hct Sample Quantiles") +
+  theme(plot.title = element_text(hjust = 0.5),
+        plot.subtitle = element_text(hjust = 0.5, size = 7))
+print(hct_ambient_res_qqplot)
+
+
+# ggsave(filename = "data-images/hct_ambient_res_int_qqplot.pdf", plot = hct_ambient_res_int_qqplot, device = "pdf")
+# ggsave(filename = "data-images/hct_ambient_res_int_qqplot.png", plot = hct_ambient_res_int_qqplot, device = "png")
+```
+
+
+
+hematocrit Parametric Assessment
+Testing Scedasticity:
+```{r}
+# hct
+
+# Ambient samples
+
+# test with lmer
+bartlett.test(hct_ambient_res_lmer ~ Ambient_Samples$Consensus_Brood_Condition)
+
+bartlett.test(Hct.... ~ Consensus_Brood_Condition, Ambient_Samples)
+
+
+# leveneTest(hct ~ Consensus_Brood_Condition, Ambient_Samples) 
+
+```
+
+
+Hct Parametric Assumptions Assessment: 
+
+Warning: Check after assessing outliers
+
+- Ambient Data normally distributed? 
+
+- Ambient Data equal variance across factors?
+
+
+
+# Hct Stat Tests
+
+```{r}
+# hct
+# Ambient ANOVA Test
+
+# Testing for differences in ambient parturition success metrics
+# One-way ANOVA (parametric) or Kruskal-Wallis test (nonparametric)
+
+hct_aov_ambient <- aov(Hct.... ~ Consensus_Brood_Condition, data = Ambient_Samples)
+summary(hct_aov_ambient)
+
+
+# If significant, Post Hoc Test: 
+# - Tukey's HSD (parametric, normality & equal variance across groups)
+# - Dunn's test (non-parametric, if Kruskal-Wallis test is rejected)
+
+TukeyHSD(hct_aov_ambient)
+
+```
+
+Hct Ambient Results
+
+Which brood condition significantly different (if any)?
+
+
+# Glucose
 

@@ -324,13 +324,13 @@ pH Parametric Assessment
 Model Design
 ```{r}
 
+# Install flexplot
+# devtools::install_github("dustinfife/flexplot", ref="development")
+require(flexplot)
+
 # Best guess method: Treatment fixed, 
 # lm model of primary data
-pH_primary_lmerA <- lmer(pH ~ Ambient.Or.OAH * Pregnant.Or.Atresia + (1|Pregnant.Or.Atresia), data = Primary_Samples)
-
-# If above looks good, then wouldn't I have to also test the opposite?
-pH_primary_lmerB <- lmer(pH ~ Pregnant.Or.Atresia * Ambient.Or.OAH  + (1|Pregnant.Or.Atresia), data = Primary_Samples)
-# For some reason I can't visulize this one...
+pH_primary_lmer <- lmer(pH ~ Ambient.Or.OAH * Pregnant.Or.Atresia + (1|Pregnant.Or.Atresia), data = Primary_Samples)
 
 # Second best guess method:
 pH_primary_lmer2 <- lmer(pH ~ Ambient.Or.OAH * Pregnant.Or.Atresia + (1|Pregnant.Or.Atresia), data = Primary_Samples)
@@ -338,11 +338,9 @@ pH_primary_lmer2 <- lmer(pH ~ Ambient.Or.OAH * Pregnant.Or.Atresia + (1|Pregnant
 # Third option
 pH_primary_lmer3 <- lmer(pH ~ Pregnant.Or.Atresia * Ambient.Or.OAH + (1|Pregnant.Or.Atresia) + (1|Ambient.Or.OAH), data = Primary_Samples)
 
-# What's up with that wierd intersept (why does clusters either start or finish at same location, they should both be fixed right?)
+# What's up with that weird intersept (why does clusters either start or finish at same location, they should both be fixed right?)
 
-visualize(pH_primary_lmerA, plot = "model", sample = 50)
-# visualize(pH_primary_lmerB, plot = "model", sample = 50) 
-# code doesn't work..
+visualize(pH_primary_lmer, plot = "model", sample = 50)
 visualize(pH_primary_lmer2, plot = "model", sample = 50)
 visualize(pH_primary_lmer3, plot = "model", sample = 50)
 
@@ -358,28 +356,28 @@ Normality Residual QQplot
 # Assessing Normality
 
 # Summary of model
-summary(pH_primary_lmerA)
+summary(pH_primary_lmer)
 
 summary(pH_primary_lmer2)
 
 summary(pH_primary_lmer3)
 
 # Suss residuals of model
-pH_primary_res_lmer <- residuals(pH_primary_lmerA)
+pH_primary_res_lmer <- residuals(pH_primary_lmer)
 
 pH_primary_res_lmer2 <- residuals(pH_primary_lmer2)
 
 pH_primary_res_lmer3 <- residuals(pH_primary_lmer3)
 
 # Shapiro test
-shapiro.test(pH_primary_res_lmerA)
+shapiro.test(pH_primary_res_lmer)
 
 shapiro.test(pH_primary_res_lmer2)
 
 shapiro.test(pH_primary_res_lmer3)
 
 # pH simulated residuals plot
-pH_primary_simres_plot <- simulateResiduals(fittedModel = pH_primary_lmerA)
+pH_primary_simres_plot <- simulateResiduals(fittedModel = pH_primary_lmer)
 plot(pH_primary_simres_plot)
 
 pH_primary_simres_plot2 <- simulateResiduals(fittedModel = pH_primary_lmer2)
@@ -389,7 +387,7 @@ pH_primary_simres_plot3 <- simulateResiduals(fittedModel = pH_primary_lmer3)
 plot(pH_primary_simres_plot3)
 
 # Qqplot of model
-# pH_primary_res_qqplot <- ggqqplot(residuals(pH_primary_lmerA)) +
+# pH_primary_res_qqplot <- ggqqplot(residuals(pH_primary_lmer)) +
 # labs(title = "Primary pH Interactive Residual QQplot",
 #      subtitle = "lmer(pH ~ Pregnant.Or.Atresia + (1|Ambient.Or.OAH), data = Primary_Samples)",
 #                                x = "pH Theoretical Quantiles (Predicted values)",
