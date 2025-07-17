@@ -1,0 +1,18 @@
+"0","# pH ambient data"
+"0","# Best guess method: Treatment fixed, pregnancy fixed & random"
+"0","# lm model of primary data"
+"0",""
+"0","pH_ambient_lmer <- lmer(pH ~ Consensus_Brood_Condition + (1|Consensus_Brood_Condition), data = Ambient_Samples)"
+"2","G2;H2;Warningh in checkConv(attr(opt, ""derivs""), opt$par, ctrl = control$checkConv,  :
+   Hessian is numerically singular: parameters are not uniquely determinedg
+"
+"2","G2;H2;Warningh in as_lmerModLT(model, devfun) :
+  Model may not have converged with 1 eigenvalue close to zero: 6.1e-10g
+"
+"0","# Second best guess method:"
+"0",""
+"0",""
+"0","visualize(pH_ambient_lmer, plot = ""model"", sample = 50)"
+"2","[38;5;255mCoordinate system already present. Adding new coordinate system, which
+will replace the existing one.[39m
+"

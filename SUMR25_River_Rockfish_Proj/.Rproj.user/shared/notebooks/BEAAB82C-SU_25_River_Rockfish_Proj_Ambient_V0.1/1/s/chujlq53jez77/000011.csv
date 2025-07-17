@@ -1,0 +1,27 @@
+"0","# pH"
+"0",""
+"0","# Ambient samples"
+"0",""
+"0","# test with lmer"
+"0","bartlett.test(pH_ambient_res_lmer ~ Ambient_Samples$Consensus_Brood_Condition)"
+"1","
+	Bartlett test of homogeneity of variances
+
+data:  pH_ambient_res_lmer by Ambient_Samples$Consensus_Brood_Condition
+Bartlett's K-squared = 4.281, df = 3, p-value = 0.2327
+
+"
+"0","bartlett.test(pH ~ Consensus_Brood_Condition, Ambient_Samples)"
+"1","
+	Bartlett test of homogeneity of variances
+
+data:  pH by Consensus_Brood_Condition
+Bartlett's K-squared = 4.281, df = 3, p-value = 0.2327
+
+"
+"0","leveneTest(pH ~ Consensus_Brood_Condition, Ambient_Samples) "
+"1","Levene's Test for Homogeneity of Variance (center = median)
+      Df F value Pr(>F)
+group  3  0.9421 0.4389
+      20               
+"

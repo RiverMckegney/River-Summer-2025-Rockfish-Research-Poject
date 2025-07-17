@@ -1,0 +1,19 @@
+"0","potassium_tukey_test <- TukeyHSD(potassium_primary_aov_additive)
+print(potassium_tukey_test)
+"
+"1","  Tukey multiple comparisons of means
+    95% family-wise confidence level
+
+Fit: aov(formula = K...mmol.L. ~ Pregnant.Or.Atresia + Ambient.Or.OAH, data = Primary_Samples)
+
+$Pregnant.Or.Atresia
+                         diff        lwr       upr
+Atresia-Post Parturition 0.05 -0.2357472 0.3357472
+                             p adj
+Atresia-Post Parturition 0.7230293
+
+$Ambient.Or.OAH
+             diff          lwr       upr     p adj
+OAH-Ambient 0.325 -0.002364508 0.6523645 0.0515697
+
+"

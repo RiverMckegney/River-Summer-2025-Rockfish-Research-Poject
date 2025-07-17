@@ -1,0 +1,10 @@
+"0","# Shapiro test
+shapiro.test(chloride_primary_res_lmer)
+"
+"1","
+	Shapiro-Wilk normality test
+
+data:  chloride_primary_res_lmer
+W = 0.96833, p-value = 0.4547
+
+"

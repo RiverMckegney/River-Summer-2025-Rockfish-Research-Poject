@@ -1,0 +1,5 @@
+"0","visualize(potassium_primary_lmer2, plot = ""model"", sample = 50)"
+"2","G1;H1;Errorh: object 'potassium_primary_lmer2' not found
+Error during wrapup: not that many frames on the stack
+Error: no more error handlers available (recursive errors?); invoking 'abort' restart
+g"

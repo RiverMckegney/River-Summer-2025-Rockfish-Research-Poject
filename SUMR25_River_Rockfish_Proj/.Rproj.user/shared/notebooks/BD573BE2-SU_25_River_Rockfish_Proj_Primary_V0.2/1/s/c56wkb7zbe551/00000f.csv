@@ -1,0 +1,7 @@
+"0","leveneTest(potassium_primary_res_lmer ~ Primary_Samples$Pregnant.Or.Atresia)
+"
+"1","Levene's Test for Homogeneity of Variance (center = median)
+      Df F value Pr(>F)
+group  1  0.9836 0.3292
+      30               
+"

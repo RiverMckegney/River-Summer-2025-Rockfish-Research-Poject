@@ -1,0 +1,18 @@
+"0","shapiro.test(calcium_primary_res_lmer)
+"
+"1","
+	Shapiro-Wilk normality test
+
+data:  calcium_primary_res_lmer
+W = 0.9505, p-value = 0.1489
+
+"
+"0",""
+"0","shapiro.test(calcium_primary_res_lmer2)"
+"1","
+	Shapiro-Wilk normality test
+
+data:  calcium_primary_res_lmer2
+W = 0.9505, p-value = 0.1489
+
+"

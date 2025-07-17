@@ -1,3 +1,88 @@
+"0","# glucose"
+"0","# Parametric Assumptions:"
 "0",""
-"0","# ggsave(filename = ""data-images/glucose_primary_res_lmer_qqplot.pdf"", plot = glucose_primary_res_lmer_qqplot, device = ""pdf"")"
-"0","# ggsave(filename = ""data-images/glucose_primary_res_lmer_qqplot.png"", plot = glucose_primary_res_lmer_qqplot, device = ""png"")"
+"0","# Assessing Normality"
+"0",""
+"0",""
+"0","# Best guess method: Treatment fixed, "
+"0","# lm model of primary data"
+"0","glucose_primary_lmer <- lmer(Glu..mmol.L. ~ Ambient.Or.OAH * Pregnant.Or.Atresia + (1|Pregnant.Or.Atresia), data = Primary_Samples)"
+"2","G2;H2;Warningh in checkConv(attr(opt, ""derivs""), opt$par, ctrl = control$checkConv,  :
+  unable to evaluate scaled gradientg
+"
+"2","G2;H2;Warningh in checkConv(attr(opt, ""derivs""), opt$par, ctrl = control$checkConv,  :
+   Hessian is numerically singular: parameters are not uniquely determinedg
+"
+"2","G2;H2;Warningh in as_lmerModLT(model, devfun) :
+  Model may not have converged with 1 eigenvalue close to zero: -1.1e-10g
+"
+"0","# Summary of model"
+"0","summary(glucose_primary_lmer)"
+"1","Linear mixed model fit by REML. t-tests use
+  Satterthwaite's method [lmerModLmerTest]
+Formula: 
+Glu..mmol.L. ~ Ambient.Or.OAH * Pregnant.Or.Atresia + (1 | Pregnant.Or.Atresia)
+   Data: Primary_Samples
+
+REML criterion at convergence: 70
+
+Scaled residuals: 
+    Min      1Q  Median      3Q     Max 
+-1.3102 -0.6129 -0.1284  0.3360  2.9966 
+
+Random effects:
+ Groups              Name        Variance Std.Dev.
+ Pregnant.Or.Atresia (Intercept) 0.04815  0.2194  
+ Residual                        0.49111  0.7008  
+Number of obs: 32, groups:  Pregnant.Or.Atresia, 2
+
+Fixed effects:
+                                       Estimate
+(Intercept)                              1.9662
+Ambient.Or.OAH.L                         0.2929
+Pregnant.Or.Atresia.L                    0.1044
+Ambient.Or.OAH.L:Pregnant.Or.Atresia.L  -0.5342
+                                       Std. Error
+(Intercept)                                0.2135
+Ambient.Or.OAH.L                           0.2075
+Pregnant.Or.Atresia.L                      0.3020
+Ambient.Or.OAH.L:Pregnant.Or.Atresia.L     0.2934
+                                            df t value
+(Intercept)                            28.0000   9.208
+Ambient.Or.OAH.L                       28.0000   1.412
+Pregnant.Or.Atresia.L                  28.0000   0.346
+Ambient.Or.OAH.L:Pregnant.Or.Atresia.L 28.0000  -1.821
+                                       Pr(>|t|)    
+(Intercept)                            5.76e-10 ***
+Ambient.Or.OAH.L                         0.1690    
+Pregnant.Or.Atresia.L                    0.7323    
+Ambient.Or.OAH.L:Pregnant.Or.Atresia.L   0.0793 .  
+---
+Signif. codes:  
+0 ‘***’ 0.001 ‘**’ 0.01 ‘*’ 0.05 ‘.’ 0.1 ‘ ’ 1
+
+Correlation of Fixed Effects:
+            (Intr) Am.O.OAH.L P.O.A.
+Amb.O.OAH.L  0.358                  
+Prgnn.O.A.L -0.099 -0.117           
+A.O.OAH.L:P -0.117 -0.210      0.358
+optimizer (nloptwrap) convergence code: 0 (OK)
+unable to evaluate scaled gradient
+ Hessian is numerically singular: parameters are not uniquely determined
+
+"
+"0","# Suss residuals of model"
+"0","glucose_primary_res_lmer <- residuals(glucose_primary_lmer)"
+"0",""
+"0","# Shapiro test"
+"0","shapiro.test(glucose_primary_res_lmer)"
+"1","
+	Shapiro-Wilk normality test
+
+data:  glucose_primary_res_lmer
+W = 0.86978, p-value = 0.001148
+
+"
+"0","# hct simulated residuals plot"
+"0","glucose_primary_simres_plot <- simulateResiduals(fittedModel = glucose_primary_lmer)"
+"0","plot(glucose_primary_simres_plot)"

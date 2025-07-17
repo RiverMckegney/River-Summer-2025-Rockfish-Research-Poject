@@ -1,0 +1,52 @@
+"0","# chloride Analysis"
+"0","# ANOVA Tests"
+"0",""
+"0","# Testing primary factor differences: Treatment & Parturition Outcome"
+"0",""
+"0","# Two-Way Interactive ANOVA"
+"0","chloride_primary_aov_int <- aov(Cl...mmol.L. ~ Pregnant.Or.Atresia * Ambient.Or.OAH, data = Primary_Samples)"
+"0","summary(chloride_primary_aov_int) "
+"1","                                   Df Sum Sq Mean Sq
+Pregnant.Or.Atresia                 1    1.6   1.612
+Ambient.Or.OAH                      1   24.2"
+"1","  24.223
+Pregnant.Or.Atresia:Ambient.Or.OAH  1   14.9  14.891
+Residuals                          28  471.2  16.830
+                                   F value Pr(>F)
+Pregnant.Or.Atresia                  0.096  0.759
+Ambient.Or.OAH                       1.439  0.240
+Pregnant.Or.Atresia:Ambient.Or.OAH   0.885  0.355
+Residuals                                        
+"
+"0","# If interaction not significant (p-value > 0.05), use additive model"
+"0",""
+"0","chloride_primary_aov_additive <- aov(Cl...mmol.L. ~ Pregnant.Or.Atresia + Ambient.Or.OAH, data = Primary_Samples)"
+"0","summary(chloride_primary_aov_additive)"
+"1","                    Df Sum Sq Mean Sq F value Pr(>F)
+Pregnant.Or.Atresia  1    1.6   1.612   0.096  0.759
+Ambient.Or.OAH       1   24.2  24.223   1.445  0.239
+Residuals           29  486.1  16.763               
+"
+"0","# Post-Hoc Test: "
+"0","chloride_tukey_test <- TukeyHSD(chloride_primary_aov_additive)"
+"0","print(chloride_tukey_test)"
+"1","  Tukey multiple comparisons of means
+    95% family-wise confidence level
+
+Fit: aov(formula = Cl...mmol.L. ~ Pregnant.Or.Atresia + Ambient.Or.OAH, data = Primary_Samples)
+
+$Pregnant.Or.Atresia
+                             diff       lwr      upr
+Atresia-Post Parturition 0.452381 -2.531597 3.436359
+                             p adj
+Atresia-Post Parturition 0.7587299
+
+$Ambient.Or.OAH
+                diff       lwr      upr     p adj
+OAH-Ambient 2.003968 -1.414608 5.422545 0.2402671
+
+"
+"0","# TukeyHSD(chloride_tukey_test, which = ""Pregnant.Or.Atresia"")"
+"0","# print()"
+"0",""
+"0","#chloride_primary_aov_int %>% tukey_hsd()"

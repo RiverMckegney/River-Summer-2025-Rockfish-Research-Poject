@@ -1,0 +1,19 @@
+"0","chloride_tukey_test <- TukeyHSD(chloride_primary_aov_additive)
+print(chloride_tukey_test)
+"
+"1","  Tukey multiple comparisons of means
+    95% family-wise confidence level
+
+Fit: aov(formula = Cl...mmol.L. ~ Pregnant.Or.Atresia + Ambient.Or.OAH, data = Primary_Samples)
+
+$Pregnant.Or.Atresia
+                             diff       lwr      upr
+Atresia-Post Parturition 0.452381 -2.531597 3.436359
+                             p adj
+Atresia-Post Parturition 0.7587299
+
+$Ambient.Or.OAH
+                diff       lwr      upr     p adj
+OAH-Ambient 2.003968 -1.414608 5.422545 0.2402671
+
+"

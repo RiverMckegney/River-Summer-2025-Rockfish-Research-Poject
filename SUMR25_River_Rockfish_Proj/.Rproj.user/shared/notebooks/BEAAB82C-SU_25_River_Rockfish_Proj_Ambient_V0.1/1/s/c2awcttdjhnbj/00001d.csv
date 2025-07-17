@@ -1,0 +1,64 @@
+"0","# pH"
+"0","# Parametric Assumptions:"
+"0",""
+"0","# Assessing Normality"
+"0",""
+"0","# Summary of model"
+"0","summary(pH_ambient_lmer)"
+"1","Linear mixed model fit by REML. t-tests use Satterthwaite's method [
+lmerModLmerTest]
+Formula: 
+pH ~ Consensus_Brood_Condition + (1 | Consensus_Brood_Condition)
+   Data: Ambient_Samples
+
+REML criterion at convergence: -32.9
+
+Scaled residuals: 
+     Min       1Q   Median       3Q      Max 
+-1.70520 -0.42367 -0.05345  0.65834  2.53239 
+
+Random effects:
+ Groups                    Name        Variance Std.Dev.
+ Consensus_Brood_Condition (Intercept) 0.003066 0.05537 
+ Residual                              0.007706 0.08779 
+Number of obs: 24, groups:  Consensus_Brood_Condition, 4
+
+Fixed effects:
+                            Estimate Std. Error       df t value
+(Intercept)                  7.41894    0.03551 20.00000 208.908
+Consensus_Brood_Condition.L -0.05107    0.07239 20.00000  -0.705
+Consensus_Brood_Condition.Q -0.02068    0.07103 20.00000  -0.291
+Consensus_Brood_Condition.C  0.01052    0.06963 20.00000   0.151
+                            Pr(>|t|)    
+(Intercept)                   <2e-16 ***
+Consensus_Brood_Condition.L    0.489    
+Consensus_Brood_Condition.Q    0.774    
+Consensus_Brood_Condition.C    0.881    
+---
+Signif. codes:  0 ‘***’ 0.001 ‘**’ 0.01 ‘*’ 0.05 ‘.’ 0.1 ‘ ’ 1
+
+Correlation of Fixed Effects:
+            (Intr) C_B_C.L C_B_C.Q
+Cnsns_B_C.L -0.221                
+Cnsns_B_C.Q  0.048 -0.204         
+Cnsns_B_C.C -0.048  0.029  -0.100 
+optimizer (nloptwrap) convergence code: 0 (OK)
+ Hessian is numerically singular: parameters are not uniquely determined
+
+"
+"0","# Suss residuals of model"
+"0","pH_ambient_res_lmer <- residuals(pH_ambient_lmer)"
+"0",""
+"0","# Shapiro test"
+"0","shapiro.test(pH_ambient_res_lmer)"
+"1","
+	Shapiro-Wilk normality test
+
+data:  pH_ambient_res_lmer
+"
+"1","W = 0.95582, p-value = 0.3602
+
+"
+"0","# pH simulated residuals plot"
+"0","pH_ambient_simres_plot <- simulateResiduals(fittedModel = pH_ambient_lmer)"
+"0","plot(pH_ambient_simres_plot)"

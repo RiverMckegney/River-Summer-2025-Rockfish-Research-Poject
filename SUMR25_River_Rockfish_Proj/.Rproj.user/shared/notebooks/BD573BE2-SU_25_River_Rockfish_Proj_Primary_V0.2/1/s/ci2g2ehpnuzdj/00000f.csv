@@ -1,0 +1,87 @@
+"0","# Na+"
+"0","# Parametric Assumptions:"
+"0",""
+"0","# Assessing Normality"
+"0",""
+"0","# lm model of primary data"
+"0","sodium_primary_lmer <- lmer(Na...mmol.L. ~ Ambient.Or.OAH * Pregnant.Or.Atresia + (1|Pregnant.Or.Atresia), data = Primary_Samples)"
+"2","G2;H2;Warningh in checkConv(attr(opt, ""derivs""), opt$par, ctrl = control$checkConv,  :
+  unable to evaluate scaled gradientg
+"
+"2","G2;H2;Warningh in checkConv(attr(opt, ""derivs""), opt$par, ctrl = control$checkConv,  :
+   Hessian is numerically singular: parameters are not uniquely determinedg
+"
+"2","G2;H2;Warningh in as_lmerModLT(model, devfun) :
+  Model may not have converged with 1 eigenvalue close to zero: 4.9e-14g
+"
+"0","# Summary of model"
+"0","summary(sodium_primary_lmer)"
+"1","Linear mixed model fit by REML. t-tests use
+  Satterthwaite's method [lmerModLmerTest]
+Formula: 
+Na...mmol.L. ~ Ambient.Or.OAH * Pregnant.Or.Atresia + (1 | Pregnant.Or.Atresia)
+   Data: Primary_Samples
+
+REML criterion at convergence: 205.3
+
+Scaled residuals: 
+    Min      1Q  Median      3Q     Max 
+-0.9956 -0.4301 -0.1158  0.1331  4.6824 
+
+Random effects:
+ Groups              Name        Variance Std.Dev.
+ Pregnant.Or.Atresia (Intercept)  1.251   1.118   
+ Residual                        61.665   7.853   
+Number of obs: 32, groups:  Pregnant.Or.Atresia, 2
+
+Fixed effects:
+                                       Estimate
+(Intercept)                            177.4289
+Ambient.Or.OAH.L                        -2.2565
+Pregnant.Or.Atresia.L                    0.2637
+Ambient.Or.OAH.L:Pregnant.Or.Atresia.L  -4.0396
+                                       Std. Error
+(Intercept)                                1.8242
+Ambient.Or.OAH.L                           2.3248
+Pregnant.Or.Atresia.L                      2.5798
+Ambient.Or.OAH.L:Pregnant.Or.Atresia.L     3.2877
+                                             df t value
+(Intercept)                             28.0000  97.263
+Ambient.Or.OAH.L                        28.0000  -0.971
+Pregnant.Or.Atresia.L                   28.0000   0.102
+Ambient.Or.OAH.L:Pregnant.Or.Atresia.L  28.0000  -1.229
+                                       Pr(>|t|)    
+(Intercept)                              <2e-16 ***
+Ambient.Or.OAH.L                          0.340    
+Pregnant.Or.Atresia.L                     0.919    
+Ambient.Or.OAH.L:Pregnant.Or.Atresia.L    0.229    
+---
+Signif. codes:  
+0 ‘***’ 0.001 ‘**’ 0.01 ‘*’ 0.05 ‘.’ 0.1 ‘ ’ 1
+
+Correlation of Fixed Effects:
+            (Intr) Am.O.OAH.L P.O.A.
+Amb.O.OAH.L  0.470                  
+Prgnn.O.A.L -0.171 -0.153           
+A.O.OAH.L:P -0.153 -0.210      0.470
+optimizer (nloptwrap) convergence code: 0 (OK)
+unable to evaluate scaled gradient
+ Hessian is numerically singular: parameters are not uniquely determined
+
+"
+"0","# Suss residuals of model"
+"0","sodium_primary_res_lmer <- residuals(sodium_primary_lmer)"
+"0",""
+"0","# Shapiro test"
+"0","shapiro.test(sodium_primary_res_lmer)"
+"1","
+	Shapiro-Wilk normality test
+
+data:  sodium_primary_res_lmer
+"
+"1","W = 0.58408, p-value = 2.382e-08
+
+"
+"0","# hct simulated residuals plot"
+"0","sodium_primary_simres_plot <- simulateResiduals(fittedModel = sodium_primary_lmer)"
+"0","plot(sodium_primary_simres_plot)"

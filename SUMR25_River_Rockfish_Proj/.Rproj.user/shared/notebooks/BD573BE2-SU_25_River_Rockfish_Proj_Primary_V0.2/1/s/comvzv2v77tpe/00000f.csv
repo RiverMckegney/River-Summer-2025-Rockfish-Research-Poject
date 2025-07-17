@@ -1,0 +1,32 @@
+"0","# Na+"
+"0",""
+"0","# Primary samples"
+"0",""
+"0","# test with lmer"
+"0","bartlett.test(sodium_primary_res_lmer ~ Primary_Samples$Ambient.Or.OAH)"
+"1","
+	Bartlett test of homogeneity of variances
+
+data:  sodium_primary_res_lmer by Primary_Samples$Ambient.Or.OAH
+Bartlett's K-squared = 14.231, df = 1, p-value =
+0.0001617
+
+"
+"0","bartlett.test(Na...mmol.L. ~ Ambient.Or.OAH, Primary_Samples)"
+"1","
+	Bartlett test of homogeneity of variances
+
+data:  Na...mmol.L. by Ambient.Or.OAH
+Bartlett's K-squared = 9.7241, df = 1, p-value =
+0.001819
+
+"
+"0","bartlett.test(Na...mmol.L. ~ Pregnant.Or.Atresia, Primary_Samples) "
+"1","
+	Bartlett test of homogeneity of variances
+
+data:  Na...mmol.L. by Pregnant.Or.Atresia
+Bartlett's K-squared = 13.52, df = 1, p-value =
+0.0002361
+
+"

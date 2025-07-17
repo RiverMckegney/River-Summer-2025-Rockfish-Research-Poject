@@ -1,0 +1,10 @@
+"0","# Shapiro test
+shapiro.test(potassium_primary_res_lmer)
+"
+"1","
+	Shapiro-Wilk normality test
+
+data:  potassium_primary_res_lmer
+W = 0.89039, p-value = 0.003557
+
+"

@@ -1,0 +1,19 @@
+"0","calcium_tukey_test <- TukeyHSD(calcium_primary_aov_additive)
+print(calcium_tukey_test)
+"
+"1","  Tukey multiple comparisons of means
+    95% family-wise confidence level
+
+Fit: aov(formula = Ca....mmol.L. ~ Pregnant.Or.Atresia + Ambient.Or.OAH, data = Primary_Samples)
+
+$Pregnant.Or.Atresia
+                              diff        lwr        upr
+Atresia-Post Parturition -0.138254 -0.1997458 -0.0767621
+                            p adj
+Atresia-Post Parturition 7.73e-05
+
+$Ambient.Or.OAH
+                  diff      lwr         upr     p adj
+OAH-Ambient -0.1143122 -0.18476 -0.04386438 0.0024459
+
+"

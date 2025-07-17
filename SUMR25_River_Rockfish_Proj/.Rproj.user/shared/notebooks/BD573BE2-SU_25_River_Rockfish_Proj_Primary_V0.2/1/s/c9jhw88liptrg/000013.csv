@@ -1,0 +1,22 @@
+"0",""
+"0","# Best guess method: Treatment fixed, pregnancy fixed & random"
+"0","# lm model of primary data"
+"0",""
+"0","potassium_primary_lmer <- lmer(K...mmol.L. ~ Ambient.Or.OAH * Pregnant.Or.Atresia + (1|Pregnant.Or.Atresia), data = Primary_Samples)"
+"2","G2;H2;Warningh in as_lmerModLT(model, devfun) :
+  Model may not have converged with 1 eigenvalue close to zero: 1.4e-09g
+"
+"0","# Second best guess method:"
+"0","sodium_primary_lmer2 <- lmer(K...mmol.L. ~ Pregnant.Or.Atresia * Ambient.Or.OAH + (1|Ambient.Or.OAH), data = Primary_Samples)"
+"2","G2;H2;Warningh in checkConv(attr(opt, ""derivs""), opt$par, ctrl = control$checkConv,  :
+  unable to evaluate scaled gradientg
+"
+"2","G2;H2;Warningh in checkConv(attr(opt, ""derivs""), opt$par, ctrl = control$checkConv,  :
+   Hessian is numerically singular: parameters are not uniquely determinedg
+"
+"2","G2;H2;Warningh in as_lmerModLT(model, devfun) :
+  Model may not have converged with 1 eigenvalue close to zero: 1.2e-11g
+"
+"0","visualize(potassium_primary_lmer, plot = ""model"", sample = 50)"
+"2","[38;5;255mJoining with `by = join_by(K...mmol.L.)`[39m
+"
