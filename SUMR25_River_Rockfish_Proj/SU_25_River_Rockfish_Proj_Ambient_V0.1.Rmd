@@ -455,7 +455,7 @@ pH Boxplot
 pH_ambient_boxplot <- ggplot(data = Ambient_Samples) + 
   geom_boxplot(aes(x = Consensus_Brood_Condition, y = pH)) +
   geom_point(aes(x = Consensus_Brood_Condition, y = pH), alpha = 0.5, colour = "black") +
-  labs(title = "pH", x = "Parturition Success", y = "pH") +
+  labs(title = "pH Ambient", x = "Parturition Success", y = "pH") +
   facet_wrap(~ Ambient.Or.OAH) +
   theme_classic() +
   theme(panel.background = element_rect(fill = "white"),
@@ -474,7 +474,6 @@ ggsave(filename = "data-images/pH_ambient_boxplot.pdf", plot = pH_ambient_boxplo
 ggsave(filename = "data-images/pH_ambient_boxplot.png", plot = pH_ambient_boxplot, device = "png")
 
 ```
-
 
 Test Outliers
 ```{r}
@@ -529,6 +528,10 @@ Ambient_Samples %>%
 Ambient_Samples %>%
 ggplot(aes(x = pH)) +
   geom_density(aes(x = pH, fill = Consensus_Brood_Condition), alpha = 0.5)
+
+ggplot(Ambient_Samples, aes(x = pH)) +
+  geom_density(aes(x = pH)) +
+  facet_wrap(~ Consensus_Brood_Condition)
 
 plotNormalDensity(Ambient_Samples$pH)
 ```
@@ -625,7 +628,7 @@ summary(pH_aov_ambient)
 
 # If significant, Post Hoc Test: 
 # - Tukey's HSD (parametric, normality & equal variance across groups)
-# - Dunn's test (non-parametric, if Kruskal-Wallis test is rejected)
+# - Dunn's test (non-parametric, after Kruskal-Wallis test)
 
 TukeyHSD(pH_aov_ambient)
 
@@ -663,7 +666,7 @@ Hematocrit Boxplot
 hct_ambient_boxplot <- ggplot(data = Ambient_Samples) + 
   geom_boxplot(aes(x = Consensus_Brood_Condition, y = Hct....)) +
   geom_point(aes(x = Consensus_Brood_Condition, y = Hct....), alpha = 0.5, colour = "black") +
-  labs(title = "Hematocrit", x = "Parturition Success", y = "Hct (%)") +
+  labs(title = "Hematocrit Ambient", x = "Parturition Success", y = "Hct (%)") +
   facet_wrap(~ Ambient.Or.OAH) +
   theme_classic() +
   theme(panel.background = element_rect(fill = "white"),
@@ -732,6 +735,9 @@ Ambient_Samples %>%
 ggplot(aes(x = Hct....)) +
   geom_density(aes(x = Hct...., fill = Consensus_Brood_Condition), alpha = 0.5)
 
+ggplot(Ambient_Samples, aes(x = Hct....)) +
+  geom_density(aes(x = Hct....)) +
+  facet_wrap(~ Consensus_Brood_Condition)
 
 plotNormalDensity(Ambient_Samples$Hct....) +
   rug(jitter(Ambient_Samples$Hct....))
@@ -832,7 +838,7 @@ summary(hct_aov_ambient)
 
 # If significant, Post Hoc Test: 
 # - Tukey's HSD (parametric, normality & equal variance across groups)
-# - Dunn's test (non-parametric, if Kruskal-Wallis test is rejected)
+# - Dunn's test (non-parametric, after Kruskal-Wallis test)
 
 TukeyHSD(hct_aov_ambient)
 
@@ -844,4 +850,1019 @@ Which brood condition significantly different (if any)?
 
 
 # Glucose
+
+Glucose Summary Stats
+```{r}
+# glucose
+# Summary stats
+
+# Ambient data
+Ambient_Samples %>%
+  group_by(Ambient.Or.OAH, Consensus_Brood_Condition) %>%
+  summarize(count = n(),
+            median = round(median(Glu..mmol.L.), 3),
+            mean = round(mean(Glu..mmol.L.), 3),
+            sd = round(sd(Glu..mmol.L.), 3),
+            cv = round(sd(Glu..mmol.L.)/mean(Glu..mmol.L.), 3)) %>%
+  ungroup()
+```
+
+
+Glucose Boxplot
+```{r}
+# glucose boxplot
+
+# Ambient Samples
+glucose_ambient_boxplot <- ggplot(data = Ambient_Samples) + 
+  geom_boxplot(aes(x = Consensus_Brood_Condition, y = Glu..mmol.L.)) +
+  geom_point(aes(x = Consensus_Brood_Condition, y = Glu..mmol.L.), alpha = 0.5, colour = "black") +
+  labs(title = "Glucose Ambient", x = "Parturition Success", y = "Glucose (mmol/L)") +
+  facet_wrap(~ Ambient.Or.OAH) +
+  theme_classic() +
+  theme(panel.background = element_rect(fill = "white"),
+        plot.background = element_rect(fill = "white"),
+        legend.background = element_rect(fill = "white", color = "black"),
+        title = element_text(size = 12),
+        plot.title = element_text(size = 30, hjust = 0.5),
+        axis.text.x = element_text(size = 18),
+        axis.text.y = element_text(size = 20),
+        axis.title.x = element_text(size = 20),
+        axis.title.y = element_text(size = 20))
+
+print(glucose_ambient_boxplot)
+
+ggsave(filename = "data-images/glucose_ambient_boxplot.pdf", plot = glucose_ambient_boxplot, device = "pdf")
+ggsave(filename = "data-images/glucose_ambient_boxplot.png", plot = glucose_ambient_boxplot, device = "png")
+
+```
+
+
+
+Test Outliers
+```{r}
+# glucose
+# Ambient
+
+# Test outliers
+
+```
+
+
+
+Glucose Parametric Assessment
+Data Distribution
+```{r}
+# glucose
+# Parametric Assumptions
+
+# Data Distribution
+
+# Frequency Histogram
+hist(Ambient_Samples$Glu..mmol.L.)
+
+plotNormalHistogram(Ambient_Samples$Glu..mmol.L.) 
+
+# More accurate density curve
+Ambient_Samples %>%
+  ggplot(aes(x = Glu..mmol.L.)) +
+  geom_histogram(aes(x = Glu..mmol.L., y = after_stat(density))) +
+  stat_function(fun = dnorm, args = c(mean = mean(Ambient_Samples$Glu..mmol.L.), sd = sd(Ambient_Samples$Glu..mmol.L.)), aes(col = "Normal Distribution"), show.legend = TRUE) +
+  geom_density(aes(col = "Sample Density"), show.legend = TRUE) +
+  labs(title = "Glucose Ambient Sample Distribution") +
+  scale_color_manual("Distribution", values = c("Normal Distribution" = "green", "Sample Density" = "black"))
+
+# Density Plot with normal density
+Ambient_Samples %>%
+  ggplot(aes(x = Glu..mmol.L.)) +
+  stat_function(fun = dnorm, args = c(mean = mean(Ambient_Samples$Glu..mmol.L.), sd = sd(Ambient_Samples$Glu..mmol.L.)), aes(col = "Normal Distribution"), show.legend = TRUE) +
+  geom_density(aes(col = "Sample Density"), show.legend = TRUE) +
+  labs(title = "Glucose Ambient Sample Distribution") +
+  scale_color_manual("Distribution", values = c("Normal Distribution" = "green", "Sample Density" = "black"))
+
+# Density by brood condition
+Ambient_Samples %>%
+ggplot(aes(x = Glu..mmol.L.)) +
+  geom_density(aes(x = Glu..mmol.L., fill = Consensus_Brood_Condition), alpha = 0.5)
+
+ggplot(Ambient_Samples, aes(x = Glu..mmol.L.)) +
+  geom_density(aes(x = Glu..mmol.L.)) +
+  facet_wrap(~ Consensus_Brood_Condition)
+
+plotNormalDensity(Ambient_Samples$Glu..mmol.L.)
+```
+
+
+
+Model Design:
+```{r}
+# glucose ambient data
+
+# Install flexplot
+# devtools::install_github("dustinfife/flexplot", ref="development")
+require(flexplot)
+
+glucose_ambient_lmer <- lmer(Glu..mmol.L. ~ Consensus_Brood_Condition + (1|Consensus_Brood_Condition), data = Ambient_Samples)
+
+visualize(glucose_ambient_lmer, plot = "model", sample = 50)
+
+```
+
+
+
+Normality Residual QQplot
+```{r}
+# Glucose
+# Parametric Assumptions:
+
+# Assessing Normality
+
+# Summary of model
+summary(glucose_ambient_lmer)
+
+# Suss residuals of model
+glucose_ambient_res_lmer <- residuals(glucose_ambient_lmer)
+
+# Shapiro test
+shapiro.test(glucose_ambient_res_lmer)
+
+# pH simulated residuals plot
+glucose_ambient_simres_plot <- simulateResiduals(fittedModel = glucose_ambient_lmer)
+plot(glucose_ambient_simres_plot)
+
+# Qqplot of model
+glucose_ambient_res_qqplot <- ggqqplot(residuals(glucose_ambient_lmer)) +
+labs(title = "Ambient glucose Interactive Residual QQplot",
+     subtitle = "lmer(Glu..mmol.L. ~ Consensus_Brood_Condition + (1|Consensus_Brood_Condition), data = Ambient_Samples)",
+                               x = "Glucose Theoretical Quantiles (Predicted values)",
+                               y = "Glucose Sample Quantiles") +
+  theme(plot.title = element_text(hjust = 0.5),
+        plot.subtitle = element_text(hjust = 0.5, size = 7))
+print(glucose_ambient_res_qqplot)
+
+
+# ggsave(filename = "data-images/glucose_ambient_res_int_qqplot.pdf", plot = glucose_ambient_res_int_qqplot, device = "pdf")
+# ggsave(filename = "data-images/glucose_ambient_res_int_qqplot.png", plot = glucose_ambient_res_int_qqplot, device = "png")
+```
+
+
+
+Glucose Parametric Assessment
+Testing Scedasticity:
+```{r}
+# glucose
+
+# Ambient samples
+
+# test with lmer
+bartlett.test(glucose_ambient_res_lmer ~ Ambient_Samples$Consensus_Brood_Condition)
+
+bartlett.test(Glu..mmol.L. ~ Consensus_Brood_Condition, Ambient_Samples)
+
+
+# leveneTest(glucose ~ Consensus_Brood_Condition, Ambient_Samples) 
+
+```
+
+Glucose Parametric Assumptions Assessment: 
+
+Warning: Check after assessing outliers
+
+- Ambient Data normally distributed? 
+
+- Ambient Data equal variance across factors?
+
+
+
+# Glucose Stat Tests
+```{r}
+# pH
+# Ambient ANOVA Test
+
+# Testing for differences in ambient parturition success metrics
+# One-way ANOVA (parametric) or Kruskal-Wallis test (nonparametric)
+
+glucose_aov_ambient <- aov(Glu..mmol.L. ~ Consensus_Brood_Condition, data = Ambient_Samples)
+summary(glucose_aov_ambient)
+
+
+# If significant, Post Hoc Test: 
+# - Tukey's HSD (parametric, normality & equal variance across groups)
+# - Dunn's test (non-parametric, after Kruskal-Wallis test)
+
+TukeyHSD(glucose_aov_ambient)
+
+```
+
+
+
+# Na+ : Sodium
+
+
+Sodium Summary Stats
+```{r}
+# Na+
+# Summary stats
+
+# Ambient data
+Ambient_Samples %>%
+  group_by(Ambient.Or.OAH, Consensus_Brood_Condition) %>%
+  summarize(count = n(),
+            median = round(median(Na...mmol.L.), 3),
+            mean = round(mean(Na...mmol.L.), 3),
+            sd = round(sd(Na...mmol.L.), 3),
+            cv = round(sd(Na...mmol.L.)/mean(Na...mmol.L.), 3)) %>%
+  ungroup()
+```
+
+
+Sodium Boxplot
+```{r}
+# Na+ boxplot
+
+# Ambient Samples
+sodium_ambient_boxplot <- ggplot(data = Ambient_Samples) + 
+  geom_boxplot(aes(x = Consensus_Brood_Condition, y = Na...mmol.L.)) +
+  geom_point(aes(x = Consensus_Brood_Condition, y = Na...mmol.L.), alpha = 0.5, colour = "black") +
+  labs(title = "Sodium Ambient", x = "Parturition Success", y = "Sodium (mmol/L)") +
+  facet_wrap(~ Ambient.Or.OAH) +
+  theme_classic() +
+  theme(panel.background = element_rect(fill = "white"),
+        plot.background = element_rect(fill = "white"),
+        legend.background = element_rect(fill = "white", color = "black"),
+        title = element_text(size = 12),
+        plot.title = element_text(size = 30, hjust = 0.5),
+        axis.text.x = element_text(size = 18),
+        axis.text.y = element_text(size = 20),
+        axis.title.x = element_text(size = 20),
+        axis.title.y = element_text(size = 20))
+
+print(sodium_ambient_boxplot)
+
+ggsave(filename = "data-images/sodium_ambient_boxplot.pdf", plot = sodium_ambient_boxplot, device = "pdf")
+ggsave(filename = "data-images/sodium_ambient_boxplot.png", plot = sodium_ambient_boxplot, device = "png")
+
+```
+
+Test Outliers
+```{r}
+# Na+
+# Ambient
+
+# Test outliers
+
+```
+
+
+
+Sodium Parametric Assessment
+Data Distribution
+```{r}
+# Na+
+# Parametric Assumptions
+
+# Data Distribution
+
+# Frequency Histogram
+hist(Ambient_Samples$Na...mmol.L.)
+
+plotNormalHistogram(Ambient_Samples$Na...mmol.L.) 
+
+# More accurate density curve?
+Ambient_Samples %>%
+  ggplot(aes(x = Na...mmol.L.)) +
+  geom_histogram(aes(x = Na...mmol.L., y = after_stat(density))) +
+  stat_function(fun = dnorm, args = c(mean = mean(Ambient_Samples$Na...mmol.L.), sd = sd(Ambient_Samples$Na...mmol.L.)), aes(col = "Normal Distribution"), show.legend = TRUE) +
+  geom_density(aes(col = "Sample Density"), show.legend = TRUE) +
+  labs(title = "Sodium Ambient Sample Distribution") +
+  scale_color_manual("Distribution", values = c("Normal Distribution" = "green", "Sample Density" = "black"))
+
+# Density Plot with normal density
+Ambient_Samples %>%
+  ggplot(aes(x = Na...mmol.L.)) +
+  stat_function(fun = dnorm, args = c(mean = mean(Ambient_Samples$Na...mmol.L.), sd = sd(Ambient_Samples$Na...mmol.L.)), aes(col = "Normal Distribution"), show.legend = TRUE) +
+  geom_density(aes(col = "Sample Density"), show.legend = TRUE) +
+  labs(title = "Sodium Ambient Sample Distribution") +
+  scale_color_manual("Distribution", values = c("Normal Distribution" = "green", "Sample Density" = "black"))
+
+# Density by brood condition
+Ambient_Samples %>%
+ggplot(aes(x = Na...mmol.L.)) +
+  geom_density(aes(x = Na...mmol.L., fill = Consensus_Brood_Condition), alpha = 0.5)
+
+ggplot(Ambient_Samples, aes(x = Na...mmol.L.)) +
+  geom_density(aes(x = Na...mmol.L.)) +
+  facet_wrap(~ Consensus_Brood_Condition)
+
+plotNormalDensity(Ambient_Samples$Na...mmol.L.)
+```
+
+
+Model Design:
+```{r}
+# Na+ ambient data
+
+# Install flexplot
+# devtools::install_github("dustinfife/flexplot", ref="development")
+require(flexplot)
+
+sodium_ambient_lmer <- lmer(Na...mmol.L. ~ Consensus_Brood_Condition + (1|Consensus_Brood_Condition), data = Ambient_Samples)
+
+visualize(sodium_ambient_lmer, plot = "model", sample = 50)
+
+```
+
+
+Normality Residual QQplot
+```{r}
+# Na+
+# Parametric Assumptions:
+
+# Assessing Normality
+
+# Summary of model
+summary(sodium_ambient_lmer)
+
+# Suss residuals of model
+sodium_ambient_res_lmer <- residuals(sodium_ambient_lmer)
+
+# Shapiro test
+shapiro.test(sodium_ambient_res_lmer)
+
+# pH simulated residuals plot
+sodium_ambient_simres_plot <- simulateResiduals(fittedModel = sodium_ambient_lmer)
+plot(sodium_ambient_simres_plot)
+
+# Qqplot of model
+sodium_ambient_res_qqplot <- ggqqplot(residuals(sodium_ambient_lmer)) +
+labs(title = "Ambient Sodium Interactive Residual QQplot",
+     subtitle = "lmer(Na...mmol.L. ~ Consensus_Brood_Condition + (1|Consensus_Brood_Condition), data = Ambient_Samples)",
+                               x = "Sodium Theoretical Quantiles (Predicted values)",
+                               y = "Sodium Sample Quantiles") +
+  theme(plot.title = element_text(hjust = 0.5),
+        plot.subtitle = element_text(hjust = 0.5, size = 7))
+print(sodium_ambient_res_qqplot)
+
+
+# ggsave(filename = "data-images/sodium_ambient_res_int_qqplot.pdf", plot = sodium_ambient_res_int_qqplot, device = "pdf")
+# ggsave(filename = "data-images/sodium_ambient_res_int_qqplot.png", plot = sodium_ambient_res_int_qqplot, device = "png")
+```
+
+
+
+Sodium Parametric Assessment
+Testing Scedasticity:
+```{r}
+# Na+
+
+# Ambient samples
+
+# test with lmer
+bartlett.test(sodium_ambient_res_lmer ~ Ambient_Samples$Consensus_Brood_Condition)
+
+bartlett.test(Na...mmol.L. ~ Consensus_Brood_Condition, Ambient_Samples)
+
+
+# leveneTest(Na...mmol.L. ~ Consensus_Brood_Condition, Ambient_Samples) 
+
+```
+
+Sodium Parametric Assumptions Assessment: 
+
+Warning: Check after assessing outliers
+
+- Ambient Data normally distributed? 
+
+- Ambient Data equal variance across factors?
+
+
+# Na+ Stat Tests
+```{r}
+# Na+
+# Ambient ANOVA Test
+
+# Testing for differences in ambient parturition success metrics
+# One-way ANOVA (parametric) or Kruskal-Wallis test (nonparametric)
+
+sodium_aov_ambient <- aov(Na...mmol.L. ~ Consensus_Brood_Condition, data = Ambient_Samples)
+summary(sodium_aov_ambient)
+
+
+# If significant, Post Hoc Test: 
+# - Tukey's HSD (parametric, normality & equal variance across groups)
+# - Dunn's test (non-parametric, after Kruskal-Wallis test)
+
+TukeyHSD(sodium_aov_ambient)
+
+```
+
+Sodium Ambient Results
+
+Which brood condition significantly different (if any)?
+
+
+# Cl- : Chloride
+
+Chloride Summary Stats
+```{r}
+# Cl-
+# Summary stats
+
+# Ambient data
+Ambient_Samples %>%
+  group_by(Ambient.Or.OAH, Consensus_Brood_Condition) %>%
+  summarize(count = n(),
+            median = round(median(Cl...mmol.L.), 3),
+            mean = round(mean(Cl...mmol.L.), 3),
+            sd = round(sd(Cl...mmol.L.), 3),
+            cv = round(sd(Cl...mmol.L.)/mean(Cl...mmol.L.), 3)) %>%
+  ungroup()
+```
+
+
+
+Chloride Boxplot
+```{r}
+# Cl- boxplot
+
+# Ambient Samples
+chloride_ambient_boxplot <- ggplot(data = Ambient_Samples) + 
+  geom_boxplot(aes(x = Consensus_Brood_Condition, y = Cl...mmol.L.)) +
+  geom_point(aes(x = Consensus_Brood_Condition, y = Cl...mmol.L.), alpha = 0.5, colour = "black") +
+  labs(title = "Chloride Ambient", x = "Parturition Success", y = "Chloride (mmol/L)") +
+  facet_wrap(~ Ambient.Or.OAH) +
+  theme_classic() +
+  theme(panel.background = element_rect(fill = "white"),
+        plot.background = element_rect(fill = "white"),
+        legend.background = element_rect(fill = "white", color = "black"),
+        title = element_text(size = 12),
+        plot.title = element_text(size = 30, hjust = 0.5),
+        axis.text.x = element_text(size = 18),
+        axis.text.y = element_text(size = 20),
+        axis.title.x = element_text(size = 20),
+        axis.title.y = element_text(size = 20))
+
+print(chloride_ambient_boxplot)
+
+ggsave(filename = "data-images/chloride_ambient_boxplot.pdf", plot = chloride_ambient_boxplot, device = "pdf")
+ggsave(filename = "data-images/chloride_ambient_boxplot.png", plot = chloride_ambient_boxplot, device = "png")
+
+```
+
+
+Chloride Parametric Assessment
+Data Distribution
+```{r}
+# Cl-
+# Parametric Assumptions
+
+# Data Distribution
+
+# Frequency Histogram
+hist(Ambient_Samples$Cl...mmol.L.)
+
+plotNormalHistogram(Ambient_Samples$Cl...mmol.L.) 
+
+# More accurate density curve?
+Ambient_Samples %>%
+  ggplot(aes(x = Cl...mmol.L.)) +
+  geom_histogram(aes(x = Cl...mmol.L., y = after_stat(density))) +
+  stat_function(fun = dnorm, args = c(mean = mean(Ambient_Samples$Cl...mmol.L.), sd = sd(Ambient_Samples$Cl...mmol.L.)), aes(col = "Normal Distribution"), show.legend = TRUE) +
+  geom_density(aes(col = "Sample Density"), show.legend = TRUE) +
+  labs(title = "Chloride Ambient Sample Distribution") +
+  scale_color_manual("Distribution", values = c("Normal Distribution" = "green", "Sample Density" = "black"))
+
+# Density Plot with normal density
+Ambient_Samples %>%
+  ggplot(aes(x = Cl...mmol.L.)) +
+  stat_function(fun = dnorm, args = c(mean = mean(Ambient_Samples$Cl...mmol.L.), sd = sd(Ambient_Samples$Cl...mmol.L.)), aes(col = "Normal Distribution"), show.legend = TRUE) +
+  geom_density(aes(col = "Sample Density"), show.legend = TRUE) +
+  labs(title = "Chloride Ambient Sample Distribution") +
+  scale_color_manual("Distribution", values = c("Normal Distribution" = "green", "Sample Density" = "black"))
+
+# Density by brood condition
+Ambient_Samples %>%
+ggplot(aes(x = Cl...mmol.L.)) +
+  geom_density(aes(x = Cl...mmol.L., fill = Consensus_Brood_Condition), alpha = 0.5)
+
+ggplot(Ambient_Samples, aes(x = Cl...mmol.L.)) +
+  geom_density(aes(x = Cl...mmol.L.)) +
+  facet_wrap(~ Consensus_Brood_Condition)
+
+plotNormalDensity(Ambient_Samples$Cl...mmol.L.)
+```
+
+
+Model Design:
+```{r}
+# Cl- ambient data
+
+# Install flexplot
+# devtools::install_github("dustinfife/flexplot", ref="development")
+require(flexplot)
+
+chloride_ambient_lmer <- lmer(Cl...mmol.L. ~ Consensus_Brood_Condition + (1|Consensus_Brood_Condition), data = Ambient_Samples)
+
+visualize(chloride_ambient_lmer, plot = "model", sample = 50)
+
+```
+
+
+Normality Residual QQplot
+```{r}
+# Cl-
+# Parametric Assumptions:
+
+# Assessing Normality
+
+# Summary of model
+summary(chloride_ambient_lmer)
+
+# Suss residuals of model
+chloride_ambient_res_lmer <- residuals(chloride_ambient_lmer)
+
+# Shapiro test
+shapiro.test(chloride_ambient_res_lmer)
+
+# pH simulated residuals plot
+chloride_ambient_simres_plot <- simulateResiduals(fittedModel = chloride_ambient_lmer)
+plot(chloride_ambient_simres_plot)
+
+# Qqplot of model
+chloride_ambient_res_qqplot <- ggqqplot(residuals(chloride_ambient_lmer)) +
+labs(title = "Ambient Chloride Interactive Residual QQplot",
+     subtitle = "lmer(Cl...mmol.L. ~ Consensus_Brood_Condition + (1|Consensus_Brood_Condition), data = Ambient_Samples)",
+                               x = "Chloride Theoretical Quantiles (Predicted values)",
+                               y = "Chloride Sample Quantiles") +
+  theme(plot.title = element_text(hjust = 0.5),
+        plot.subtitle = element_text(hjust = 0.5, size = 7))
+print(chloride_ambient_res_qqplot)
+
+
+# ggsave(filename = "data-images/chloride_ambient_res_int_qqplot.pdf", plot = chloride_ambient_res_int_qqplot, device = "pdf")
+# ggsave(filename = "data-images/chloride_ambient_res_int_qqplot.png", plot = chloride_ambient_res_int_qqplot, device = "png")
+```
+
+
+Chloride Parametric Assessment
+Testing Scedasticity:
+```{r}
+# Cl-
+
+# Ambient samples
+
+# test with lmer
+bartlett.test(chloride_ambient_res_lmer ~ Ambient_Samples$Consensus_Brood_Condition)
+
+bartlett.test(Cl...mmol.L. ~ Consensus_Brood_Condition, Ambient_Samples)
+
+
+# leveneTest(Cl...mmol.L. ~ Consensus_Brood_Condition, Ambient_Samples) 
+
+```
+
+
+Chloride Parametric Assumptions Assessment: 
+
+Warning: Check after assessing outliers
+
+- Ambient Data normally distributed? 
+
+- Ambient Data equal variance across factors?
+
+
+# Cl- Stat Tests
+```{r}
+# Cl-
+# Ambient ANOVA Test
+
+# Testing for differences in ambient parturition success metrics
+# One-way ANOVA (parametric) or Kruskal-Wallis test (nonparametric)
+
+chloride_aov_ambient <- aov(Cl...mmol.L. ~ Consensus_Brood_Condition, data = Ambient_Samples)
+summary(chloride_aov_ambient)
+
+
+# If significant, Post Hoc Test: 
+# - Tukey's HSD (parametric, normality & equal variance across groups)
+# - Dunn's test (non-parametric, after Kruskal-Wallis test)
+
+TukeyHSD(chloride_aov_ambient)
+
+```
+
+
+Chloride Ambient Results
+
+Which brood condition significantly different (if any)?
+
+
+
+# K+ : Potassium
+
+Potassium Summary Stats
+```{r}
+# K+
+# Summary stats
+
+# Ambient data
+Ambient_Samples %>%
+  group_by(Ambient.Or.OAH, Consensus_Brood_Condition) %>%
+  summarize(count = n(),
+            median = round(median(K...mmol.L.), 3),
+            mean = round(mean(K...mmol.L.), 3),
+            sd = round(sd(K...mmol.L.), 3),
+            cv = round(sd(K...mmol.L.)/mean(K...mmol.L.), 3)) %>%
+  ungroup()
+```
+
+
+Potassium Boxplot
+```{r}
+# K+ boxplot
+
+# Ambient Samples
+potassium_ambient_boxplot <- ggplot(data = Ambient_Samples) + 
+  geom_boxplot(aes(x = Consensus_Brood_Condition, y = K...mmol.L.)) +
+  geom_point(aes(x = Consensus_Brood_Condition, y = K...mmol.L.), alpha = 0.5, colour = "black") +
+  labs(title = "Potassium Ambient", x = "Parturition Success", y = "Potassium (mmol/L)") +
+  facet_wrap(~ Ambient.Or.OAH) +
+  theme_classic() +
+  theme(panel.background = element_rect(fill = "white"),
+        plot.background = element_rect(fill = "white"),
+        legend.background = element_rect(fill = "white", color = "black"),
+        title = element_text(size = 12),
+        plot.title = element_text(size = 30, hjust = 0.5),
+        axis.text.x = element_text(size = 18),
+        axis.text.y = element_text(size = 20),
+        axis.title.x = element_text(size = 20),
+        axis.title.y = element_text(size = 20))
+
+print(potassium_ambient_boxplot)
+
+ggsave(filename = "data-images/potassium_ambient_boxplot.pdf", plot = potassium_ambient_boxplot, device = "pdf")
+ggsave(filename = "data-images/potassium_ambient_boxplot.png", plot = potassium_ambient_boxplot, device = "png")
+
+```
+
+
+Test Outliers
+```{r}
+# Na+
+# Ambient
+
+# Test outliers
+
+```
+
+
+
+Potassium Parametric Assessment
+Data Distribution
+```{r}
+# K+
+# Parametric Assumptions
+
+# Data Distribution
+
+# Frequency Histogram
+hist(Ambient_Samples$K...mmol.L.)
+
+plotNormalHistogram(Ambient_Samples$K...mmol.L.) 
+
+# More accurate density curve?
+Ambient_Samples %>%
+  ggplot(aes(x = K...mmol.L.)) +
+  geom_histogram(aes(x = K...mmol.L., y = after_stat(density))) +
+  stat_function(fun = dnorm, args = c(mean = mean(Ambient_Samples$K...mmol.L.), sd = sd(Ambient_Samples$K...mmol.L.)), aes(col = "Normal Distribution"), show.legend = TRUE) +
+  geom_density(aes(col = "Sample Density"), show.legend = TRUE) +
+  labs(title = "Potassium Ambient Sample Distribution") +
+  scale_color_manual("Distribution", values = c("Normal Distribution" = "green", "Sample Density" = "black"))
+
+# Density Plot with normal density
+Ambient_Samples %>%
+  ggplot(aes(x = K...mmol.L.)) +
+  stat_function(fun = dnorm, args = c(mean = mean(Ambient_Samples$K...mmol.L.), sd = sd(Ambient_Samples$K...mmol.L.)), aes(col = "Normal Distribution"), show.legend = TRUE) +
+  geom_density(aes(col = "Sample Density"), show.legend = TRUE) +
+  labs(title = "Potassium Ambient Sample Distribution") +
+  scale_color_manual("Distribution", values = c("Normal Distribution" = "green", "Sample Density" = "black"))
+
+# Density by brood condition
+Ambient_Samples %>%
+ggplot(aes(x = K...mmol.L.)) +
+  geom_density(aes(x = K...mmol.L., fill = Consensus_Brood_Condition), alpha = 0.5)
+
+ggplot(Ambient_Samples, aes(x = K...mmol.L.)) +
+  geom_density(aes(x = K...mmol.L.)) +
+  facet_wrap(~ Consensus_Brood_Condition)
+
+plotNormalDensity(Ambient_Samples$K...mmol.L.)
+```
+
+
+Model Design:
+```{r}
+# K+ ambient data
+
+# Install flexplot
+# devtools::install_github("dustinfife/flexplot", ref="development")
+require(flexplot)
+
+potassium_ambient_lmer <- lmer(K...mmol.L. ~ Consensus_Brood_Condition + (1|Consensus_Brood_Condition), data = Ambient_Samples)
+
+visualize(potassium_ambient_lmer, plot = "model", sample = 50)
+
+```
+
+Normality Residual QQplot
+```{r}
+# K+
+# Parametric Assumptions:
+
+# Assessing Normality
+
+# Summary of model
+summary(potassium_ambient_lmer)
+
+# Suss residuals of model
+potassium_ambient_res_lmer <- residuals(potassium_ambient_lmer)
+
+# Shapiro test
+shapiro.test(potassium_ambient_res_lmer)
+
+# pH simulated residuals plot
+potassium_ambient_simres_plot <- simulateResiduals(fittedModel = potassium_ambient_lmer)
+plot(potassium_ambient_simres_plot)
+
+# Qqplot of model
+potassium_ambient_res_qqplot <- ggqqplot(residuals(potassium_ambient_lmer)) +
+labs(title = "Ambient Potassium Interactive Residual QQplot",
+     subtitle = "lmer(K...mmol.L. ~ Consensus_Brood_Condition + (1|Consensus_Brood_Condition), data = Ambient_Samples)",
+                               x = "Potassium Theoretical Quantiles (Predicted values)",
+                               y = "Potassium Sample Quantiles") +
+  theme(plot.title = element_text(hjust = 0.5),
+        plot.subtitle = element_text(hjust = 0.5, size = 7))
+print(potassium_ambient_res_qqplot)
+
+
+# ggsave(filename = "data-images/potassium_ambient_res_int_qqplot.pdf", plot = potassium_ambient_res_int_qqplot, device = "pdf")
+# ggsave(filename = "data-images/potassium_ambient_res_int_qqplot.png", plot = potassium_ambient_res_int_qqplot, device = "png")
+```
+
+Potassium Parametric Assessment
+Testing Scedasticity:
+```{r}
+# K+
+
+# Ambient samples
+
+# test with lmer
+bartlett.test(potassium_ambient_res_lmer ~ Ambient_Samples$Consensus_Brood_Condition)
+
+bartlett.test(K...mmol.L. ~ Consensus_Brood_Condition, Ambient_Samples)
+
+
+# leveneTest(K...mmol.L. ~ Consensus_Brood_Condition, Ambient_Samples) 
+
+```
+
+Potassium Parametric Assumptions Assessment: 
+
+Warning: Check after assessing outliers
+
+- Ambient Data normally distributed? 
+
+- Ambient Data equal variance across factors?
+
+
+# K+ Stat Tests
+```{r}
+# K+
+# Ambient ANOVA Test
+
+# Testing for differences in ambient parturition success metrics
+# One-way ANOVA (parametric) or Kruskal-Wallis test (nonparametric)
+
+potassium_aov_ambient <- aov(K...mmol.L. ~ Consensus_Brood_Condition, data = Ambient_Samples)
+summary(potassium_aov_ambient)
+
+
+# If significant, Post Hoc Test: 
+# - Tukey's HSD (parametric, normality & equal variance across groups)
+# - Dunn's test (non-parametric, after Kruskal-Wallis test)
+
+TukeyHSD(potassium_aov_ambient)
+
+```
+
+
+Potassium Ambient Results
+
+Which brood condition significantly different (if any)?
+
+
+
+# Ca+2 : Calcium
+
+Calcium Summary Stats
+```{r}
+# Ca+2
+# Summary stats
+
+# Ambient data
+Ambient_Samples %>%
+  group_by(Ambient.Or.OAH, Consensus_Brood_Condition) %>%
+  summarize(count = n(),
+            median = round(median(Ca....mmol.L.), 3),
+            mean = round(mean(Ca....mmol.L.), 3),
+            sd = round(sd(Ca....mmol.L.), 3),
+            cv = round(sd(Ca....mmol.L.)/mean(Ca....mmol.L.), 3)) %>%
+  ungroup()
+```
+
+
+Calcium Boxplot
+```{r}
+# Ca+2 boxplot
+
+# Ambient Samples
+calcium_ambient_boxplot <- ggplot(data = Ambient_Samples) + 
+  geom_boxplot(aes(x = Consensus_Brood_Condition, y = Ca....mmol.L.)) +
+  geom_point(aes(x = Consensus_Brood_Condition, y = Ca....mmol.L.), alpha = 0.5, colour = "black") +
+  labs(title = "Calcium Ambient", x = "Parturition Success", y = "Calcium (mmol/L)") +
+  facet_wrap(~ Ambient.Or.OAH) +
+  theme_classic() +
+  theme(panel.background = element_rect(fill = "white"),
+        plot.background = element_rect(fill = "white"),
+        legend.background = element_rect(fill = "white", color = "black"),
+        title = element_text(size = 12),
+        plot.title = element_text(size = 30, hjust = 0.5),
+        axis.text.x = element_text(size = 18),
+        axis.text.y = element_text(size = 20),
+        axis.title.x = element_text(size = 20),
+        axis.title.y = element_text(size = 20))
+
+print(calcium_ambient_boxplot)
+
+ggsave(filename = "data-images/calcium_ambient_boxplot.pdf", plot = calcium_ambient_boxplot, device = "pdf")
+ggsave(filename = "data-images/calcium_ambient_boxplot.png", plot = calcium_ambient_boxplot, device = "png")
+
+```
+
+
+Test Outliers
+```{r}
+# Na+
+# Ambient
+
+# Test outliers
+
+```
+
+
+
+Calcium Parametric Assessment
+Data Distribution
+```{r}
+# Ca+2
+# Parametric Assumptions
+
+# Data Distribution
+
+# Frequency Histogram
+hist(Ambient_Samples$Ca....mmol.L.)
+
+plotNormalHistogram(Ambient_Samples$Ca....mmol.L.) 
+
+# More accurate density curve?
+Ambient_Samples %>%
+  ggplot(aes(x = Ca....mmol.L.)) +
+  geom_histogram(aes(x = Ca....mmol.L., y = after_stat(density))) +
+  stat_function(fun = dnorm, args = c(mean = mean(Ambient_Samples$Ca....mmol.L.), sd = sd(Ambient_Samples$Ca....mmol.L.)), aes(col = "Normal Distribution"), show.legend = TRUE) +
+  geom_density(aes(col = "Sample Density"), show.legend = TRUE) +
+  labs(title = "Calcium Ambient Sample Distribution") +
+  scale_color_manual("Distribution", values = c("Normal Distribution" = "green", "Sample Density" = "black"))
+
+# Density Plot with normal density
+Ambient_Samples %>%
+  ggplot(aes(x = Ca....mmol.L.)) +
+  stat_function(fun = dnorm, args = c(mean = mean(Ambient_Samples$Ca....mmol.L.), sd = sd(Ambient_Samples$Ca....mmol.L.)), aes(col = "Normal Distribution"), show.legend = TRUE) +
+  geom_density(aes(col = "Sample Density"), show.legend = TRUE) +
+  labs(title = "Calcium Ambient Sample Distribution") +
+  scale_color_manual("Distribution", values = c("Normal Distribution" = "green", "Sample Density" = "black"))
+
+# Density by brood condition
+Ambient_Samples %>%
+ggplot(aes(x = Ca....mmol.L.)) +
+  geom_density(aes(x = Ca....mmol.L., fill = Consensus_Brood_Condition), alpha = 0.5)
+
+ggplot(Ambient_Samples, aes(x = Ca....mmol.L.)) +
+  geom_density(aes(x = Ca....mmol.L.)) +
+  facet_wrap(~ Consensus_Brood_Condition)
+
+plotNormalDensity(Ambient_Samples$Ca....mmol.L.)
+```
+
+
+Model Design:
+```{r}
+# Ca+2 ambient data
+
+# Install flexplot
+# devtools::install_github("dustinfife/flexplot", ref="development")
+require(flexplot)
+
+calcium_ambient_lmer <- lmer(Ca....mmol.L. ~ Consensus_Brood_Condition + (1|Consensus_Brood_Condition), data = Ambient_Samples)
+
+visualize(calcium_ambient_lmer, plot = "model", sample = 50)
+
+```
+
+
+Normality Residual QQplot
+```{r}
+# Ca+2
+# Parametric Assumptions:
+
+# Assessing Normality
+
+# Summary of model
+summary(calcium_ambient_lmer)
+
+# Suss residuals of model
+calcium_ambient_res_lmer <- residuals(calcium_ambient_lmer)
+
+# Shapiro test
+shapiro.test(calcium_ambient_res_lmer)
+
+# pH simulated residuals plot
+calcium_ambient_simres_plot <- simulateResiduals(fittedModel = calcium_ambient_lmer)
+plot(calcium_ambient_simres_plot)
+
+# Qqplot of model
+calcium_ambient_res_qqplot <- ggqqplot(residuals(calcium_ambient_lmer)) +
+labs(title = "Ambient Calcium Interactive Residual QQplot",
+     subtitle = "lmer(CA....mmol.L. ~ Consensus_Brood_Condition + (1|Consensus_Brood_Condition), data = Ambient_Samples)",
+                               x = "Calcium Theoretical Quantiles (Predicted values)",
+                               y = "Calcium Sample Quantiles") +
+  theme(plot.title = element_text(hjust = 0.5),
+        plot.subtitle = element_text(hjust = 0.5, size = 7))
+print(calcium_ambient_res_qqplot)
+
+
+# ggsave(filename = "data-images/calcium_ambient_res_int_qqplot.pdf", plot = calcium_ambient_res_int_qqplot, device = "pdf")
+# ggsave(filename = "data-images/calcium_ambient_res_int_qqplot.png", plot = calcium_ambient_res_int_qqplot, device = "png")
+```
+
+
+Calcium Parametric Assessment
+Testing Scedasticity:
+```{r}
+# Ca+2
+
+# Ambient samples
+
+# test with lmer
+bartlett.test(calcium_ambient_res_lmer ~ Ambient_Samples$Consensus_Brood_Condition)
+
+bartlett.test(Ca....mmol.L. ~ Consensus_Brood_Condition, Ambient_Samples)
+
+
+# leveneTest(Ca....mmol.L. ~ Consensus_Brood_Condition, Ambient_Samples) 
+
+```
+
+
+Calcium Parametric Assumptions Assessment: 
+
+Warning: Check after assessing outliers
+
+- Ambient Data normally distributed? 
+
+- Ambient Data equal variance across factors?
+
+
+
+# Ca+2 Stat Tests
+```{r}
+# Ca+2
+# Ambient ANOVA Test
+
+# Testing for differences in ambient parturition success metrics
+# One-way ANOVA (parametric) or Kruskal-Wallis test (nonparametric)
+
+calcium_aov_ambient <- aov(Ca....mmol.L. ~ Consensus_Brood_Condition, data = Ambient_Samples)
+summary(calcium_aov_ambient)
+
+
+# If significant, Post Hoc Test: 
+# - Tukey's HSD (parametric, normality & equal variance across groups)
+# - Dunn's test (non-parametric, after Kruskal-Wallis test)
+
+TukeyHSD(calcium_aov_ambient)
+
+```
+
+Calcium Ambient Results
+
+Which brood condition significantly different (if any)?
 
