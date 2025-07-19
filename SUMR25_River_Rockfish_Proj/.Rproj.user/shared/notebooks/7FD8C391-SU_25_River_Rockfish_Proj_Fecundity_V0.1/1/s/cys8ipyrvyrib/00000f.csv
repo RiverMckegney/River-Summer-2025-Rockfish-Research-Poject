@@ -17,6 +17,9 @@
 Caused by warning:
 [33m![39m NAs introduced by coerciong
 "
+"0","Fecundity_Count_Samples <- Fecundity_Samples %>%"
+"0","  mutate(across(c(Fecundity_Or_Brood_Count, pH, Hct...., Glu..mmol.L., Na...mmol.L., Cl...mmol.L., K...mmol.L., Ca....mmol.L.), as.numeric))"
+"0",""
 "0","# glimpse(Primary_Samples)"
 "0","# glimpse(Ambient_Samples)"
 "0","# glimpse(Fecundity_Samples)"

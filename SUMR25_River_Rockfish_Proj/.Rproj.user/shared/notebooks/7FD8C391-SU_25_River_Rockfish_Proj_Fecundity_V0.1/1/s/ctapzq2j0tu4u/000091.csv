@@ -1,0 +1,13 @@
+"0","# pH Fecundity data"
+"0",""
+"0","# Install flexplot"
+"0","# devtools::install_github(""dustinfife/flexplot"", ref=""development"")"
+"0","require(flexplot)"
+"0",""
+"0","# Fecundity Count Only data lmer (without atresia ids)"
+"0","pH_fecundity_only_lmer <- lmer(pH ~ Fecundity_Or_Brood_Count + Ambient.Or.OAH + (1 | Ambient.Or.OAH), data = Fecundity_Samples)"
+"2","G2;H2;Warningh: Some predictor variables are on very different scales: consider rescalingg
+"
+"2","G2;H2;Warningh: Some predictor variables are on very different scales: consider rescalingg
+"
+"0","visualize(pH_fecundity_only_lmer, plot = ""model"", replace = TRUE)"

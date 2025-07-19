@@ -1,0 +1,18 @@
+"0","TukeyHSD(pH_aov_fecundity)
+"
+"1","  Tukey multiple comparisons of means
+    95% family-wise confidence level
+
+Fit: aov(formula = pH ~ Fecundity_Class, data = Fecundity_Samples)
+
+$Fecundity_Class
+                                    diff        lwr        upr
+Low (~1,000s)-High (>50,000)  0.01941667 -0.1326752 0.17150849
+Atresia-High (>50,000)       -0.09377778 -0.2048499 0.01729439
+Atresia-Low (~1,000s)        -0.11319444 -0.2434381 0.01704921
+                                 p adj
+Low (~1,000s)-High (>50,000) 0.9459058
+Atresia-High (>50,000)       0.1095722
+Atresia-Low (~1,000s)        0.0972365
+
+"

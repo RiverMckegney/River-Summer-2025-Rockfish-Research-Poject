@@ -1,0 +1,10 @@
+"0","# test with lmer
+bartlett.test(pH ~ Fecundity_Class, Fecundity_Samples)
+"
+"1","
+	Bartlett test of homogeneity of variances
+
+data:  pH by Fecundity_Class
+Bartlett's K-squared = 2.7285, df = 2, p-value = 0.2556
+
+"

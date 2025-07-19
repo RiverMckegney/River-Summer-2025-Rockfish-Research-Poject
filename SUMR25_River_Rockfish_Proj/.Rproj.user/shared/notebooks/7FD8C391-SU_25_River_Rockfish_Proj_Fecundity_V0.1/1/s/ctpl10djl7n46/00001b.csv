@@ -1,0 +1,3 @@
+"0",""
+"0","pH_fecundity_class_simres_plot <- simulateResiduals(fittedModel = pH_fecundity_class_lmer)"
+"0","plot(pH_fecundity_class_simres_plot)"

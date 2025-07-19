@@ -14,3 +14,11 @@
 "0","library(conover.test) # For the conover.Iman() test function"
 "0","library(DescTools) # Contain alternative ConoverTest function"
 "0","library(rstatix) # tidyverse adapted stat tests and mshapiro_test() functions"
+"0","library(DHARMa) # For multi-level lm models and shapiro test"
+"2","G2;H2;Warningh: package ‘DHARMa’ was built under R version 4.4.3g
+"
+"2","G3;This is DHARMa 0.4.7. For overview type '?DHARMa'. For recent changes, type news(package = 'DHARMa')
+g"
+"0","library(patchwork) # For combining ggplots"
+"2","G2;H2;Warningh: package ‘patchwork’ was built under R version 4.4.3g
+"

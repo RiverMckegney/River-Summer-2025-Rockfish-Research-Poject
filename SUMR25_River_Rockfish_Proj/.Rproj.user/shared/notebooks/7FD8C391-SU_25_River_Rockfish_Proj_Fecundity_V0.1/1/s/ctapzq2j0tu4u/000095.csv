@@ -1,0 +1,15 @@
+"0",""
+"0","# Fecundity categorical class lmer"
+"0","pH_fecundity_class_lmer <- lmer(pH ~ Ambient.Or.OAH + Fecundity_Class + (1|Fecundity_Class), data = Fecundity_Samples)"
+"2","G2;H2;Warningh in checkConv(attr(opt, ""derivs""), opt$par, ctrl = control$checkConv,  :
+  unable to evaluate scaled gradientg
+"
+"2","G2;H2;Warningh in checkConv(attr(opt, ""derivs""), opt$par, ctrl = control$checkConv,  :
+   Hessian is numerically singular: parameters are not uniquely determinedg
+"
+"2","G2;H2;Warningh in as_lmerModLT(model, devfun) :
+  Model may not have converged with 1 eigenvalue close to zero: 1.7e-15g
+"
+"0","visualize(pH_fecundity_class_lmer, plot = ""model"", replace = TRUE)"
+"2","[38;5;255mJoining with `by = join_by(pH)`[39m
+"

@@ -1,0 +1,161 @@
+"0","# pH"
+"0","# Parametric Assumptions:"
+"0",""
+"0","# Assessing Normality"
+"0",""
+"0","# Fecundity Count Data"
+"0",""
+"0","# model summary: "
+"0",""
+"0","# Without atresia patients"
+"0","summary(pH_fecundity_only_lmer)"
+"1","Linear mixed model fit by REML. t-tests use Satterthwaite's method [
+lmerModLmerTest]
+Formula: 
+pH ~ Fecundity_Or_Brood_Count + Ambient.Or.OAH + (1 | Ambient.Or.OAH)
+   Data: Fecundity_Samples
+
+REML criterion at convergence: 6.6
+
+Scaled residuals: 
+    Min      1Q  Median      3Q     Max 
+-1.8540 -0.3819  0.1972  0.4229  1.1167 
+
+Random effects:
+ Groups         Name        Variance  Std.Dev. 
+ Ambient.Or.OAH (Intercept) 6.961e-07 0.0008343
+ Residual                   3.994e-03 0.0631987
+Number of obs: 10, groups:  Ambient.Or.OAH, 2
+
+Fixed effects:
+                           Estimate Std. Error         df t value
+(Intercept)               7.475e+00  4.613e-02  1.212e-03 162.055
+Fecundity_Or_Brood_Count -6.563e-07  7.730e-07  7.000e+00  -0.849
+Ambient.Or.OAHOAH         5.069e-02  7.038e-02  1.641e-03   0.720
+                         Pr(>|t|)
+(Intercept)                 0.989
+Fecundity_Or_Brood_Count    0.424
+Ambient.Or.OAHOAH           0.994
+
+Correlation of Fixed Effects:
+            (Intr) F_O_B_
+Fcndt_O_B_C -0.875       
+Am.O.OAHOAH  0.462 -0.704
+fit warnings:
+Some predictor variables are on very different scales: consider rescaling
+"
+"0","# With atresia patients"
+"0","summary(pH_fecundity_count_lmer) # significant"
+"1","Linear mixed model fit by REML. t-tests use Satterthwaite's method [
+lmerModLmerTest]
+Formula: 
+pH ~ Consensus_Fecundity + Ambient.Or.OAH + (1 | Pregnant.Or.Atresia)
+   Data: Fecundity_Count_Samples
+
+REML criterion at convergence: -21.6
+
+Scaled residuals: 
+    Min      1Q  Median      3Q     Max 
+-1.7316 -0.5986 -0.1012  0.7292  2.5293 
+
+Random effects:
+ Groups              Name        Variance Std.Dev.
+ Pregnant.Or.Atresia (Intercept) 0.000000 0.0000  
+ Residual                        0.007622 0.0873  
+Number of obs: 28, groups:  Pregnant.Or.Atresia, 2
+
+Fixed effects:
+                      Estimate Std. Error         df t value Pr(>|t|)
+(Intercept)          7.378e+00  2.096e-02  2.500e+01 352.041  < 2e-16
+Consensus_Fecundity  1.155e-06  4.393e-07  2.500e+01   2.629  0.01444
+Ambient.Or.OAHOAH   -1.107e-01  3.855e-02  2.500e+01  -2.871  0.00821
+                       
+(Intercept)         ***
+Consensus_Fecundity *  
+Ambient.Or.OAHOAH   ** 
+---
+Signif. codes:  0 ‘***’ 0.001 ‘**’ 0.01 ‘*’ 0.05 ‘.’ 0.1 ‘ ’ 1
+
+Correlation of Fixed Effects:
+            (Intr) Cnsn_F
+Cnsnss_Fcnd -0.417       
+Am.O.OAHOAH -0.386 -0.152
+fit warnings:
+Some predictor variables are on very different scales: consider rescaling
+optimizer (nloptwrap) convergence code: 0 (OK)
+boundary (singular) fit: see help('isSingular')
+
+"
+"0","# With Fecundity Class"
+"0","summary(pH_fecundity_class_lmer) # significant"
+"1","Linear mixed model fit by REML. t-tests use Satterthwaite's method [
+lmerModLmerTest]
+Formula: pH ~ Ambient.Or.OAH + Fecundity_Class + (1 | Fecundity_Class)
+   Data: Fecundity_Samples
+
+REML criterion at convergence: -39.8
+
+Scaled residuals: 
+    Min      1Q  Median      3Q     Max 
+-1.5929 -0.5024 -0.1735  0.5301  2.6558 
+
+Random effects:
+ Groups          Name        Variance Std.Dev.
+ Fecundity_Class (Intercept) 0.002323 0.04820 
+ Residual                    0.007734 0.08794 
+Number of obs: 28, groups:  Fecundity_Class, 3
+
+Fixed effects:
+                  Estimate Std. Error       df t value Pr(>|t|)    
+(Intercept)        7.42792    0.03529 24.00000 210.510   <2e-16 ***
+Ambient.Or.OAHOAH -0.08776    0.03955 24.00000  -2.219   0.0362 *  
+Fecundity_Class.L -0.06976    0.05643 24.00000  -1.236   0.2284    
+Fecundity_Class.Q -0.03224    0.06321 24.00000  -0.510   0.6147    
+---
+Signif. codes:  0 ‘***’ 0.001 ‘**’ 0.01 ‘*’ 0.05 ‘.’ 0.1 ‘ ’ 1
+
+Correlation of Fixed Effects:
+            (Intr) A.O.OA Fc_C.L
+Am.O.OAHOAH -0.228              
+Fcndty_Cl.L -0.108  0.028       
+Fcndty_Cl.Q -0.095 -0.156 -0.074
+optimizer (nloptwrap) convergence code: 0 (OK)
+unable to evaluate scaled gradient
+ Hessian is numerically singular: parameters are not uniquely determined
+
+"
+"0","# Make model residuals"
+"0","pH_fecundity_only_res_lmer <- residuals(pH_fecundity_only_lmer)"
+"0",""
+"0","pH_fecundity_count_res_lmer <- residuals(pH_fecundity_count_lmer) "
+"0",""
+"0","pH_fecundity_class_res_lmer <- residuals(pH_fecundity_class_lmer)"
+"0",""
+"0","# Shapiro test"
+"0","shapiro.test(pH_fecundity_only_res_lmer)"
+"1","
+	Shapiro-Wilk normality test
+
+data:  pH_fecundity_only_res_lmer
+W = 0.93918, p-value = 0.544
+
+"
+"0","shapiro.test(pH_fecundity_count_res_lmer)"
+"1","
+	Shapiro-Wilk normality test
+
+data:  pH_fecundity_count_res_lmer
+W = 0.96284, p-value = 0.4063
+
+"
+"0","shapiro.test(pH_fecundity_class_res_lmer)"
+"1","
+	Shapiro-Wilk normality test
+
+data:  pH_fecundity_class_res_lmer
+W = 0.96516, p-value = 0.4585
+
+"
+"0","# pH simulated residuals plot"
+"0","pH_fecundity_only_simres_plot <- simulateResiduals(fittedModel = pH_fecundity_only_lmer)"
+"0","plot(pH_fecundity_only_simres_plot)"
