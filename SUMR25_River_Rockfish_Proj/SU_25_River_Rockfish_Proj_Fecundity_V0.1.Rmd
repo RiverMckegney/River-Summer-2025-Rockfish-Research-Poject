@@ -7,8 +7,6 @@ output: html_document
 
 
 
-
-
 ## Setup, and Packages
 
 ```{r setup, include=FALSE}
@@ -361,6 +359,9 @@ Fecundity_Count_Samples <- Fecundity_Samples %>%
 # Arrange the order of parturition categories for visualizations & tests
 Fecundity_Samples$Fecundity_Class <- ordered(Fecundity_Samples$Fecundity_Class, levels = c("High (>50,000)", "Low (~1,000s)", "Atresia"))
 
+Fecundity_Count_Samples$Fecundity_Class <- 
+  ordered(Fecundity_Samples$Fecundity_Class, levels = c("High (>50,000)", "Low (~1,000s)", "Atresia"))
+
 ```
 
 
@@ -427,7 +428,7 @@ fecundity_sample_size_barplot <- Fecundity_Samples %>%
         legend.background = element_rect(fill = "white", color = "black"),
         title = element_text(size = 12),
         plot.title = element_text(size = 30, hjust = 0.5),
-        axis.text.x = element_text(size = 10),
+        axis.text.x = element_text(size = 7),
         axis.text.y = element_text(size = 20),
         axis.title.x = element_text(size = 20),
         axis.title.y = element_text(size = 20))
@@ -514,6 +515,25 @@ pH_fecundity_count_facet_scatterplot_treatment <- ggplot(data = Fecundity_Count_
         axis.title.y = element_text(size = 20))
 
 print(pH_fecundity_count_facet_scatterplot_treatment)
+
+# pH Fecundity Count facet scatterplot by Fecundity Class
+pH_fecundity_count_facet_scatterplot_fecundity_class <- ggplot(data = Fecundity_Count_Samples) + 
+  geom_point(aes(x = pH, y = Consensus_Fecundity), colour = "black") +
+  labs(title = "pH Fecundity Count Samples", x = "pH", y = "Brood Count") +
+  scale_y_continuous(breaks = c(1000, 50000, 90000)) +
+  facet_wrap(~ Fecundity_Class) +
+  theme_classic() +
+  theme(panel.background = element_rect(fill = "white"),
+        plot.background = element_rect(fill = "white"),
+        legend.background = element_rect(fill = "white", color = "black"),
+        plot.title = element_text(size = 15, hjust = 0.5),
+        axis.text.x = element_text(size = 7),
+        axis.text.y = element_text(size = 15),
+        axis.title.x = element_text(size = 15),
+        axis.title.y = element_text(size = 15)) 
+  
+
+print(pH_fecundity_count_facet_scatterplot_fecundity_class)
 ```
 
 
@@ -676,6 +696,10 @@ Model Design:
 # devtools::install_github("dustinfife/flexplot", ref="development")
 require(flexplot)
 
+# New method
+pH_fecund_lmer <- lmer(pH ~ Pregnant.Or.Atresia + Consensus_Fecundity + (1|Fecundity_Class), data = Fecundity_Count_Samples)
+visualize(pH_fecund_lmer)
+
 # Fecundity Count Only data lmer (without atresia ids)
 pH_fecundity_only_lmer <- lmer(pH ~ Fecundity_Or_Brood_Count + Ambient.Or.OAH + (1 | Ambient.Or.OAH), data = Fecundity_Samples)
 
@@ -822,3 +846,227 @@ pH Fecundity Results
 
 
 # Hct : Hematocrit
+
+Hematocrit Summary Stats
+```{r}
+# hct
+# Summary stats
+
+# Fecundity data: without atresia ids
+Fecundity_Samples %>%
+  group_by(Ambient.Or.OAH) %>%
+  summarize(count = n(),
+            median = round(median(Hct....), 3),
+            mean = round(mean(Hct....), 3),
+            sd = round(sd(Hct....), 3),
+            cv = round(sd(Hct....)/mean(Hct....), 3)) %>%
+  ungroup()
+
+# Fecundity Count data: with atresia ids
+Fecundity_Count_Samples %>%
+  group_by(Ambient.Or.OAH, Pregnant.Or.Atresia) %>%
+  summarize(count = n(),
+            median = round(median(Hct....), 3),
+            mean = round(mean(Hct....), 3),
+            sd = round(sd(Hct....), 3),
+            cv = round(sd(Hct....)/mean(Hct....), 3)) %>%
+  ungroup()
+
+# Fecundity Class data
+Fecundity_Samples %>%
+  group_by(Ambient.Or.OAH, Fecundity_Class) %>%
+  summarize(count = n(),
+            median = round(median(Hct....), 3),
+            mean = round(mean(Hct....), 3),
+            sd = round(sd(Hct....), 3),
+            cv = round(sd(Hct....)/mean(Hct....), 3)) %>%
+  ungroup()
+
+```
+
+
+
+Hematocrit Fecundity Count Scatterplot 
+```{r}
+# hct Scatterplot
+
+# Fecundity Samples
+hct_fecundity_count_scatterplot <- ggplot(data = Fecundity_Count_Samples) + 
+  geom_point(aes(x = Hct...., y = Consensus_Fecundity), colour = "black") +
+  labs(title = "Hematocrit Fecundity Count Samples", x = "Hct (%)", y = "Brood Count") +
+  scale_y_continuous(breaks = c(0, 50000, 90000)) + 
+  theme_classic() +
+  theme(panel.background = element_rect(fill = "white"),
+        plot.background = element_rect(fill = "white"),
+        legend.background = element_rect(fill = "white", color = "black"),
+        plot.title = element_text(size = 15, hjust = 0.5),
+        axis.text.x = element_text(size = 20),
+        axis.text.y = element_text(size = 20),
+        axis.title.x = element_text(size = 12),
+        axis.title.y = element_text(size = 20))
+
+print(hct_fecundity_count_scatterplot)
+
+ggsave(filename = "data-images/hct_fecundity_count_scatterplot.pdf", plot = hct_fecundity_count_scatterplot, device = "pdf")
+ggsave(filename = "data-images/hct_fecundity_count_scatterplot.png", plot = hct_fecundity_count_scatterplot, device = "png")
+
+# Hct Fecundity Count facet scatterplot by Treatment
+hct_fecundity_count_facet_scatterplot_treatment <- ggplot(data = Fecundity_Count_Samples) + 
+  geom_point(aes(x = Hct...., y = Consensus_Fecundity), colour = "black") +
+  labs(title = "Hematocrit Fecundity Count Samples", x = "Hct (%)", y = "Fecundity", ) +
+  scale_y_continuous(breaks = c(0, 50000, 90000)) +
+  facet_wrap(~ Ambient.Or.OAH) +
+  theme_classic() +
+  theme(panel.background = element_rect(fill = "white"),
+        plot.background = element_rect(fill = "white"),
+        legend.background = element_rect(fill = "white", color = "black"),
+        plot.title = element_text(size = 15, hjust = 0.5),
+        axis.text.x = element_text(size = 10),
+        axis.text.y = element_text(size = 20),
+        axis.title.x = element_text(size = 10),
+        axis.title.y = element_text(size = 20))
+
+print(hct_fecundity_count_facet_scatterplot_treatment)
+
+# Hct fecundity count facet scatterplot by Fecundity Class
+hct_fecundity_count_facet_scatterplot_fecundity_class <- ggplot(data = Fecundity_Count_Samples) + 
+  geom_point(aes(x = Hct...., y = Consensus_Fecundity), colour = "black") +
+  labs(title = "Hematocrit Fecundity Count Samples", x = "Hct....", y = "Brood Count") +
+  scale_y_continuous(breaks = c(1000, 50000, 90000)) +
+  facet_wrap(~ Fecundity_Class) +
+  theme_classic() +
+  theme(panel.background = element_rect(fill = "white"),
+        plot.background = element_rect(fill = "white"),
+        legend.background = element_rect(fill = "white", color = "black"),
+        plot.title = element_text(size = 15, hjust = 0.5),
+        axis.text.x = element_text(size = 7),
+        axis.text.y = element_text(size = 15),
+        axis.title.x = element_text(size = 15),
+        axis.title.y = element_text(size = 15)) 
+  
+
+print(hct_fecundity_count_facet_scatterplot_fecundity_class)
+```
+
+
+Hematocrit Fecundity Class Scatterplot
+```{r}
+# hct Scatterplot
+
+# Fecundity Samples
+hct_fecundity_scatterplot <- ggplot(data = Fecundity_Samples) + 
+  geom_point(aes(x = Hct...., y = Fecundity_Or_Brood_Count), colour = "black") +
+  labs(title = "Hematocrit Fecundity Samples", x = "Hct (%)", y = "Brood Count") +
+  scale_y_continuous(breaks = c(1000, 50000, 90000)) + 
+  theme_classic() +
+  theme(panel.background = element_rect(fill = "white"),
+        plot.background = element_rect(fill = "white"),
+        legend.background = element_rect(fill = "white", color = "black"),
+        plot.title = element_text(size = 15, hjust = 0.5),
+        axis.text.x = element_text(size = 20),
+        axis.text.y = element_text(size = 20),
+        axis.title.x = element_text(size = 20),
+        axis.title.y = element_text(size = 20))
+
+print(hct_fecundity_scatterplot)
+
+ggsave(filename = "data-images/hct_fecundity_scatterplot.pdf", plot = hct_fecundity_scatterplot, device = "pdf")
+ggsave(filename = "data-images/hct_fecundity_scatterplot.png", plot = hct_fecundity_scatterplot, device = "png")
+
+# Hct facet scatterplot by Treatment
+hct_fecundity_facet_scatterplot_treatment <- ggplot(data = Fecundity_Samples) + 
+  geom_point(aes(x = Hct...., y = Fecundity_Or_Brood_Count), colour = "black") +
+  labs(title = "Hematocrit Fecundity Samples", x = "Hct (%)", y = "Brood Count") +
+  scale_y_continuous(breaks = c(1000, 50000, 90000)) +
+  facet_wrap(~ Ambient.Or.OAH) +
+  theme_classic() +
+  theme(panel.background = element_rect(fill = "white"),
+        plot.background = element_rect(fill = "white"),
+        legend.background = element_rect(fill = "white", color = "black"),
+        plot.title = element_text(size = 15, hjust = 0.5),
+        axis.text.x = element_text(size = 12),
+        axis.text.y = element_text(size = 20),
+        axis.title.x = element_text(size = 20),
+        axis.title.y = element_text(size = 20))
+
+print(hct_fecundity_facet_scatterplot_treatment)
+
+# Hct facet scatterplot by Fecundity Class
+hct_fecundity_facet_scatterplot_fecundity_class <- ggplot(data = Fecundity_Samples) + 
+  geom_point(aes(x = Hct...., y = Fecundity_Or_Brood_Count), colour = "black") +
+  labs(title = "Hematocrit Fecundity Samples", x = "Hct....", y = "Brood Count") +
+  scale_y_continuous(breaks = c(1000, 50000, 90000)) +
+  facet_wrap(~ Fecundity_Class) +
+  theme_classic() +
+  theme(panel.background = element_rect(fill = "white"),
+        plot.background = element_rect(fill = "white"),
+        legend.background = element_rect(fill = "white", color = "black"),
+        plot.title = element_text(size = 15, hjust = 0.5),
+        axis.text.x = element_text(size = 7),
+        axis.text.y = element_text(size = 15),
+        axis.title.x = element_text(size = 15),
+        axis.title.y = element_text(size = 15)) 
+  
+
+print(hct_fecundity_facet_scatterplot_fecundity_class)
+```
+
+
+Hematocrit Boxplot
+```{r}
+# Hct boxplot
+
+# Fecundity Samples
+hct_fecundity_boxplot <- ggplot(data = Fecundity_Samples) + 
+  geom_boxplot(aes(x = Fecundity_Class, y = Hct....)) +
+  geom_point(aes(x = Fecundity_Class, y = Hct....), alpha = 0.5, colour = "black") +
+  labs(title = "Fecundity Hematocrit", x = "Fecundity Class", y = "Hct (%)") +
+  theme_classic() +
+  theme(panel.background = element_rect(fill = "white"),
+        plot.background = element_rect(fill = "white"),
+        legend.background = element_rect(fill = "white", color = "black"),
+        plot.title = element_text(size = 30, hjust = 0.5),
+        axis.text.x = element_text(size = 9),
+        axis.text.y = element_text(size = 20),
+        axis.title.x = element_text(size = 20),
+        axis.title.y = element_text(size = 20))
+
+print(hct_fecundity_boxplot)
+
+ggsave(filename = "data-images/hct_fecundity_boxplot.pdf", plot = hct_fecundity_boxplot, device = "pdf")
+ggsave(filename = "data-images/hct_fecundity_boxplot.png", plot = hct_fecundity_boxplot, device = "png")
+
+
+# hct faceted boxplot
+hct_fecundity_facet_boxplot <- ggplot(data = Fecundity_Samples) + 
+  geom_boxplot(aes(x = Fecundity_Class, y = Hct....)) +
+  geom_point(aes(x = Fecundity_Class, y = Hct....), alpha = 0.5, colour = "black") +
+  labs(title = "Fecundity Hematocrit", x = "Fecundity Class", y = "Hct (%)") +
+  facet_wrap(~ Ambient.Or.OAH) +
+  theme_classic() +
+  theme(panel.background = element_rect(fill = "white"),
+        plot.background = element_rect(fill = "white"),
+        legend.background = element_rect(fill = "white", color = "black"),
+        plot.title = element_text(size = 20, hjust = 0.5),
+        axis.text.x = element_text(size = 5),
+        axis.text.y = element_text(size = 15),
+        axis.title.x = element_text(size = 15),
+        axis.title.y = element_text(size = 15))
+
+print(hct_fecundity_facet_boxplot)
+
+ggsave(filename = "data-images/hct_fecundity_facet_boxplot.pdf", plot = hct_fecundity_facet_boxplot, device = "pdf")
+ggsave(filename = "data-images/hct_fecundity_facet_boxplot.png", plot = _fecundity_facet_boxplot, device = "png")
+
+```
+
+
+# Hct Stat Tests:
+
+
+
+# Glucose
+
+
+
+# Glucose Stat Tests:

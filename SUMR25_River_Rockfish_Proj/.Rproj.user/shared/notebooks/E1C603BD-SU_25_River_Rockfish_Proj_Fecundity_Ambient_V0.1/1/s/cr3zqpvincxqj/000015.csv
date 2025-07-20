@@ -1,0 +1,7 @@
+"0","# Sample Size"
+"0",""
+"0","# Ambient Fecundity data: "
+"0","amb_fec_sample_size_table <- Amb_Fec_Samples %>%"
+"0","  group_by(Ambient.Or.OAH, Fecundity_Class) %>%"
+"0","  summarise(n_size = n_distinct(Patient.ID_edited), .groups = ""drop"")"
+"0","print(amb_fec_sample_size_table)"

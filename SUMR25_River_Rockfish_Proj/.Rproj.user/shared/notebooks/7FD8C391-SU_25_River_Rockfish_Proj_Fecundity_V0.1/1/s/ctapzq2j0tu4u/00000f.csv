@@ -1,0 +1,35 @@
+"0","pH_fecund_lmer <- lmer(pH ~ Pregnant.Or.Atresia + Consensus_Fecundity + (1|Fecundity_Class), data = Fecundity_Count_Samples)
+"
+"2","G2;H2;Warningh: Some predictor variables are on very different scales: consider rescalingg
+"
+"2","G3;boundary (singular) fit: see help('isSingular')
+g"
+"2","G2;H2;Warningh: Some predictor variables are on very different scales: consider rescalingg
+"
+"0","visualize(pH_fecund_lmer)"
+"2","[38;5;255mJoining with `by = join_by(pH)`[39m
+"
+"2","G2;H2;Warningh in simpleLoess(y, x, w, span, degree = degree, parametric = parametric,  :
+  pseudoinverse used at 7.3394g
+"
+"2","G2;H2;Warningh in simpleLoess(y, x, w, span, degree = degree, parametric = parametric,  :
+  neighborhood radius 0.0906g
+"
+"2","G2;H2;Warningh in simpleLoess(y, x, w, span, degree = degree, parametric = parametric,  :
+  reciprocal condition number  0g
+"
+"2","G2;H2;Warningh in simpleLoess(y, x, w, span, degree = degree, parametric = parametric,  :
+  There are other near singularities as well. 0.0081g
+"
+"2","G2;H2;Warningh in predLoess(object$y, object$x, newx = if (is.null(newdata)) object$x else if (is.data.frame(newdata)) as.matrix(model.frame(delete.response(terms(object)),  :
+  pseudoinverse used at 7.3394g
+"
+"2","G2;H2;Warningh in predLoess(object$y, object$x, newx = if (is.null(newdata)) object$x else if (is.data.frame(newdata)) as.matrix(model.frame(delete.response(terms(object)),  :
+  neighborhood radius 0.0906g
+"
+"2","G2;H2;Warningh in predLoess(object$y, object$x, newx = if (is.null(newdata)) object$x else if (is.data.frame(newdata)) as.matrix(model.frame(delete.response(terms(object)),  :
+  reciprocal condition number  0g
+"
+"2","G2;H2;Warningh in predLoess(object$y, object$x, newx = if (is.null(newdata)) object$x else if (is.data.frame(newdata)) as.matrix(model.frame(delete.response(terms(object)),  :
+  There are other near singularities as well. 0.0081g
+"
