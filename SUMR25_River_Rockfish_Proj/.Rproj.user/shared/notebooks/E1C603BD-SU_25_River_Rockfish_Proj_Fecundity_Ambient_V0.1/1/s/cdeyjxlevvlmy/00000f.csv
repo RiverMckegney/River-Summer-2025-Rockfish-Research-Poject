@@ -1,0 +1,15 @@
+"0","# Install flexplot"
+"0","# devtools::install_github(""dustinfife/flexplot"", ref=""development"")"
+"0","require(flexplot)"
+"0",""
+"0","# Amb Fec regression model"
+"0",""
+"0","glucose_amb_fec_lmer <- lmer(Glu..mmol.L. ~ All_Fecundity + (All_Fecundity | Fecundity_Class), data = Amb_Fec_Samples)"
+"2","G2;H2;Warningh: Some predictor variables are on very different scales: consider rescalingg
+"
+"2","G3;boundary (singular) fit: see help('isSingular')
+g"
+"2","G2;H2;Warningh: Some predictor variables are on very different scales: consider rescalingg
+"
+"0","visualize(glucose_amb_fec_lmer, plot = ""model"")"
+"0",""

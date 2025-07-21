@@ -1,0 +1,15 @@
+"0","# Sodium"
+"0",""
+"0","# Amb Fec samples"
+"0",""
+"0","# test with lmer"
+"0","bartlett.test(Na...mmol.L. ~ Fecundity_Class, Amb_Fec_Samples)"
+"1","
+	Bartlett test of homogeneity of variances
+
+data:  Na...mmol.L. by Fecundity_Class
+Bartlett's K-squared = 7.4634, df = 2, p-value = 0.02395
+
+"
+"0","# leveneTest() "
+"0",""

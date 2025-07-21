@@ -1,0 +1,5 @@
+"0",""
+"0","# Density by brood condition"
+"0","Amb_Fec_Samples %>%"
+"0","ggplot(aes(x = Glu..mmol.L.)) +"
+"0","  geom_density(aes(x = Glu..mmol.L., fill = Fecundity_Class), alpha = 0.5) "

@@ -335,7 +335,7 @@ Change Data Types:
 #glimpse(General_Samples)
 #glimpse(Ambient_Samples)
  
-General_Samples <- Primary_Samples %>%
+Primary_Samples <- Primary_Samples %>%
   mutate(across(c(pH, Hct...., Glu..mmol.L., Na...mmol.L., Cl...mmol.L., K...mmol.L., Ca....mmol.L.), as.numeric))
 
 Ambient_Samples <- Ambient_Samples %>%
@@ -500,7 +500,7 @@ pH Amb Fec Count Scatterplot
 # Amb Fec Count Samples : With atresia Ids
 pH_amb_fec_all_scatterplot <- ggplot(data = Amb_Fec_Samples) + 
   geom_point(aes(x = pH, y = All_Fecundity), colour = "black") +
-  labs(title = "pH All Fecundity Samples", x = "pH", y = "Fecundity") +
+  labs(title = "pH", x = "pH", y = "Fecundity") +
   scale_y_continuous(breaks = c(0, 50000, 90000)) + 
   facet_wrap(~ Ambient.Or.OAH) +
   theme_classic() +
@@ -522,7 +522,7 @@ ggsave(filename = "data-images/pH_amb_fec_all_scatterplot.png", plot = pH_amb_fe
 # pH Amb Fec Count facet scatterplot by Fecundity Class
 pH_amb_fec_all_facet_scatterplot_fecundity_class <- ggplot(data = Amb_Fec_Samples) + 
   geom_point(aes(x = pH, y = All_Fecundity), colour = "black") +
-  labs(title = "pH All Fecundity Count Samples", x = "pH", y = "Brood Count") +
+  labs(title = "pH", x = "pH", y = "Brood Count") +
   scale_y_continuous(breaks = c(1000, 50000, 90000)) +
   facet_wrap(Fecundity_Class ~ Ambient.Or.OAH) +
   theme_classic() +
@@ -551,9 +551,9 @@ pH Amb Fec Class Scatterplot
 # Refer to 'Fecundity_Class' col for categorical classification of fecund data (Not 'Consensus_Fecundity' col, which is same, but raw data input)
 
 # Amb Fec only scatterplot: atresia ids removed
-pH_amb_fec_scatterplot <- ggplot(data = Amb_Fec_Samples) + 
+pH_amb_fec_no_atresia_scatterplot <- ggplot(data = Amb_Fec_Samples) + 
   geom_point(aes(x = pH, y = Fecundity_No_Atresia), colour = "black") +
-  labs(title = "pH Fecundity Samples", x = "pH", y = "Brood Count") +
+  labs(title = "pH", x = "pH", y = "Brood Count") +
   scale_y_continuous(breaks = c(1000, 50000, 90000)) + 
   theme_classic() +
   facet_wrap(~ Ambient.Or.OAH) +
@@ -566,16 +566,16 @@ pH_amb_fec_scatterplot <- ggplot(data = Amb_Fec_Samples) +
         axis.title.x = element_text(size = 20),
         axis.title.y = element_text(size = 20))
 
-print(pH_amb_fec_scatterplot)
+print(pH_amb_fec_no_atresia_scatterplot)
 
-ggsave(filename = "data-images/pH_amb_fec_scatterplot.pdf", plot = pH_fecundity_scatterplot, device = "pdf")
-ggsave(filename = "data-images/pH_amb_fec_scatterplot.png", plot = pH_amb_fec_scatterplot, device = "png")
+ggsave(filename = "data-images/pH_amb_fec_no_atresia_scatterplot.pdf", plot = pH_amb_fec_no_atresia_scatterplot, device = "pdf")
+ggsave(filename = "data-images/pH_amb_fec_no_atresia_scatterplot.png", plot = pH_amb_fec_no_atresia_scatterplot, device = "png")
 
 
 # pH Amb Fec No Atresia facet scatterplot by Fecundity Class
-pH_amb_fec_facet_scatterplot_fecundity_class <- ggplot(data = Amb_Fec_Samples) + 
+pH_amb_fec_no_atresia_facet_scatterplot_fecundity_class <- ggplot(data = Amb_Fec_Samples) + 
   geom_point(aes(x = pH, y = Fecundity_No_Atresia), colour = "black") +
-  labs(title = "pH Fecundity Samples", x = "pH", y = "Fecundity") +
+  labs(title = "pH", x = "pH", y = "Fecundity") +
   scale_y_continuous(breaks = c(1000, 50000, 90000)) +
   facet_wrap(Fecundity_Class ~ Ambient.Or.OAH) +
   theme_classic() +
@@ -589,7 +589,7 @@ pH_amb_fec_facet_scatterplot_fecundity_class <- ggplot(data = Amb_Fec_Samples) +
         axis.title.y = element_text(size = 20)) 
   
 
-print(pH_amb_fec_facet_scatterplot_fecundity_class)
+print(pH_amb_fec_no_atresia_facet_scatterplot_fecundity_class)
 ```
 
 
@@ -679,8 +679,8 @@ require(flexplot)
 
 # Amb Fec regression model
 
-amb_fec_lmer <- lmer(pH ~ All_Fecundity + (All_Fecundity | Fecundity_Class), data = Amb_Fec_Samples)
-visualize(amb_fec_lmer, plot = "model")
+pH_amb_fec_lmer <- lmer(pH ~ All_Fecundity + (All_Fecundity | Fecundity_Class), data = Amb_Fec_Samples)
+visualize(pH_amb_fec_lmer, plot = "model")
 
 ```
 
@@ -759,7 +759,7 @@ Hematocrit Amb Fec Count Scatterplot
 # Amb Fec Count Samples : With atresia Ids
 hct_amb_fec_count_scatterplot <- ggplot(data = Amb_Fec_Samples) + 
   geom_point(aes(x = Hct...., y = All_Fecundity), colour = "black") +
-  labs(title = "Hematocrit Fecundity Count Samples", x = "Hct (%)", y = "Fecundity") +
+  labs(title = "Hematocrit", x = "Hct (%)", y = "Fecundity") +
   scale_y_continuous(breaks = c(0, 50000, 90000)) + 
   facet_wrap(~ Ambient.Or.OAH) +
   theme_classic() +
@@ -781,7 +781,7 @@ ggsave(filename = "data-images/hct_amb_fec_count_scatterplot.png", plot = hct_am
 # pH Amb Fec Count facet scatterplot by Fecundity Class
 hct_amb_fec_count_facet_scatterplot_fecundity_class <- ggplot(data = Amb_Fec_Samples) + 
   geom_point(aes(x = Hct...., y = All_Fecundity), colour = "black") +
-  labs(title = "Hematocrit Fecundity Count Samples", x = "Hct (%)", y = "Brood Count") +
+  labs(title = "Hematocrit", x = "Hct (%)", y = "Brood Count") +
   scale_y_continuous(breaks = c(1000, 50000, 90000)) +
   facet_wrap(~ Fecundity_Class) +
   theme_classic() +
@@ -799,6 +799,1243 @@ print(hct_amb_fec_count_facet_scatterplot_fecundity_class)
 ```
 
 
+Hematocrit Boxplot
+```{r}
+# Hct boxplot
+
+# Amb_Fec Samples with Atresia Ids
+hct_amb_fec_boxplot <- ggplot(data = Amb_Fec_Samples) + 
+  geom_boxplot(aes(x = Fecundity_Class, y = Hct....)) +
+  geom_point(aes(x = Fecundity_Class, y = Hct....), alpha = 0.5, colour = "black") +
+  labs(title = "Hematocrit", x = "Fecundity Class", y = "Hematocrit (%)") +
+   facet_wrap(~ Ambient.Or.OAH) +
+  theme_classic() +
+  theme(panel.background = element_rect(fill = "white"),
+        plot.background = element_rect(fill = "white"),
+        legend.background = element_rect(fill = "white", color = "black"),
+        title = element_text(size = 12),
+        plot.title = element_text(size = 30, hjust = 0.5),
+        axis.text.x = element_text(size = 9),
+        axis.text.y = element_text(size = 20),
+        axis.title.x = element_text(size = 20),
+        axis.title.y = element_text(size = 20))
+
+print(hct_amb_fec_boxplot)
+
+ggsave(filename = "data-images/hct_amb_fec_boxplot.pdf", plot = hct_amb_fec_boxplot, device = "pdf")
+ggsave(filename = "data-images/hct_amb_fec_boxplot.png", plot = hct_amb_fec_boxplot, device = "png")
+
+
+```
+
+
+pH Parametric Assessment
+Data Distribution
+```{r}
+# pH
+# Parametric Assumptions
+
+# Data Distribution
+
+
+# Amb Fec Samples 
+# Frequency Histograms
+
+hist(Amb_Fec_Samples$Hct....)
+
+plotNormalHistogram(Amb_Fec_Samples$Hct....) 
+
+# Density plot
+
+Amb_Fec_Samples %>%
+  ggplot(aes(x = Hct....)) +
+  stat_function(fun = dnorm, args = c(mean = mean(Amb_Fec_Samples$Hct....), sd = sd(Amb_Fec_Samples$Hct....)), aes(col = "Normal Distribution"), show.legend = TRUE) +
+  geom_density(aes(col = "Sample Density"), show.legend = TRUE) +
+  labs(title = "Hematocrit Sample Distribution") +
+  scale_color_manual("Distribution", values = c("Normal Distribution" = "green", "Sample Density" = "black"))
+
+# Density by brood condition
+Amb_Fec_Samples %>%
+ggplot(aes(x = Hct....)) +
+  geom_density(aes(x = Hct...., fill = Fecundity_Class), alpha = 0.5) 
+
+ggplot(Amb_Fec_Samples, aes(x = Hct....)) +
+  geom_density(aes(x = Hct....)) +
+  facet_wrap(Fecundity_Class ~ Ambient.Or.OAH) 
+
+plotNormalDensity(Amb_Fec_Samples$Hct....)
+
+```
+
+
+
+Test For Outliers
+```{r}
+# Test for Outliers
+
+
+```
+
+
+
+Model Design
+```{r}
+# Install flexplot
+# devtools::install_github("dustinfife/flexplot", ref="development")
+require(flexplot)
+
+# Amb Fec regression model
+
+hct_amb_fec_lmer <- lmer(Hct.... ~ All_Fecundity + (All_Fecundity | Fecundity_Class), data = Amb_Fec_Samples)
+visualize(hct_amb_fec_lmer, plot = "model")
+
+```
+
+
+
+pH Normality: QQPlot and Shapiro-Wilk Test
+```{r}
+
+
+
+```
+
+
+pH Parametric Assessment
+Testing Scedasticity:
+```{r}
+# pH
+
+# Amb Fec samples
+
+# test with lmer
+bartlett.test(pH ~ Fecundity_Class, Amb_Fec_Samples)
+
+# leveneTest() 
+
+```
+
+pH Parametric Assumptions Assessment: 
+
+Warning: Check after assessing outliers
+
+- Amb Fec Data normally distributed? 
+
+- Amb Fec Data equal variance across factors?
+
 
 # Hct Stat Tests
+
+
+
+# Glucose
+Glucose Summary Stats
+```{r}
+# Glucose
+# Summary stats
+
+# Amb Fec data
+Amb_Fec_Samples %>%
+  group_by(Ambient.Or.OAH, Pregnant.Or.Atresia) %>%
+  summarize(count = n(),
+            median = round(median(Glu..mmol.L.), 3),
+            mean = round(mean(Glu..mmol.L.), 3),
+            sd = round(sd(Glu..mmol.L.), 3),
+            cv = round(sd(Glu..mmol.L.)/mean(Glu..mmol.L.), 3)) %>%
+  ungroup()
+
+
+# Amb Fec Class data
+Amb_Fec_Samples %>%
+  group_by(Ambient.Or.OAH, Fecundity_Class) %>%
+  summarize(count = n(),
+            median = round(median(Glu..mmol.L.), 3),
+            mean = round(mean(Glu..mmol.L.), 3),
+            sd = round(sd(Glu..mmol.L.), 3),
+            cv = round(sd(Glu..mmol.L.)/mean(Glu..mmol.L.), 3)) %>%
+  ungroup()
+
+```
+
+
+pH Amb Fec Count Scatterplot 
+```{r}
+# pH Scatterplot
+
+# Amb_fec Samples: 
+# Note When using Fecundity_Or_Brood_Count col, the "No Parturition" aka atresia ids are automatically removed in plots, and results display numerical count, but this may cause issues if column is called in stat tests
+# Refer to 'All_Fecundity' col (all numeric, includes atresia ids as 0)
+# Refer to 'Fecundity_No_Atresia' col (all numeric, excludes atresia ids)
+# Refer to 'Fecundity_Class' col for categorical classification of fecund data (Not 'Consensus_Fecundity' col, which is same, but raw data input)
+
+# Amb Fec Count Samples : With atresia Ids
+glucose_amb_fec_all_scatterplot <- ggplot(data = Amb_Fec_Samples) + 
+  geom_point(aes(x = Glu..mmol.L., y = All_Fecundity), colour = "black") +
+  labs(title = "Glucose", x = "Glucose (mmol/L)", y = "Fecundity") +
+  scale_y_continuous(breaks = c(0, 50000, 90000)) + 
+  facet_wrap(~ Ambient.Or.OAH) +
+  theme_classic() +
+  theme(panel.background = element_rect(fill = "white"),
+        plot.background = element_rect(fill = "white"),
+        legend.background = element_rect(fill = "white", color = "black"),
+        plot.title = element_text(size = 25, hjust = 0.5),
+        axis.text.x = element_text(size = 20),
+        axis.text.y = element_text(size = 20),
+        axis.title.x = element_text(size = 20),
+        axis.title.y = element_text(size = 20))
+
+print(glucose_amb_fec_all_scatterplot)
+
+ggsave(filename = "data-images/glucose_amb_fec_all_scatterplot.pdf", plot = glucose_amb_fec_count_scatterplot, device = "pdf")
+ggsave(filename = "data-images/glucose_amb_fec_all_scatterplot.png", plot = glucose_amb_fec_count_scatterplot, device = "png")
+
+
+# pH Amb Fec Count facet scatterplot by Fecundity Class
+glucose_amb_fec_all_facet_scatterplot_fecundity_class <- ggplot(data = Amb_Fec_Samples) + 
+  geom_point(aes(x = Glu..mmol.L., y = All_Fecundity), colour = "black") +
+  labs(title = "Glucose", x = "Glucose (mmol/L)", y = "Brood Count") +
+  scale_y_continuous(breaks = c(1000, 50000, 90000)) +
+  facet_wrap(Fecundity_Class ~ Ambient.Or.OAH) +
+  theme_classic() +
+  theme(panel.background = element_rect(fill = "white"),
+        plot.background = element_rect(fill = "white"),
+        legend.background = element_rect(fill = "white", color = "black"),
+        plot.title = element_text(size = 25, hjust = 0.5),
+        axis.text.x = element_text(size = 15),
+        axis.text.y = element_text(size = 15),
+        axis.title.x = element_text(size = 20),
+        axis.title.y = element_text(size = 20)) 
+  
+print(glucose_amb_fec_all_facet_scatterplot_fecundity_class)
+
+```
+
+Glucose Boxplot
+```{r}
+# Glucose boxplot
+
+# Amb_Fec Samples with Atresia Ids
+glucose_amb_fec_boxplot <- ggplot(data = Amb_Fec_Samples) + 
+  geom_boxplot(aes(x = Fecundity_Class, y = Glu..mmol.L.)) +
+  geom_point(aes(x = Fecundity_Class, y = Glu..mmol.L.), alpha = 0.5, colour = "black") +
+  labs(title = "Glucose", x = "Fecundity Class", y = "Glucose (mmol/L)") +
+   facet_wrap(~ Ambient.Or.OAH) +
+  theme_classic() +
+  theme(panel.background = element_rect(fill = "white"),
+        plot.background = element_rect(fill = "white"),
+        legend.background = element_rect(fill = "white", color = "black"),
+        title = element_text(size = 12),
+        plot.title = element_text(size = 30, hjust = 0.5),
+        axis.text.x = element_text(size = 9),
+        axis.text.y = element_text(size = 20),
+        axis.title.x = element_text(size = 20),
+        axis.title.y = element_text(size = 20))
+
+print(glucose_amb_fec_boxplot)
+
+ggsave(filename = "data-images/glucose_amb_fec_boxplot.pdf", plot = glucose_amb_fec_boxplot, device = "pdf")
+ggsave(filename = "data-images/glucose_amb_fec_boxplot.png", plot = glucose_amb_fec_boxplot, device = "png")
+
+
+```
+
+
+Glucose Parametric Assessment
+Data Distribution
+```{r}
+# glucose
+# Parametric Assumptions
+
+# Data Distribution
+
+
+# Amb Fec Samples 
+# Frequency Histograms
+
+hist(Amb_Fec_Samples$Glu..mmol.L.)
+
+plotNormalHistogram(Amb_Fec_Samples$Glu..mmol.L.) 
+
+# Density plot
+
+Amb_Fec_Samples %>%
+  ggplot(aes(x = Glu..mmol.L.)) +
+  stat_function(fun = dnorm, args = c(mean = mean(Amb_Fec_Samples$Glu..mmol.L.), sd = sd(Amb_Fec_Samples$Glu..mmol.L.)), aes(col = "Normal Distribution"), show.legend = TRUE) +
+  geom_density(aes(col = "Sample Density"), show.legend = TRUE) +
+  labs(title = "Glucose Ambient Fecundity Sample Distribution") +
+  scale_color_manual("Distribution", values = c("Normal Distribution" = "green", "Sample Density" = "black"))
+
+# Density by brood condition
+Amb_Fec_Samples %>%
+ggplot(aes(x = Glu..mmol.L.)) +
+  geom_density(aes(x = Glu..mmol.L., fill = Fecundity_Class), alpha = 0.5) 
+
+ggplot(Amb_Fec_Samples, aes(x = Glu..mmol.L.)) +
+  geom_density(aes(x = Glu..mmol.L.)) +
+  facet_wrap(Fecundity_Class ~ Ambient.Or.OAH) 
+
+plotNormalDensity(Amb_Fec_Samples$Glu..mmol.L.)
+
+```
+
+
+Test For Outliers
+```{r}
+# Test for Outliers
+
+
+```
+
+
+Model Design
+```{r}
+# Install flexplot
+# devtools::install_github("dustinfife/flexplot", ref="development")
+require(flexplot)
+
+# Amb Fec regression model
+
+glucose_amb_fec_lmer <- lmer(Glu..mmol.L. ~ All_Fecundity + (All_Fecundity | Fecundity_Class), data = Amb_Fec_Samples)
+visualize(glucose_amb_fec_lmer, plot = "model")
+
+```
+
+
+Glucose Normality: QQPlot and Shapiro-Wilk Test
+```{r}
+
+
+
+```
+
+
+Glucose Parametric Assessment
+Testing Scedasticity:
+```{r}
+# glucose
+
+# Amb Fec samples
+
+# test with lmer
+bartlett.test(Glu..mmol.L. ~ Fecundity_Class, Amb_Fec_Samples)
+
+# leveneTest() 
+
+```
+
+
+Glucose Parametric Assumptions Assessment: 
+
+Warning: Check after assessing outliers
+
+- Amb Fec Data normally distributed? 
+
+- Amb Fec Data equal variance across factors?
+
+
+
+# Glucose Stat Tests
+
+
+
+# Na+ : Sodium
+
+Sodium Summary Stats
+```{r}
+# Na+
+# Summary stats
+
+# Amb Fec data
+Amb_Fec_Samples %>%
+  group_by(Ambient.Or.OAH, Pregnant.Or.Atresia) %>%
+  summarize(count = n(),
+            median = round(median(Na...mmol.L.), 3),
+            mean = round(mean(Na...mmol.L.), 3),
+            sd = round(sd(Na...mmol.L.), 3),
+            cv = round(sd(Na...mmol.L.)/mean(Na...mmol.L.), 3)) %>%
+  ungroup()
+
+
+# Amb Fec Class data
+Amb_Fec_Samples %>%
+  group_by(Ambient.Or.OAH, Fecundity_Class) %>%
+  summarize(count = n(),
+            median = round(median(Na...mmol.L.), 3),
+            mean = round(mean(Na...mmol.L.), 3),
+            sd = round(sd(Na...mmol.L.), 3),
+            cv = round(sd(Na...mmol.L.)/mean(Na...mmol.L.), 3)) %>%
+  ungroup()
+
+```
+
+
+Sodium Amb Fec Count Scatterplot 
+```{r}
+# Na+ Scatterplot
+
+# Amb_fec Samples: 
+# Note When using Fecundity_Or_Brood_Count col, the "No Parturition" aka atresia ids are automatically removed in plots, and results display numerical count, but this may cause issues if column is called in stat tests
+# Refer to 'All_Fecundity' col (all numeric, includes atresia ids as 0)
+# Refer to 'Fecundity_No_Atresia' col (all numeric, excludes atresia ids)
+# Refer to 'Fecundity_Class' col for categorical classification of fecund data (Not 'Consensus_Fecundity' col, which is same, but raw data input)
+
+# Amb Fec Count Samples : With atresia Ids
+sodium_amb_fec_all_scatterplot <- ggplot(data = Amb_Fec_Samples) + 
+  geom_point(aes(x = Na...mmol.L., y = All_Fecundity), colour = "black") +
+  labs(title = "Sodium", x = "Sodium (mmol/L)", y = "Fecundity") +
+  scale_y_continuous(breaks = c(0, 50000, 90000)) + 
+  facet_wrap(~ Ambient.Or.OAH) +
+  theme_classic() +
+  theme(panel.background = element_rect(fill = "white"),
+        plot.background = element_rect(fill = "white"),
+        legend.background = element_rect(fill = "white", color = "black"),
+        plot.title = element_text(size = 25, hjust = 0.5),
+        axis.text.x = element_text(size = 10),
+        axis.text.y = element_text(size = 10),
+        axis.title.x = element_text(size = 20),
+        axis.title.y = element_text(size = 20))
+
+print(sodium_amb_fec_all_scatterplot)
+
+ggsave(filename = "data-images/sodium_amb_fec_all_scatterplot.pdf", plot = sodium_amb_fec_count_scatterplot, device = "pdf")
+ggsave(filename = "data-images/sodium_amb_fec_all_scatterplot.png", plot = sodium_amb_fec_count_scatterplot, device = "png")
+
+
+# pH Amb Fec Count facet scatterplot by Fecundity Class
+sodium_amb_fec_all_facet_scatterplot_fecundity_class <- ggplot(data = Amb_Fec_Samples) + 
+  geom_point(aes(x = Na...mmol.L., y = All_Fecundity), colour = "black") +
+  labs(title = "Sodium", x = "Sodium (mmol/L)", y = "Brood Count") +
+  scale_y_continuous(breaks = c(1000, 50000, 90000)) +
+  facet_wrap(Fecundity_Class ~ Ambient.Or.OAH) +
+  theme_classic() +
+  theme(panel.background = element_rect(fill = "white"),
+        plot.background = element_rect(fill = "white"),
+        legend.background = element_rect(fill = "white", color = "black"),
+        plot.title = element_text(size = 25, hjust = 0.5),
+        axis.text.x = element_text(size = 8),
+        axis.text.y = element_text(size = 13),
+        axis.title.x = element_text(size = 18),
+        axis.title.y = element_text(size = 18)) 
+  
+print(sodium_amb_fec_all_facet_scatterplot_fecundity_class)
+
+```
+
+
+Sodium Amb Fec Class Scatterplot
+```{r}
+# Sodium Scatterplot
+
+# Amb_fec Samples: 
+# Note When using Fecundity_Or_Brood_Count col, the "No Parturition" aka atresia ids are automatically removed in plots, and results display numerical count, but this may cause issues if column is called in stat tests
+# Refer to 'All_Fecundity' col (all numeric, includes atresia ids as 0)
+# Refer to 'Fecundity_No_Atresia' col (all numeric, excludes atresia ids)
+# Refer to 'Fecundity_Class' col for categorical classification of fecund data (Not 'Consensus_Fecundity' col, which is same, but raw data input)
+
+# Amb Fec only scatterplot: atresia ids removed
+sodium_amb_fec_no_atresia_scatterplot <- ggplot(data = Amb_Fec_Samples) + 
+  geom_point(aes(x = Na...mmol.L., y = Fecundity_No_Atresia), colour = "black") +
+  labs(title = "Sodium", x = "Sodium (mmol/L)", y = "Brood Count") +
+  scale_y_continuous(breaks = c(1000, 50000, 90000)) + 
+  theme_classic() +
+  facet_wrap(~ Ambient.Or.OAH) +
+  theme(panel.background = element_rect(fill = "white"),
+        plot.background = element_rect(fill = "white"),
+        legend.background = element_rect(fill = "white", color = "black"),
+        plot.title = element_text(size = 25, hjust = 0.5),
+        axis.text.x = element_text(size = 10),
+        axis.text.y = element_text(size = 10),
+        axis.title.x = element_text(size = 20),
+        axis.title.y = element_text(size = 20))
+
+print(sodium_amb_fec_no_atresia_scatterplot)
+
+ggsave(filename = "data-images/sodium_amb_fec_no_atresia_scatterplot.pdf", plot = sodium_amb_fec_no_atresia_scatterplot, device = "pdf")
+ggsave(filename = "data-images/sodium_amb_fec_no_atresia_scatterplot.png", plot = sodium_amb_fec_scatterplot, device = "png")
+
+
+# pH Amb Fec No Atresia facet scatterplot by Fecundity Class
+pH_amb_fec_no_atresia_facet_scatterplot_fecundity_class <- ggplot(data = Amb_Fec_Samples) + 
+  geom_point(aes(x = Na...mmol.L., y = Fecundity_No_Atresia), colour = "black") +
+  labs(title = "Sodium", x = "Sodium (mmol/L)", y = "Fecundity") +
+  scale_y_continuous(breaks = c(1000, 50000, 90000)) +
+  facet_wrap(Fecundity_Class ~ Ambient.Or.OAH) +
+  theme_classic() +
+  theme(panel.background = element_rect(fill = "white"),
+        plot.background = element_rect(fill = "white"),
+        legend.background = element_rect(fill = "white", color = "black"),
+        plot.title = element_text(size = 25, hjust = 0.5),
+        axis.text.x = element_text(size = 8),
+        axis.text.y = element_text(size = 13),
+        axis.title.x = element_text(size = 18),
+        axis.title.y = element_text(size = 18)) 
+  
+
+print(pH_amb_fec_no_atresia_facet_scatterplot_fecundity_class)
+```
+
+
+Sodium Boxplot
+```{r}
+# Na+ boxplot
+
+# Amb_Fec Samples with Atresia Ids
+sodium_amb_fec_boxplot <- ggplot(data = Amb_Fec_Samples) + 
+  geom_boxplot(aes(x = Fecundity_Class, y = Na...mmol.L.)) +
+  geom_point(aes(x = Fecundity_Class, y = Na...mmol.L.), alpha = 0.5, colour = "black") +
+  labs(title = "Sodium", x = "Fecundity Class", y = "Sodium (mmol/L)") +
+   facet_wrap(~ Ambient.Or.OAH) +
+  theme_classic() +
+  theme(panel.background = element_rect(fill = "white"),
+        plot.background = element_rect(fill = "white"),
+        legend.background = element_rect(fill = "white", color = "black"),
+        title = element_text(size = 12),
+        plot.title = element_text(size = 30, hjust = 0.5),
+        axis.text.x = element_text(size = 9),
+        axis.text.y = element_text(size = 20),
+        axis.title.x = element_text(size = 20),
+        axis.title.y = element_text(size = 20))
+
+print(sodium_amb_fec_boxplot)
+
+ggsave(filename = "data-images/sodium_amb_fec_boxplot.pdf", plot = sodium_amb_fec_boxplot, device = "pdf")
+ggsave(filename = "data-images/sodium_amb_fec_boxplot.png", plot = sodium_amb_fec_boxplot, device = "png")
+
+```
+
+
+Sodium Parametric Assessment
+Data Distribution
+```{r}
+# Na+
+# Parametric Assumptions
+
+# Data Distribution
+
+
+# Amb Fec Samples 
+# Frequency Histograms
+
+hist(Amb_Fec_Samples$Na...mmol.L.)
+
+plotNormalHistogram(Amb_Fec_Samples$Na...mmol.L.) 
+
+# Density plot
+
+Amb_Fec_Samples %>%
+  ggplot(aes(x = Na...mmol.L.)) +
+  stat_function(fun = dnorm, args = c(mean = mean(Amb_Fec_Samples$Na...mmol.L.), sd = sd(Amb_Fec_Samples$Na...mmol.L.)), aes(col = "Normal Distribution"), show.legend = TRUE) +
+  geom_density(aes(col = "Sample Density"), show.legend = TRUE) +
+  labs(title = "Sodium Sample Distribution") +
+  scale_color_manual("Distribution", values = c("Normal Distribution" = "green", "Sample Density" = "black"))
+
+# Density by brood condition
+Amb_Fec_Samples %>%
+ggplot(aes(x = Na...mmol.L.)) +
+  geom_density(aes(x = Na...mmol.L., fill = Fecundity_Class), alpha = 0.5) 
+
+ggplot(Amb_Fec_Samples, aes(x = Na...mmol.L.)) +
+  geom_density(aes(x = Na...mmol.L.)) +
+  facet_wrap(Fecundity_Class ~ Ambient.Or.OAH) 
+
+plotNormalDensity(Amb_Fec_Samples$Na...mmol.L.)
+
+```
+
+
+Test For Outliers
+```{r}
+# Test for Outliers
+
+
+```
+
+
+
+Model Design
+```{r}
+# Install flexplot
+# devtools::install_github("dustinfife/flexplot", ref="development")
+require(flexplot)
+
+# Amb Fec regression model
+
+sodium_amb_fec_lmer <- lmer(Na...mmol.L. ~ All_Fecundity + (All_Fecundity | Fecundity_Class), data = Amb_Fec_Samples)
+visualize(sodium_amb_fec_lmer, plot = "model")
+
+```
+
+
+
+Sodium Normality: QQPlot and Shapiro-Wilk Test
+```{r}
+
+
+
+```
+
+
+Sodium Parametric Assessment
+Testing Scedasticity:
+```{r}
+# Sodium
+
+# Amb Fec samples
+
+# test with lmer
+bartlett.test(Na...mmol.L. ~ Fecundity_Class, Amb_Fec_Samples)
+
+# leveneTest() 
+
+```
+
+Sodium Parametric Assumptions Assessment: 
+
+Warning: Check after assessing outliers
+
+- Amb Fec Data normally distributed? 
+
+- Amb Fec Data equal variance across factors?
+
+
+# Na+ Stat Tests
+
+
+
+# Cl- : Chloride
+
+Chloride Summary Stats
+```{r}
+# Cl-
+# Summary stats
+
+# Amb Fec data
+Amb_Fec_Samples %>%
+  group_by(Ambient.Or.OAH, Pregnant.Or.Atresia) %>%
+  summarize(count = n(),
+            median = round(median(Cl...mmol.L.), 3),
+            mean = round(mean(Cl...mmol.L.), 3),
+            sd = round(sd(Cl...mmol.L.), 3),
+            cv = round(sd(Cl...mmol.L.)/mean(Cl...mmol.L.), 3)) %>%
+  ungroup()
+
+
+# Amb Fec Class data
+Amb_Fec_Samples %>%
+  group_by(Ambient.Or.OAH, Fecundity_Class) %>%
+  summarize(count = n(),
+            median = round(median(Cl...mmol.L.), 3),
+            mean = round(mean(Cl...mmol.L.), 3),
+            sd = round(sd(Cl...mmol.L.), 3),
+            cv = round(sd(Cl...mmol.L.)/mean(Cl...mmol.L.), 3)) %>%
+  ungroup()
+
+```
+
+
+
+Chloride Amb Fec Count Scatterplot 
+```{r}
+# Cl- Scatterplot
+
+# Amb_fec Samples: 
+# Note When using Fecundity_Or_Brood_Count col, the "No Parturition" aka atresia ids are automatically removed in plots, and results display numerical count, but this may cause issues if column is called in stat tests
+# Refer to 'All_Fecundity' col (all numeric, includes atresia ids as 0)
+# Refer to 'Fecundity_No_Atresia' col (all numeric, excludes atresia ids)
+# Refer to 'Fecundity_Class' col for categorical classification of fecund data (Not 'Consensus_Fecundity' col, which is same, but raw data input)
+
+# Amb Fec Count Samples : With atresia Ids
+chloride_amb_fec_all_scatterplot <- ggplot(data = Amb_Fec_Samples) + 
+  geom_point(aes(x = Cl...mmol.L., y = All_Fecundity), colour = "black") +
+  labs(title = "Chloride", x = "Chloride (mmol/L)", y = "Fecundity") +
+  scale_y_continuous(breaks = c(0, 50000, 90000)) + 
+  facet_wrap(~ Ambient.Or.OAH) +
+  theme_classic() +
+  theme(panel.background = element_rect(fill = "white"),
+        plot.background = element_rect(fill = "white"),
+        legend.background = element_rect(fill = "white", color = "black"),
+        plot.title = element_text(size = 25, hjust = 0.5),
+        axis.text.x = element_text(size = 10),
+        axis.text.y = element_text(size = 10),
+        axis.title.x = element_text(size = 20),
+        axis.title.y = element_text(size = 20))
+
+print(chloride_amb_fec_all_scatterplot)
+
+ggsave(filename = "data-images/chloride_amb_fec_all_scatterplot.pdf", plot = chloride_amb_fec_count_scatterplot, device = "pdf")
+ggsave(filename = "data-images/chloride_amb_fec_all_scatterplot.png", plot = chloride_amb_fec_count_scatterplot, device = "png")
+
+
+# pH Amb Fec Count facet scatterplot by Fecundity Class
+chloride_amb_fec_all_facet_scatterplot_fecundity_class <- ggplot(data = Amb_Fec_Samples) + 
+  geom_point(aes(x = Cl...mmol.L., y = All_Fecundity), colour = "black") +
+  labs(title = "Chloride", x = "Chloride (mmol/L)", y = "Brood Count") +
+  scale_y_continuous(breaks = c(1000, 50000, 90000)) +
+  facet_wrap(Fecundity_Class ~ Ambient.Or.OAH) +
+  theme_classic() +
+  theme(panel.background = element_rect(fill = "white"),
+        plot.background = element_rect(fill = "white"),
+        legend.background = element_rect(fill = "white", color = "black"),
+        plot.title = element_text(size = 25, hjust = 0.5),
+        axis.text.x = element_text(size = 8),
+        axis.text.y = element_text(size = 13),
+        axis.title.x = element_text(size = 18),
+        axis.title.y = element_text(size = 18)) 
+  
+print(chloride_amb_fec_all_facet_scatterplot_fecundity_class)
+
+```
+
+
+Chloride Boxplot
+```{r}
+# Cl- boxplot
+
+# Amb_Fec Samples with Atresia Ids
+chloride_amb_fec_boxplot <- ggplot(data = Amb_Fec_Samples) + 
+  geom_boxplot(aes(x = Fecundity_Class, y = Cl...mmol.L.)) +
+  geom_point(aes(x = Fecundity_Class, y = Cl...mmol.L.), alpha = 0.5, colour = "black") +
+  labs(title = "Chloride", x = "Fecundity Class", y = "Chloride (mmol/L)") +
+   facet_wrap(~ Ambient.Or.OAH) +
+  theme_classic() +
+  theme(panel.background = element_rect(fill = "white"),
+        plot.background = element_rect(fill = "white"),
+        legend.background = element_rect(fill = "white", color = "black"),
+        title = element_text(size = 12),
+        plot.title = element_text(size = 30, hjust = 0.5),
+        axis.text.x = element_text(size = 9),
+        axis.text.y = element_text(size = 20),
+        axis.title.x = element_text(size = 20),
+        axis.title.y = element_text(size = 20))
+
+print(chloride_amb_fec_boxplot)
+
+ggsave(filename = "data-images/chloride_amb_fec_boxplot.pdf", plot = chloride_amb_fec_boxplot, device = "pdf")
+ggsave(filename = "data-images/chloride_amb_fec_boxplot.png", plot = chloride_amb_fec_boxplot, device = "png")
+
+```
+
+
+
+Chloride Parametric Assessment
+Data Distribution
+```{r}
+# Cl-
+# Parametric Assumptions
+
+# Data Distribution
+
+
+# Amb Fec Samples 
+# Frequency Histograms
+
+hist(Amb_Fec_Samples$Cl...mmol.L.)
+
+plotNormalHistogram(Amb_Fec_Samples$Cl...mmol.L.) 
+
+# Density plot
+
+Amb_Fec_Samples %>%
+  ggplot(aes(x = Cl...mmol.L.)) +
+  stat_function(fun = dnorm, args = c(mean = mean(Amb_Fec_Samples$Cl...mmol.L.), sd = sd(Amb_Fec_Samples$Cl...mmol.L.)), aes(col = "Normal Distribution"), show.legend = TRUE) +
+  geom_density(aes(col = "Sample Density"), show.legend = TRUE) +
+  labs(title = "Chloride Sample Distribution") +
+  scale_color_manual("Distribution", values = c("Normal Distribution" = "green", "Sample Density" = "black"))
+
+# Density by brood condition
+Amb_Fec_Samples %>%
+ggplot(aes(x = Cl...mmol.L.)) +
+  geom_density(aes(x = Cl...mmol.L., fill = Fecundity_Class), alpha = 0.5) 
+
+ggplot(Amb_Fec_Samples, aes(x = Cl...mmol.L.)) +
+  geom_density(aes(x = Cl...mmol.L.)) +
+  facet_wrap(Fecundity_Class ~ Ambient.Or.OAH) 
+
+plotNormalDensity(Amb_Fec_Samples$Cl...mmol.L.)
+
+```
+
+
+Test For Outliers
+```{r}
+# Test for Outliers
+
+
+```
+
+
+
+Model Design
+```{r}
+# Install flexplot
+# devtools::install_github("dustinfife/flexplot", ref="development")
+require(flexplot)
+
+# Amb Fec regression model
+
+chloride_amb_fec_lmer <- lmer(Cl...mmol.L. ~ All_Fecundity + (All_Fecundity | Fecundity_Class), data = Amb_Fec_Samples)
+visualize(chloride_amb_fec_lmer, plot = "model")
+
+```
+
+
+
+Chloride Normality: QQPlot and Shapiro-Wilk Test
+```{r}
+
+
+
+```
+
+
+Chloride Parametric Assessment
+Testing Scedasticity:
+```{r}
+# Cl-
+
+# Amb Fec samples
+
+# test with lmer
+bartlett.test(Cl...mmol.L. ~ Fecundity_Class, Amb_Fec_Samples)
+
+# leveneTest() 
+
+```
+
+Chloride Parametric Assumptions Assessment: 
+
+Warning: Check after assessing outliers
+
+- Amb Fec Data normally distributed? 
+
+- Amb Fec Data equal variance across factors?
+
+
+# Cl- Stat Tests
+
+
+
+# K : Potassium
+
+Potassium Summary Stats
+```{r}
+# K+
+# Summary stats
+
+# Amb Fec data
+Amb_Fec_Samples %>%
+  group_by(Ambient.Or.OAH, Pregnant.Or.Atresia) %>%
+  summarize(count = n(),
+            median = round(median(K...mmol.L.), 3),
+            mean = round(mean(K...mmol.L.), 3),
+            sd = round(sd(K...mmol.L.), 3),
+            cv = round(sd(K...mmol.L.)/mean(K...mmol.L.), 3)) %>%
+  ungroup()
+
+
+# Amb Fec Class data
+Amb_Fec_Samples %>%
+  group_by(Ambient.Or.OAH, Fecundity_Class) %>%
+  summarize(count = n(),
+            median = round(median(K...mmol.L.), 3),
+            mean = round(mean(K...mmol.L.), 3),
+            sd = round(sd(K...mmol.L.), 3),
+            cv = round(sd(K...mmol.L.)/mean(K...mmol.L.), 3)) %>%
+  ungroup()
+
+```
+
+
+Potassium Amb Fec Count Scatterplot 
+```{r}
+# K+ Scatterplot
+
+# Amb_fec Samples: 
+# Note When using Fecundity_Or_Brood_Count col, the "No Parturition" aka atresia ids are automatically removed in plots, and results display numerical count, but this may cause issues if column is called in stat tests
+# Refer to 'All_Fecundity' col (all numeric, includes atresia ids as 0)
+# Refer to 'Fecundity_No_Atresia' col (all numeric, excludes atresia ids)
+# Refer to 'Fecundity_Class' col for categorical classification of fecund data (Not 'Consensus_Fecundity' col, which is same, but raw data input)
+
+# Amb Fec Count Samples : With atresia Ids
+potassium_amb_fec_all_scatterplot <- ggplot(data = Amb_Fec_Samples) + 
+  geom_point(aes(x = K...mmol.L., y = All_Fecundity), colour = "black") +
+  labs(title = "Potassium", x = "Potassium (mmol/L)", y = "Fecundity") +
+  scale_y_continuous(breaks = c(0, 50000, 90000)) + 
+  facet_wrap(~ Ambient.Or.OAH) +
+  theme_classic() +
+  theme(panel.background = element_rect(fill = "white"),
+        plot.background = element_rect(fill = "white"),
+        legend.background = element_rect(fill = "white", color = "black"),
+        plot.title = element_text(size = 25, hjust = 0.5),
+        axis.text.x = element_text(size = 10),
+        axis.text.y = element_text(size = 10),
+        axis.title.x = element_text(size = 20),
+        axis.title.y = element_text(size = 20))
+
+print(potassium_amb_fec_all_scatterplot)
+
+ggsave(filename = "data-images/potassium_amb_fec_all_scatterplot.pdf", plot = potassium_amb_fec_count_scatterplot, device = "pdf")
+ggsave(filename = "data-images/potassium_amb_fec_all_scatterplot.png", plot = potasssium_amb_fec_count_scatterplot, device = "png")
+
+
+# pH Amb Fec Count facet scatterplot by Fecundity Class
+potassium_amb_fec_all_facet_scatterplot_fecundity_class <- ggplot(data = Amb_Fec_Samples) + 
+  geom_point(aes(x = K...mmol.L., y = All_Fecundity), colour = "black") +
+  labs(title = "Potassium", x = "Potassium (mmol/L)", y = "Brood Count") +
+  scale_y_continuous(breaks = c(1000, 50000, 90000)) +
+  facet_wrap(Fecundity_Class ~ Ambient.Or.OAH) +
+  theme_classic() +
+  theme(panel.background = element_rect(fill = "white"),
+        plot.background = element_rect(fill = "white"),
+        legend.background = element_rect(fill = "white", color = "black"),
+        plot.title = element_text(size = 25, hjust = 0.5),
+        axis.text.x = element_text(size = 8),
+        axis.text.y = element_text(size = 13),
+        axis.title.x = element_text(size = 18),
+        axis.title.y = element_text(size = 18)) 
+  
+print(potassium_amb_fec_all_facet_scatterplot_fecundity_class)
+
+```
+
+
+Potassium Boxplot
+```{r}
+# K+ boxplot
+
+# Amb_Fec Samples with Atresia Ids
+potassium_amb_fec_boxplot <- ggplot(data = Amb_Fec_Samples) + 
+  geom_boxplot(aes(x = Fecundity_Class, y = K...mmol.L.)) +
+  geom_point(aes(x = Fecundity_Class, y = K...mmol.L.), alpha = 0.5, colour = "black") +
+  labs(title = "Potassium", x = "Fecundity Class", y = "Potassium (mmol/L)") +
+   facet_wrap(~ Ambient.Or.OAH) +
+  theme_classic() +
+  theme(panel.background = element_rect(fill = "white"),
+        plot.background = element_rect(fill = "white"),
+        legend.background = element_rect(fill = "white", color = "black"),
+        title = element_text(size = 12),
+        plot.title = element_text(size = 30, hjust = 0.5),
+        axis.text.x = element_text(size = 9),
+        axis.text.y = element_text(size = 20),
+        axis.title.x = element_text(size = 20),
+        axis.title.y = element_text(size = 20))
+
+print(potassium_amb_fec_boxplot)
+
+ggsave(filename = "data-images/potassium_amb_fec_boxplot.pdf", plot = potassium_amb_fec_boxplot, device = "pdf")
+ggsave(filename = "data-images/potassium_amb_fec_boxplot.png", plot = potassium_amb_fec_boxplot, device = "png")
+
+```
+
+
+Potassium Parametric Assessment
+Data Distribution
+```{r}
+# K+
+# Parametric Assumptions
+
+# Data Distribution
+
+
+# Amb Fec Samples 
+# Frequency Histograms
+
+hist(Amb_Fec_Samples$K...mmol.L.)
+
+plotNormalHistogram(Amb_Fec_Samples$K...mmol.L.) 
+
+# Density plot
+
+Amb_Fec_Samples %>%
+  ggplot(aes(x = K...mmol.L.)) +
+  stat_function(fun = dnorm, args = c(mean = mean(Amb_Fec_Samples$K...mmol.L.), sd = sd(Amb_Fec_Samples$K...mmol.L.)), aes(col = "Normal Distribution"), show.legend = TRUE) +
+  geom_density(aes(col = "Sample Density"), show.legend = TRUE) +
+  labs(title = "Potassium Sample Distribution") +
+  scale_color_manual("Distribution", values = c("Normal Distribution" = "green", "Sample Density" = "black"))
+
+# Density by brood condition
+Amb_Fec_Samples %>%
+ggplot(aes(x = K...mmol.L.)) +
+  geom_density(aes(x = K...mmol.L., fill = Fecundity_Class), alpha = 0.5) 
+
+ggplot(Amb_Fec_Samples, aes(x = Cl...mmol.L.)) +
+  geom_density(aes(x = K...mmol.L.)) +
+  facet_wrap(Fecundity_Class ~ Ambient.Or.OAH) 
+
+plotNormalDensity(Amb_Fec_Samples$K...mmol.L.)
+
+```
+
+
+Test For Outliers
+```{r}
+# Test for Outliers
+
+
+```
+
+
+
+Model Design
+```{r}
+# Install flexplot
+# devtools::install_github("dustinfife/flexplot", ref="development")
+require(flexplot)
+
+# Amb Fec regression model
+
+potassium_amb_fec_lmer <- lmer(K...mmol.L. ~ All_Fecundity + (All_Fecundity | Fecundity_Class), data = Amb_Fec_Samples)
+visualize(potassium_amb_fec_lmer, plot = "model")
+
+```
+
+
+Potassium Normality: QQPlot and Shapiro-Wilk Test
+```{r}
+
+
+
+```
+
+
+Potassium Parametric Assessment
+Testing Scedasticity:
+```{r}
+# K+
+
+# Amb Fec samples
+
+# test with lmer
+bartlett.test(K...mmol.L. ~ Fecundity_Class, Amb_Fec_Samples)
+
+# leveneTest() 
+
+```
+
+Potassium Parametric Assumptions Assessment: 
+
+Warning: Check after assessing outliers
+
+- Amb Fec Data normally distributed? 
+
+- Amb Fec Data equal variance across factors?
+
+
+
+# K+ Stat Tests
+
+
+
+# Ca+2 : Calcium
+
+Calcium Summary Stats
+```{r}
+# Ca+2
+# Summary stats
+
+# Amb Fec data
+Amb_Fec_Samples %>%
+  group_by(Ambient.Or.OAH, Pregnant.Or.Atresia) %>%
+  summarize(count = n(),
+            median = round(median(Ca....mmol.L.), 3),
+            mean = round(mean(Ca....mmol.L.), 3),
+            sd = round(sd(Ca....mmol.L.), 3),
+            cv = round(sd(Ca....mmol.L.)/mean(Ca....mmol.L.), 3)) %>%
+  ungroup()
+
+
+# Amb Fec Class data
+Amb_Fec_Samples %>%
+  group_by(Ambient.Or.OAH, Fecundity_Class) %>%
+  summarize(count = n(),
+            median = round(median(Ca....mmol.L.), 3),
+            mean = round(mean(Ca....mmol.L.), 3),
+            sd = round(sd(Ca....mmol.L.), 3),
+            cv = round(sd(Ca....mmol.L.)/mean(Ca....mmol.L.), 3)) %>%
+  ungroup()
+
+```
+
+
+Potassium Amb Fec Count Scatterplot 
+```{r}
+# Ca+2 Scatterplot
+
+# Amb_fec Samples: 
+# Note When using Fecundity_Or_Brood_Count col, the "No Parturition" aka atresia ids are automatically removed in plots, and results display numerical count, but this may cause issues if column is called in stat tests
+# Refer to 'All_Fecundity' col (all numeric, includes atresia ids as 0)
+# Refer to 'Fecundity_No_Atresia' col (all numeric, excludes atresia ids)
+# Refer to 'Fecundity_Class' col for categorical classification of fecund data (Not 'Consensus_Fecundity' col, which is same, but raw data input)
+
+# Amb Fec Count Samples : With atresia Ids
+potassium_amb_fec_all_scatterplot <- ggplot(data = Amb_Fec_Samples) + 
+  geom_point(aes(x = Ca....mmol.L., y = All_Fecundity), colour = "black") +
+  labs(title = "Potassium", x = "Potassium (mmol/L)", y = "Fecundity") +
+  scale_y_continuous(breaks = c(0, 50000, 90000)) + 
+  facet_wrap(~ Ambient.Or.OAH) +
+  theme_classic() +
+  theme(panel.background = element_rect(fill = "white"),
+        plot.background = element_rect(fill = "white"),
+        legend.background = element_rect(fill = "white", color = "black"),
+        plot.title = element_text(size = 25, hjust = 0.5),
+        axis.text.x = element_text(size = 10),
+        axis.text.y = element_text(size = 10),
+        axis.title.x = element_text(size = 20),
+        axis.title.y = element_text(size = 20))
+
+print(potassium_amb_fec_all_scatterplot)
+
+ggsave(filename = "data-images/potassium_amb_fec_all_scatterplot.pdf", plot = potassium_amb_fec_count_scatterplot, device = "pdf")
+ggsave(filename = "data-images/potassium_amb_fec_all_scatterplot.png", plot = potassium_amb_fec_count_scatterplot, device = "png")
+
+
+# pH Amb Fec Count facet scatterplot by Fecundity Class
+potassium_amb_fec_all_facet_scatterplot_fecundity_class <- ggplot(data = Amb_Fec_Samples) + 
+  geom_point(aes(x = Ca....mmol.L., y = All_Fecundity), colour = "black") +
+  labs(title = "Potassium", x = "Potassium (mmol/L)", y = "Brood Count") +
+  scale_y_continuous(breaks = c(1000, 50000, 90000)) +
+  facet_wrap(Fecundity_Class ~ Ambient.Or.OAH) +
+  theme_classic() +
+  theme(panel.background = element_rect(fill = "white"),
+        plot.background = element_rect(fill = "white"),
+        legend.background = element_rect(fill = "white", color = "black"),
+        plot.title = element_text(size = 25, hjust = 0.5),
+        axis.text.x = element_text(size = 8),
+        axis.text.y = element_text(size = 13),
+        axis.title.x = element_text(size = 18),
+        axis.title.y = element_text(size = 18)) 
+  
+print(potassium_amb_fec_all_facet_scatterplot_fecundity_class)
+
+```
+
+
+Potassium Boxplot
+```{r}
+# Ca+2 boxplot
+
+# Amb_Fec Samples with Atresia Ids
+potassium_amb_fec_boxplot <- ggplot(data = Amb_Fec_Samples) + 
+  geom_boxplot(aes(x = Fecundity_Class, y = Ca....mmol.L.)) +
+  geom_point(aes(x = Fecundity_Class, y = Ca....mmol.L.), alpha = 0.5, colour = "black") +
+  labs(title = "Potassium", x = "Fecundity Class", y = "Potassium (mmol/L)") +
+   facet_wrap(~ Ambient.Or.OAH) +
+  theme_classic() +
+  theme(panel.background = element_rect(fill = "white"),
+        plot.background = element_rect(fill = "white"),
+        legend.background = element_rect(fill = "white", color = "black"),
+        title = element_text(size = 12),
+        plot.title = element_text(size = 30, hjust = 0.5),
+        axis.text.x = element_text(size = 9),
+        axis.text.y = element_text(size = 20),
+        axis.title.x = element_text(size = 20),
+        axis.title.y = element_text(size = 20))
+
+print(potassium_amb_fec_boxplot)
+
+ggsave(filename = "data-images/potassium_amb_fec_boxplot.pdf", plot = potassium_amb_fec_boxplot, device = "pdf")
+ggsave(filename = "data-images/potassium_amb_fec_boxplot.png", plot = potassium_amb_fec_boxplot, device = "png")
+
+```
+
+Potassium Parametric Assessment
+Data Distribution
+```{r}
+# Ca+2
+# Parametric Assumptions
+
+# Data Distribution
+
+
+# Amb Fec Samples 
+# Frequency Histograms
+
+hist(Amb_Fec_Samples$Ca....mmol.L.)
+
+plotNormalHistogram(Amb_Fec_Samples$Ca....mmol.L.) 
+
+# Density plot
+
+Amb_Fec_Samples %>%
+  ggplot(aes(x = Ca....mmol.L.)) +
+  stat_function(fun = dnorm, args = c(mean = mean(Amb_Fec_Samples$Ca....mmol.L.), sd = sd(Amb_Fec_Samples$Ca....mmol.L.)), aes(col = "Normal Distribution"), show.legend = TRUE) +
+  geom_density(aes(col = "Sample Density"), show.legend = TRUE) +
+  labs(title = "Potassium Sample Distribution") +
+  scale_color_manual("Distribution", values = c("Normal Distribution" = "green", "Sample Density" = "black"))
+
+# Density by brood condition
+Amb_Fec_Samples %>%
+ggplot(aes(x = Ca....mmol.L.)) +
+  geom_density(aes(x = Ca....mmol.L., fill = Fecundity_Class), alpha = 0.5) 
+
+ggplot(Amb_Fec_Samples, aes(x = Ca....mmol.L.)) +
+  geom_density(aes(x = Ca....mmol.L.)) +
+  facet_wrap(Fecundity_Class ~ Ambient.Or.OAH) 
+
+plotNormalDensity(Amb_Fec_Samples$Ca....mmol.L.)
+
+```
+
+
+Test For Outliers
+```{r}
+# Test for Outliers
+
+
+```
+
+
+
+Model Design
+```{r}
+# Install flexplot
+# devtools::install_github("dustinfife/flexplot", ref="development")
+require(flexplot)
+
+# Amb Fec regression model
+
+potassium_amb_fec_lmer <- lmer(Ca....mmol.L. ~ All_Fecundity + (All_Fecundity | Fecundity_Class), data = Amb_Fec_Samples)
+visualize(potassium_amb_fec_lmer, plot = "model")
+
+```
+
+
+Calcium Normality: QQPlot and Shapiro-Wilk Test
+```{r}
+
+
+
+```
+
+
+
+Calcium Parametric Assessment
+Testing Scedasticity:
+```{r}
+# Ca+2
+
+# Amb Fec samples
+
+# test with lmer
+bartlett.test(Ca....mmol.L. ~ Fecundity_Class, Amb_Fec_Samples)
+
+# leveneTest() 
+
+```
+
+Calcium Parametric Assumptions Assessment: 
+
+Warning: Check after assessing outliers
+
+- Amb Fec Data normally distributed? 
+
+- Amb Fec Data equal variance across factors?
+
+
+
+# Ca+2 Stat Tests
+
+
+
+
 

@@ -1,0 +1,15 @@
+"0","# K+"
+"0",""
+"0","# Amb Fec samples"
+"0",""
+"0","# test with lmer"
+"0","bartlett.test(K...mmol.L. ~ Fecundity_Class, Amb_Fec_Samples)"
+"1","
+	Bartlett test of homogeneity of variances
+
+data:  K...mmol.L. by Fecundity_Class
+Bartlett's K-squared = 4.6368, df = 2, p-value = 0.09843
+
+"
+"0","# leveneTest() "
+"0",""

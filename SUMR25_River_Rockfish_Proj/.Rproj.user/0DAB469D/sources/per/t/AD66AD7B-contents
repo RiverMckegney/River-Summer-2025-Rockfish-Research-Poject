@@ -1,0 +1,1385 @@
+---
+title: "SU_25_River_Rockfish_Proj_Graphs"
+author: "River Mckegney"
+date: "`r Sys.Date()`"
+output: html_document
+---
+
+## Setup, and Packages
+
+```{r setup, include=FALSE}
+# Setup
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+
+Code Packages:
+```{r packages}
+# Load packages
+library(gridExtra) # For using grid.table to save tables as images
+library(flextable) # Alternative method to save df as image
+library(tidyverse)
+library(zoo)
+library(lme4)
+library(lmerTest)
+library(rlang)
+library(nortest) # For ad.test
+library(car) # For homogeneity of variance with leveneTest
+library(rcompanion) # For scheirerRayHare test
+library(pastecs) # For stat.desc
+library(ggpubr) # For assumption plots
+library(conover.test) # For the conover.Iman() test function
+library(DescTools) # Contain alternative ConoverTest function
+library(rstatix) # tidyverse adapted stat tests and mshapiro_test() functions
+library(DHARMa) # For multi-level lm models and shapiro test
+library(patchwork) # For combining ggplots
+```
+
+
+## Data Entry: Read-in data
+
+```{r}
+# Read and call data into df
+
+# Primary samples df
+ABL90 <- read.csv("Raw_Data/ABL90_Raw.csv")
+
+# River's Parturition metadata
+partuition_subcat <- read.csv("Raw_Data/River's_Rockfish_Metadata_Parturition_V7.csv")
+
+```
+
+
+## Data Filtering
+
+```{r}
+# Data sifting: ABL90 dataset
+
+# Step 1: Remove missing info
+ABL_set1 <- ABL90 %>%
+  filter(Patient.ID_edited != "") 
+  
+
+# Step 2: Separate Patient.ID into columns of sample types: blood plasma and instant freeze plasma 
+ABL_set2 <- separate(ABL_set1, 'Patient.ID_edited', into = c("Patient.ID_edited", "Sample_Type"), sep = ",")  
+
+
+# Step 3:
+# Convert Patient.ID_edited column data to character type
+ABL_set2$Patient.ID_edited <- as.character(ABL_set2$Patient.ID_edited) 
+
+
+```
+
+
+```{r}
+# Step 4 & 5: Sussing out specific sample errors  
+
+# Remove insufficient samples
+ABL_set3 <- ABL_set2 %>%
+  filter(!is.na("Type")) %>%
+  filter(!str_detect(Errors.detected.during.measurement, "Insufficient sample"))
+
+# Remove inhomogeneous samples
+ABL_set3 <- ABL_set3 %>%
+  filter(!is.na("Type")) %>%
+  filter(!str_detect(Errors.detected.during.measurement, "Inhomogeneous sample"))
+
+# Step 6: Filter for only blood samples
+ABL_b_samp <- ABL_set3 %>%
+  filter(Sample_Type == "b")
+
+```
+
+
+## Merge Datasets:
+
+Join ABL90 df with parturition_subcat df: Making ABL_merged
+```{r}
+# Rename columns to match: Change 'ID' in parturition_subcat to 'Patient.ID_edited' so it is ready to join with ABL90 df
+
+# Please note the 'Treatment' col in parturition_subcat does not match with the finalized 'Ambient.Or.OAH' col in metadata_atresia_guide or ABL90_merged df
+
+# Rename 'ID' col to 'patient.ID_edited'
+partuition_subcat <- partuition_subcat %>%
+  rename(Patient.ID_edited = ID)
+
+```
+
+```{r}
+# Connect main ABL90 dataset with my (River's) sub categorized parturition metadata 
+# ABL_merged <- partuition_subcat %>%
+# left_join(ABL_b_samp, by = "Patient.ID_edited")
+
+ABL_merged <- ABL_b_samp %>%
+inner_join(partuition_subcat, by = "Patient.ID_edited")
+```
+
+Rename Columns Neatly:
+```{r}
+# Rename Treatment & Parturition Outcome
+ABL_merged <- ABL_merged %>%
+  rename(Ambient.Or.OAH = Consensus_General_Treatment,
+         Pregnant.Or.Atresia = Consensus_Atresia_Or_Pregnant)
+         
+```
+
+
+## Remove Samples: Mortalities, NA's, or Missing Info, and Replicates
+
+Remove Replicate ID's
+```{r}
+# Cross Check all Columns: Cross validation to suss correct replicate row
+check_params <- ABL_merged %>%
+  select(Patient.ID_edited, Time, Sample.., Measuring.Mode, Ambient.Or.OAH, Pregnant.Or.Atresia, pH, Glu..mmol.L., Hct...., Na...mmol.L., Cl...mmol.L., K...mmol.L., Ca....mmol.L., pCO2..mmHg.) %>%
+  filter(Patient.ID_edited == "9782D")
+print(check_params)
+
+check_params <- ABL_merged %>%
+  select(Patient.ID_edited, Time, Sample.., Measuring.Mode, Ambient.Or.OAH, Pregnant.Or.Atresia, pH, Glu..mmol.L., Hct...., Na...mmol.L., Cl...mmol.L., K...mmol.L., Ca....mmol.L., pCO2..mmHg.) %>%
+  filter(Patient.ID_edited == "9783D")
+print(check_params)
+
+# Removed replicates: 9782D (2x) and 9783D (2x)
+ABL_merged <- ABL_merged %>%
+  filter(Sample.. != "863",
+         Sample.. != "934")
+
+```
+
+
+Review Replicates: 
+
+| Row | ID | Time | Sample.. | Measuring.Mode | pH | Glu.mmol.L. | Hct.... | Na...mmol.L. | Cl...mmol.L. | K...mmol.L. | Ca.mmol.L. |
+|:------:| :-----: | :-----: | :-----:| :------:|:------:|:------:|:------:|:------:|:------:|:------:|:------:|
+| 32 | 9782D | 12/28/2023 10:04 | 1016 | C 65uL | 7.348 | 0.5 | 9.8 | 184 | 149 | 2.8 | 1.32 |
+| 39 | 9782D | 1/9/2024 17:21 | 863 | S 65uL | 7.446 | 0.7 | 13.3 | 181 | 161 | 2.9 | 1.31 |  
+| 36 | 9783D | 1/19/2024 10:37 | 934 | S 65uL | 7.484 | 1.7 | **0.2** | 175 | 193 | **34.5** | 1.29 |
+| 41 | 9783D | 1/7/2024 12:32 | 860 | S 65uL | 7.450 | 1.3 | **14.7** | 179 | 164 | **2.5** | 1.30 |
+
+Methods for replicate sample removal:
+Check processing date of IDs, and remove samples that do not match that date.
+
+Case ID_9782D:
+
+- Origianl ABL90 set contains:
+- 9782D,b (Sample.. 1016, Time = 12/28/2023  10:04:00 AM) 
+- 9782D,p (Sample.. 1020, Time = 12/28/2023  10:25:00 AM)
+- 9782D,p (Sample.. 865, Time = 1/9/2024  5:29:00 PM)
+- 9782D,b (Sample.. 863, Time = 1/9/2024  5:21:00 PM)
+
+- 2024_Fish_Metadata.csv says ID_9782D was processed 3/29/2024
+
+
+- Note Processing date in metadata will not match time date stamp in ABL90 data due to the machine being reset, and innacurrate dates being automatically recorded.
+
+Deciding info:
+- For ID-9782D, refer to metadata sheet and look for other samples with that same processing date, then view thoes samples ABL90 'Time'. Try to find a matching 'Time' with other IDs and 9782D that were processed together during the same time recorded by the machine. 
+
+- ID_97838,b (single obs, Sample.. 1024) Time = 12/28/2023  11:49:00 AM
+
+- Since 9782D,b Sample.. 1016 and 97838,b Sample.. 1024 both have a date timestamp occurrence on 12/28/2023, I have decided to keep 9782D,b Sample.. 1016 and drop 9783D,b Sample.. 863
+
+
+Case ID_9783D
+
+- Original ABL90 dataset contains:
+- 9783D,b (Sample.. 934, Time = 1/19/2024  10:37:00 AM)
+- 9783D,c (Sample.. 861, Time = 1/7/2024  12:38:00 PM)
+- 9783D,b (Sample.. 860, Time = 1/7/2024  12:32:00 PM)
+
+- 2024_Fish_Metadata.csv says ID_9783D was processed 3/20/2024
+
+- Informed that ID_9783D: Sample.. 934 is a plasma sample (on account of its low hct value), remove this and **keep Sample.. 860 (parameter values appear correct)**.
+
+
+# Samples: Data subsets
+
+Remove Mortalities and No info IDs and assign analysis ready data-frames:
+```{r}
+
+# New df with Moralities removed: Note none of these samples made it into ABL90 df anyway, so looks like they are already filtered out.
+ Live_Samples <- ABL_merged %>%
+  filter(Patient.ID_edited != "9780C", # Mortality
+         Patient.ID_edited != "777AE", # Mortality
+         Patient.ID_edited != "777CA") # Mortality after parturition
+
+
+# New df with mortality and 'No info' Id's removed
+ Primary_Samples <- Live_Samples %>%
+   filter(Patient.ID_edited != "777A0", # No info
+           Patient.ID_edited != "9782F", # No info
+           Patient.ID_edited != "777B3", # No info
+           Patient.ID_edited != "777AA", # No info
+           Patient.ID_edited != "777DE", # No info
+           Patient.ID_edited != "777CE", # No info
+           Patient.ID_edited != "777A6") # No info
+ 
+ 
+# New df of Only Ambient Treatment: For testing parturition success
+ Ambient_Samples <- Primary_Samples %>%
+   filter(Ambient.Or.OAH == "Ambient")
+ 
+# New df of Fecundity Samples: For Background Correlative Evidence To Compare with Brood Condition Categorization
+ Fecundity_Samples <- Primary_Samples %>%
+   filter(Fecundity_Or_Brood_Count != "NA",
+     Fecundity_Class != "NA") # removes 97706
+
+# Fecundity samples used for deciphering correlations with continuous brood count data
+ Fecundity_Count_Samples <- Primary_Samples %>%
+   filter(All_Fecundity != "NA") # removes 97706
+
+# Fecundity Ambient Samples
+ Amb_Fec_Samples <- Primary_Samples %>%
+   filter(Ambient.Or.OAH == "Ambient",
+          All_Fecundity != "NA") # removes OAH treatment samples and ID 97706
+```
+
+
+Change Data Types:
+```{r}
+# Change Continuous Data to type to numeric, double, or factor
+
+# Change data type of ions to factor or numeric
+#glimpse(General_Samples)
+#glimpse(Ambient_Samples)
+ 
+Primary_Samples <- Primary_Samples %>%
+  mutate(across(c(All_Fecundity, pH, Hct...., Glu..mmol.L., Na...mmol.L., Cl...mmol.L., K...mmol.L., Ca....mmol.L.), as.numeric))
+
+Ambient_Samples <- Ambient_Samples %>%
+  mutate(across(c(All_Fecundity, pH, Hct...., Glu..mmol.L., Na...mmol.L., Cl...mmol.L., K...mmol.L., Ca....mmol.L.), as.numeric))
+
+Fecundity_Samples <- Fecundity_Samples %>%
+  mutate(across(c(All_Fecundity, pH, Hct...., Glu..mmol.L., Na...mmol.L., Cl...mmol.L., K...mmol.L., Ca....mmol.L.), as.numeric))
+
+Fecundity_Count_Samples <- Fecundity_Samples %>%
+  mutate(across(c(All_Fecundity, pH, Hct...., Glu..mmol.L., Na...mmol.L., Cl...mmol.L., K...mmol.L., Ca....mmol.L.), as.numeric))
+
+Amb_Fec_Samples <- Amb_Fec_Samples %>%
+  mutate(across(c(All_Fecundity, pH, Hct...., Glu..mmol.L., Na...mmol.L., Cl...mmol.L., K...mmol.L., Ca....mmol.L.), as.numeric))
+  
+
+# glimpse(Primary_Samples)
+# glimpse(Ambient_Samples)
+# glimpse(Fecundity_Samples)
+# glimpse(Fecundity_Count_Samples)
+# glimpse(Amb_Fec_Samples)
+```
+
+
+
+## Order Factor Levels
+```{r}
+# Fecundity data 
+
+#unique(Fecundity_Samples$Fecundity_Class)
+
+# Arrange the order of parturition categories for visualizations & tests
+
+# Primary Samples
+Primary_Samples$Ambient.Or.OAH <- ordered(Primary_Samples$Ambient.Or.OAH, levels = c("Ambient", "OAH"))
+
+Primary_Samples$Pregnant.Or.Atresia <- ordered(Primary_Samples$Pregnant.Or.Atresia, levels = c("Post Parturition", "Atresia"))
+
+# Ambient Samples
+Ambient_Samples$Consensus_Brood_Condition <- ordered(Ambient_Samples$Consensus_Brood_Condition, levels = c("Excellent", "Normal", "Low", "Atresia"))
+
+# Fecundity Samples
+Fecundity_Samples$Fecundity_Class <- ordered(Fecundity_Samples$Fecundity_Class, levels = c("High (>50,000)", "Low (~1,000s)", "Atresia"))
+
+Fecundity_Count_Samples$Fecundity_Class <- 
+  ordered(Fecundity_Samples$Fecundity_Class, levels = c("High (>50,000)", "Low (~1,000s)", "Atresia"))
+
+# Fecundity Ambient Samples
+Amb_Fec_Samples$Fecundity_Class <- ordered(Amb_Fec_Samples$Fecundity_Class, levels = c("High (>50,000)", "Low (~1,000s)", "Atresia"))
+
+```
+
+
+
+
+# pH 
+
+Primary Samples
+```{r}
+# pH boxplot
+
+# Primary samples
+pH_primary_boxplot <- ggplot(data = Primary_Samples, aes(x = Pregnant.Or.Atresia, y = pH, fill = Ambient.Or.OAH)) +
+  geom_boxplot(aes(x = Pregnant.Or.Atresia, y = pH, fill = Ambient.Or.OAH)) +
+  geom_point(aes(color = Ambient.Or.OAH), position = position_dodge(width = 0.75), alpha = 0.3, color = "black") +
+  labs(title = "Primary pH", x = "Parturition Type", y = "pH") +
+  guides(fill = guide_legend((title = "Treatment Type"))) + 
+  scale_fill_manual(values = c("Ambient" = "#189bff", "OAH" = "#598c78")) +
+  theme_classic() +
+  theme(panel.background = element_rect(fill = "white"),
+        plot.background = element_rect(fill = "white"),
+        legend.background = element_rect(fill = "white", color = "black"),
+        title = element_text(size = 12),
+        plot.title = element_text(size = 30, hjust = 0.5),
+        axis.text.x = element_text(size = 10),
+        axis.text.y = element_text(size = 20),
+        axis.title.x = element_text(size = 20),
+        axis.title.y = element_text(size = 20))
+
+print(pH_primary_boxplot)
+
+ggsave(filename = "data-images/pH_primary_boxplot.pdf", plot = pH_primary_boxplot, device = "pdf")
+ggsave(filename = "data-images/pH_primary_boxplot.png", plot = pH_primary_boxplot, device = "png")
+
+```
+
+
+Ambient Samples 
+```{r}
+# pH boxplot
+
+# Ambient Samples
+pH_ambient_boxplot <- ggplot(data = Ambient_Samples) + 
+  geom_boxplot(aes(x = Consensus_Brood_Condition, y = pH)) +
+  geom_point(aes(x = Consensus_Brood_Condition, y = pH), alpha = 0.5, colour = "black") +
+  labs(title = "pH Ambient", x = "Parturition Success", y = "pH") +
+  facet_wrap(~ Ambient.Or.OAH) +
+  theme_classic() +
+  theme(panel.background = element_rect(fill = "white"),
+        plot.background = element_rect(fill = "white"),
+        legend.background = element_rect(fill = "white", color = "black"),
+        title = element_text(size = 12),
+        plot.title = element_text(size = 30, hjust = 0.5),
+        axis.text.x = element_text(size = 18),
+        axis.text.y = element_text(size = 20),
+        axis.title.x = element_text(size = 20),
+        axis.title.y = element_text(size = 20))
+
+print(pH_ambient_boxplot)
+
+ggsave(filename = "data-images/pH_ambient_boxplot.pdf", plot = pH_ambient_boxplot, device = "pdf")
+ggsave(filename = "data-images/pH_ambient_boxplot.png", plot = pH_ambient_boxplot, device = "png")
+
+```
+
+
+Fecundity Samples
+```{r}
+# pH Scatterplot
+
+# Fecundity Samples
+pH_fecundity_count_scatterplot <- ggplot(data = Fecundity_Count_Samples) + 
+  geom_point(aes(x = pH, y = All_Fecundity), colour = "black") +
+  labs(title = "pH Fecundity Count Samples", x = "pH", y = "Brood Count") +
+  scale_y_continuous(breaks = c(0, 50000, 90000)) + 
+  theme_classic() +
+  theme(panel.background = element_rect(fill = "white"),
+        plot.background = element_rect(fill = "white"),
+        legend.background = element_rect(fill = "white", color = "black"),
+        plot.title = element_text(size = 15, hjust = 0.5),
+        axis.text.x = element_text(size = 20),
+        axis.text.y = element_text(size = 20),
+        axis.title.x = element_text(size = 12),
+        axis.title.y = element_text(size = 20))
+
+print(pH_fecundity_count_scatterplot)
+
+ggsave(filename = "data-images/pH_fecundity_count_scatterplot.pdf", plot = pH_fecundity_count_scatterplot, device = "pdf")
+ggsave(filename = "data-images/pH_fecundity_count_scatterplot.png", plot = pH_fecundity_count_scatterplot, device = "png")
+
+# pH Fecundity Count facet scatterplot by Treatment
+pH_fecundity_count_facet_scatterplot_treatment <- ggplot(data = Fecundity_Count_Samples) + 
+  geom_point(aes(x = pH, y = All_Fecundity), colour = "black") +
+  labs(title = "pH Fecundity Count Samples", x = "pH", y = "Fecundity", ) +
+  scale_y_continuous(breaks = c(0, 50000, 90000)) +
+  facet_wrap(~ Ambient.Or.OAH) +
+  theme_classic() +
+  theme(panel.background = element_rect(fill = "white"),
+        plot.background = element_rect(fill = "white"),
+        legend.background = element_rect(fill = "white", color = "black"),
+        plot.title = element_text(size = 15, hjust = 0.5),
+        axis.text.x = element_text(size = 10),
+        axis.text.y = element_text(size = 20),
+        axis.title.x = element_text(size = 10),
+        axis.title.y = element_text(size = 20))
+
+print(pH_fecundity_count_facet_scatterplot_treatment)
+
+# pH Fecundity Count facet scatterplot by Fecundity Class
+pH_fecundity_count_facet_scatterplot_fecundity_class <- ggplot(data = Fecundity_Count_Samples) + 
+  geom_point(aes(x = pH, y = All_Fecundity), colour = "black") +
+  labs(title = "pH Fecundity Count Samples", x = "pH", y = "Brood Count") +
+  scale_y_continuous(breaks = c(1000, 50000, 90000)) +
+  facet_wrap(~Fecundity_Class) +
+  theme_classic() +
+  theme(panel.background = element_rect(fill = "white"),
+        plot.background = element_rect(fill = "white"),
+        legend.background = element_rect(fill = "white", color = "black"),
+        plot.title = element_text(size = 15, hjust = 0.5),
+        axis.text.x = element_text(size = 7),
+        axis.text.y = element_text(size = 15),
+        axis.title.x = element_text(size = 15),
+        axis.title.y = element_text(size = 15)) 
+  
+
+print(pH_fecundity_count_facet_scatterplot_fecundity_class)
+
+pH_fecundity_count_facet_scatterplot_fecundity_class2 <- ggplot(data = Fecundity_Count_Samples) + 
+  geom_point(aes(x = pH, y = All_Fecundity), colour = "black") +
+  labs(title = "pH Fecundity Count Samples", x = "pH", y = "Brood Count") +
+  scale_y_continuous(breaks = c(1000, 50000, 90000)) +
+  facet_wrap(Fecundity_Class ~ Ambient.Or.OAH) +
+  theme_classic() +
+  theme(panel.background = element_rect(fill = "white"),
+        plot.background = element_rect(fill = "white"),
+        legend.background = element_rect(fill = "white", color = "black"),
+        plot.title = element_text(size = 15, hjust = 0.5),
+        axis.text.x = element_text(size = 7),
+        axis.text.y = element_text(size = 15),
+        axis.title.x = element_text(size = 15),
+        axis.title.y = element_text(size = 15)) 
+  
+
+print(pH_fecundity_count_facet_scatterplot_fecundity_class2)
+```
+
+```{r}
+# pH boxplot
+
+# Fecundity Samples
+pH_fecundity_boxplot <- ggplot(data = Fecundity_Samples) + 
+  geom_boxplot(aes(x = Fecundity_Class, y = pH)) +
+  geom_point(aes(x = Fecundity_Class, y = pH), alpha = 0.5, colour = "black") +
+  labs(title = "pH", x = "Fecundity Class", y = "pH") +
+  theme_classic() +
+  theme(panel.background = element_rect(fill = "white"),
+        plot.background = element_rect(fill = "white"),
+        legend.background = element_rect(fill = "white", color = "black"),
+        title = element_text(size = 12),
+        plot.title = element_text(size = 30, hjust = 0.5),
+        axis.text.x = element_text(size = 9),
+        axis.text.y = element_text(size = 20),
+        axis.title.x = element_text(size = 20),
+        axis.title.y = element_text(size = 20))
+
+print(pH_fecundity_boxplot)
+
+ggsave(filename = "data-images/pH_fecundity_boxplot.pdf", plot = pH_fecundity_boxplot, device = "pdf")
+ggsave(filename = "data-images/pH_fecundity_boxplot.png", plot = pH_fecundity_boxplot, device = "png")
+
+
+# pH faceted boxplot
+pH_fecundity_facet_boxplot <- ggplot(data = Fecundity_Samples) + 
+  geom_boxplot(aes(x = Fecundity_Class, y = pH)) +
+  geom_point(aes(x = Fecundity_Class, y = pH), alpha = 0.5, colour = "black") +
+  labs(title = "pH", x = "Fecundity Class", y = "pH") +
+  facet_wrap(~ Ambient.Or.OAH) +
+  theme_classic() +
+  theme(panel.background = element_rect(fill = "white"),
+        plot.background = element_rect(fill = "white"),
+        legend.background = element_rect(fill = "white", color = "black"),
+        title = element_text(size = 12),
+        plot.title = element_text(size = 20, hjust = 0.5),
+        axis.text.x = element_text(size = 5),
+        axis.text.y = element_text(size = 15),
+        axis.title.x = element_text(size = 15),
+        axis.title.y = element_text(size = 15))
+
+print(pH_fecundity_facet_boxplot)
+
+ggsave(filename = "data-images/pH_fecundity_facet_boxplot.pdf", plot = pH_fecundity_facet_boxplot, device = "pdf")
+ggsave(filename = "data-images/pH_fecundity_facet_boxplot.png", plot = pH_fecundity_facet_boxplot, device = "png")
+
+```
+
+
+Ambient Fecundity Samples
+```{r}
+# pH Scatterplot
+
+# Amb_fec Samples: 
+# Note When using Fecundity_Or_Brood_Count col, the "No Parturition" aka atresia ids are automatically removed in plots, and results display numerical count, but this may cause issues if column is called in stat tests
+# Refer to 'All_Fecundity' col (all numeric, includes atresia ids as 0)
+# Refer to 'Fecundity_No_Atresia' col (all numeric, excludes atresia ids)
+# Refer to 'Fecundity_Class' col for categorical classification of fecund data (Not 'Consensus_Fecundity' col, which is same, but raw data input)
+
+# Amb Fec Count Samples : With atresia Ids
+pH_amb_fec_all_scatterplot <- ggplot(data = Amb_Fec_Samples) + 
+  geom_point(aes(x = pH, y = All_Fecundity), colour = "black") +
+  labs(title = "pH", x = "pH", y = "Fecundity") +
+  scale_y_continuous(breaks = c(0, 50000, 90000)) + 
+  facet_wrap(~ Ambient.Or.OAH) +
+  theme_classic() +
+  theme(panel.background = element_rect(fill = "white"),
+        plot.background = element_rect(fill = "white"),
+        legend.background = element_rect(fill = "white", color = "black"),
+        plot.title = element_text(size = 25, hjust = 0.5),
+        axis.text.x = element_text(size = 20),
+        axis.text.y = element_text(size = 20),
+        axis.title.x = element_text(size = 20),
+        axis.title.y = element_text(size = 20))
+
+print(pH_amb_fec_all_scatterplot)
+
+ggsave(filename = "data-images/pH_amb_fec_all_scatterplot.pdf", plot = pH_amb_fec_all_scatterplot, device = "pdf")
+ggsave(filename = "data-images/pH_amb_fec_all_scatterplot.png", plot = pH_amb_fec_all_scatterplot, device = "png")
+
+
+# pH Amb Fec Count facet scatterplot by Fecundity Class
+pH_amb_fec_all_facet_scatterplot_fecundity_class <- ggplot(data = Amb_Fec_Samples) + 
+  geom_point(aes(x = pH, y = All_Fecundity), colour = "black") +
+  labs(title = "pH", x = "pH", y = "Brood Count") +
+  scale_y_continuous(breaks = c(1000, 50000, 90000)) +
+  facet_wrap(Fecundity_Class ~ Ambient.Or.OAH) +
+  theme_classic() +
+  theme(panel.background = element_rect(fill = "white"),
+        plot.background = element_rect(fill = "white"),
+        legend.background = element_rect(fill = "white", color = "black"),
+        plot.title = element_text(size = 25, hjust = 0.5),
+        axis.text.x = element_text(size = 15),
+        axis.text.y = element_text(size = 15),
+        axis.title.x = element_text(size = 20),
+        axis.title.y = element_text(size = 20)) 
+  
+print(pH_amb_fec_all_facet_scatterplot_fecundity_class)
+
+```
+
+```{r}
+# pH boxplot
+
+# Amb_Fec Samples with Atresia Ids
+pH_amb_fec_boxplot <- ggplot(data = Amb_Fec_Samples) + 
+  geom_boxplot(aes(x = Fecundity_Class, y = pH)) +
+  geom_point(aes(x = Fecundity_Class, y = pH), alpha = 0.5, colour = "black") +
+  labs(title = "pH", x = "Fecundity Class", y = "pH") +
+   facet_wrap(~ Ambient.Or.OAH) +
+  theme_classic() +
+  theme(panel.background = element_rect(fill = "white"),
+        plot.background = element_rect(fill = "white"),
+        legend.background = element_rect(fill = "white", color = "black"),
+        title = element_text(size = 12),
+        plot.title = element_text(size = 30, hjust = 0.5),
+        axis.text.x = element_text(size = 9),
+        axis.text.y = element_text(size = 20),
+        axis.title.x = element_text(size = 20),
+        axis.title.y = element_text(size = 20))
+
+print(pH_amb_fec_boxplot)
+
+ggsave(filename = "data-images/pH_amb_fec_boxplot.pdf", plot = pH_amb_fec_boxplot, device = "pdf")
+ggsave(filename = "data-images/pH_amb_fec_boxplot.png", plot = pH_amb_fec_boxplot, device = "png")
+
+
+```
+
+
+# Hct : Hematocrit
+
+Primary Samples
+```{r}
+# Primary Samples
+
+# hematocrit boxplot: General Samples
+hct_primary_boxplot <- ggplot(data = Primary_Samples, aes(x = Pregnant.Or.Atresia, y = Hct...., fill = Ambient.Or.OAH)) +
+  geom_boxplot(aes(x = Pregnant.Or.Atresia, y = Hct...., fill = Ambient.Or.OAH)) +
+  geom_point(aes(color = Ambient.Or.OAH), position = position_dodge(width = 0.75), alpha = 0.3, color = "black") +
+  labs(title = "Primary Hematocrit", x = "Parturition Type", y = "Hct (%)") +
+  guides(fill = guide_legend((title = "Treatment Type"))) + 
+  scale_fill_manual(values = c("Ambient" = "#189bff", "OAH" = "#598c78")) +
+  theme_classic() +
+  theme(panel.background = element_rect(fill = "white"),
+        plot.background = element_rect(fill = "white"),
+        legend.background = element_rect(fill = "white", color = "black"),
+        title = element_text(size = 12),
+        plot.title = element_text(size = 30, hjust = 0.5),
+        axis.text.x = element_text(size = 10),
+        axis.text.y = element_text(size = 20),
+        axis.title.x = element_text(size = 20),
+        axis.title.y = element_text(size = 20))
+
+print(hct_primary_boxplot)
+
+ggsave(filename = "data-images/hct_primary_boxplot.pdf", plot = hct_primary_boxplot, device = "pdf")
+ggsave(filename = "data-images/hct_primary_boxplot.png", plot = hct_primary_boxplot, device = "png")
+
+```
+
+
+Ambient Samples 
+```{r}
+# hct boxplot
+
+# Ambient Samples
+hct_ambient_boxplot <- ggplot(data = Ambient_Samples) + 
+  geom_boxplot(aes(x = Consensus_Brood_Condition, y = Hct....)) +
+  geom_point(aes(x = Consensus_Brood_Condition, y = Hct....), alpha = 0.5, colour = "black") +
+  labs(title = "Hematocrit Ambient", x = "Parturition Success", y = "Hct (%)") +
+  facet_wrap(~ Ambient.Or.OAH) +
+  theme_classic() +
+  theme(panel.background = element_rect(fill = "white"),
+        plot.background = element_rect(fill = "white"),
+        legend.background = element_rect(fill = "white", color = "black"),
+        title = element_text(size = 12),
+        plot.title = element_text(size = 30, hjust = 0.5),
+        axis.text.x = element_text(size = 18),
+        axis.text.y = element_text(size = 20),
+        axis.title.x = element_text(size = 20),
+        axis.title.y = element_text(size = 20))
+
+print(hct_ambient_boxplot)
+
+ggsave(filename = "data-images/hct_ambient_boxplot.pdf", plot = hct_ambient_boxplot, device = "pdf")
+ggsave(filename = "data-images/hct_ambient_boxplot.png", plot = hct_ambient_boxplot, device = "png")
+
+```
+
+
+Fecundity Samples
+```{r}
+# hct Scatterplot
+
+# Fecundity Samples
+hct_all_fecundity_scatterplot <- ggplot(data = Fecundity_Count_Samples) + 
+  geom_point(aes(x = Hct...., y = All_Fecundity), colour = "black") +
+  labs(title = "Hematocrit Fecundity Samples", x = "Hct (%)", y = "Brood Count") +
+  scale_y_continuous(breaks = c(0, 50000, 90000)) + 
+  theme_classic() +
+  theme(panel.background = element_rect(fill = "white"),
+        plot.background = element_rect(fill = "white"),
+        legend.background = element_rect(fill = "white", color = "black"),
+        plot.title = element_text(size = 15, hjust = 0.5),
+        axis.text.x = element_text(size = 20),
+        axis.text.y = element_text(size = 20),
+        axis.title.x = element_text(size = 12),
+        axis.title.y = element_text(size = 20))
+
+print(hct_all_fecundity_scatterplot)
+
+ggsave(filename = "data-images/hct_all_fecundity_scatterplot.pdf", plot = hct_all_fecundity_scatterplot, device = "pdf")
+ggsave(filename = "data-images/hct_all_fecundity_scatterplot.png", plot = hct_all_fecundity_scatterplot, device = "png")
+
+# Hct Fecundity Count facet scatterplot by Treatment
+hct_all_fecundity_count_facet_scatterplot_treatment <- ggplot(data = Fecundity_Samples) + 
+  geom_point(aes(x = Hct...., y = All_Fecundity), colour = "black") +
+  labs(title = "Hematocrit Fecundity Samples", x = "Hct (%)", y = "Fecundity") +
+  scale_y_continuous(breaks = c(0, 50000, 90000)) +
+  facet_wrap(~ Ambient.Or.OAH) +
+  theme_classic() +
+  theme(panel.background = element_rect(fill = "white"),
+        plot.background = element_rect(fill = "white"),
+        legend.background = element_rect(fill = "white", color = "black"),
+        plot.title = element_text(size = 15, hjust = 0.5),
+        axis.text.x = element_text(size = 10),
+        axis.text.y = element_text(size = 20),
+        axis.title.x = element_text(size = 10),
+        axis.title.y = element_text(size = 20))
+
+print(hct_all_fecundity_count_facet_scatterplot_treatment)
+
+# Hct fecundity count facet scatterplot by Fecundity Class
+hct_fecundity_count_facet_scatterplot_fecundity_class <- ggplot(data = Fecundity_Samples) + 
+  geom_point(aes(x = Hct...., y = All_Fecundity), colour = "black") +
+  labs(title = "Hematocrit Fecundity Count Samples", x = "Hct....", y = "Brood Count") +
+  scale_y_continuous(breaks = c(1000, 50000, 90000)) +
+  facet_wrap(~ Fecundity_Class) +
+  theme_classic() +
+  theme(panel.background = element_rect(fill = "white"),
+        plot.background = element_rect(fill = "white"),
+        legend.background = element_rect(fill = "white", color = "black"),
+        plot.title = element_text(size = 15, hjust = 0.5),
+        axis.text.x = element_text(size = 7),
+        axis.text.y = element_text(size = 15),
+        axis.title.x = element_text(size = 15),
+        axis.title.y = element_text(size = 15)) 
+  
+
+print(hct_fecundity_count_facet_scatterplot_fecundity_class)
+```
+
+```{r}
+# Hct boxplot
+
+# Fecundity Samples
+hct_fecundity_boxplot <- ggplot(data = Fecundity_Samples) + 
+  geom_boxplot(aes(x = Fecundity_Class, y = Hct....)) +
+  geom_point(aes(x = Fecundity_Class, y = Hct....), alpha = 0.5, colour = "black") +
+  labs(title = "Fecundity Hematocrit", x = "Fecundity Class", y = "Hct (%)") +
+  theme_classic() +
+  theme(panel.background = element_rect(fill = "white"),
+        plot.background = element_rect(fill = "white"),
+        legend.background = element_rect(fill = "white", color = "black"),
+        plot.title = element_text(size = 30, hjust = 0.5),
+        axis.text.x = element_text(size = 9),
+        axis.text.y = element_text(size = 20),
+        axis.title.x = element_text(size = 20),
+        axis.title.y = element_text(size = 20))
+
+print(hct_fecundity_boxplot)
+
+ggsave(filename = "data-images/hct_fecundity_boxplot.pdf", plot = hct_fecundity_boxplot, device = "pdf")
+ggsave(filename = "data-images/hct_fecundity_boxplot.png", plot = hct_fecundity_boxplot, device = "png")
+
+
+# hct faceted boxplot
+hct_fecundity_facet_boxplot <- ggplot(data = Fecundity_Samples) + 
+  geom_boxplot(aes(x = Fecundity_Class, y = Hct....)) +
+  geom_point(aes(x = Fecundity_Class, y = Hct....), alpha = 0.5, colour = "black") +
+  labs(title = "Fecundity Hematocrit", x = "Fecundity Class", y = "Hct (%)") +
+  facet_wrap(~ Ambient.Or.OAH) +
+  theme_classic() +
+  theme(panel.background = element_rect(fill = "white"),
+        plot.background = element_rect(fill = "white"),
+        legend.background = element_rect(fill = "white", color = "black"),
+        plot.title = element_text(size = 20, hjust = 0.5),
+        axis.text.x = element_text(size = 5),
+        axis.text.y = element_text(size = 15),
+        axis.title.x = element_text(size = 15),
+        axis.title.y = element_text(size = 15))
+
+print(hct_fecundity_facet_boxplot)
+
+ggsave(filename = "data-images/hct_fecundity_facet_boxplot.pdf", plot = hct_fecundity_facet_boxplot, device = "pdf")
+ggsave(filename = "data-images/hct_fecundity_facet_boxplot.png", plot = hct_fecundity_facet_boxplot, device = "png")
+
+```
+
+
+Ambient Fecundity Samples
+```{r}
+# Hct Scatterplot
+
+# Amb Fec Count Samples : With atresia Ids
+hct_amb_fec_count_scatterplot <- ggplot(data = Amb_Fec_Samples) + 
+  geom_point(aes(x = Hct...., y = All_Fecundity), colour = "black") +
+  labs(title = "Hematocrit", x = "Hct (%)", y = "Fecundity") +
+  scale_y_continuous(breaks = c(0, 50000, 90000)) + 
+  facet_wrap(~ Ambient.Or.OAH) +
+  theme_classic() +
+  theme(panel.background = element_rect(fill = "white"),
+        plot.background = element_rect(fill = "white"),
+        legend.background = element_rect(fill = "white", color = "black"),
+        plot.title = element_text(size = 15, hjust = 0.5),
+        axis.text.x = element_text(size = 20),
+        axis.text.y = element_text(size = 20),
+        axis.title.x = element_text(size = 12),
+        axis.title.y = element_text(size = 20))
+
+print(hct_amb_fec_count_scatterplot)
+
+ggsave(filename = "data-images/hct_amb_fec_count_scatterplot.pdf", plot = hct_amb_fec_count_scatterplot, device = "pdf")
+ggsave(filename = "data-images/hct_amb_fec_count_scatterplot.png", plot = hct_amb_fec_count_scatterplot, device = "png")
+
+
+# pH Amb Fec Count facet scatterplot by Fecundity Class
+hct_amb_fec_count_facet_scatterplot_fecundity_class <- ggplot(data = Amb_Fec_Samples) + 
+  geom_point(aes(x = Hct...., y = All_Fecundity), colour = "black") +
+  labs(title = "Hematocrit", x = "Hct (%)", y = "Brood Count") +
+  scale_y_continuous(breaks = c(1000, 50000, 90000)) +
+  facet_wrap(Fecundity_Class ~ Ambient.Or.OAH) +
+  theme_classic() +
+  theme(panel.background = element_rect(fill = "white"),
+        plot.background = element_rect(fill = "white"),
+        legend.background = element_rect(fill = "white", color = "black"),
+        plot.title = element_text(size = 15, hjust = 0.5),
+        axis.text.x = element_text(size = 7),
+        axis.text.y = element_text(size = 15),
+        axis.title.x = element_text(size = 15),
+        axis.title.y = element_text(size = 15)) 
+  
+print(hct_amb_fec_count_facet_scatterplot_fecundity_class)
+
+```
+
+
+```{r}
+# Hct boxplot
+
+# Amb_Fec Samples with Atresia Ids
+hct_amb_fec_boxplot <- ggplot(data = Amb_Fec_Samples) + 
+  geom_boxplot(aes(x = Fecundity_Class, y = Hct....)) +
+  geom_point(aes(x = Fecundity_Class, y = Hct....), alpha = 0.5, colour = "black") +
+  labs(title = "Hematocrit", x = "Fecundity Class", y = "Hematocrit (%)") +
+   facet_wrap(~ Ambient.Or.OAH) +
+  theme_classic() +
+  theme(panel.background = element_rect(fill = "white"),
+        plot.background = element_rect(fill = "white"),
+        legend.background = element_rect(fill = "white", color = "black"),
+        title = element_text(size = 12),
+        plot.title = element_text(size = 30, hjust = 0.5),
+        axis.text.x = element_text(size = 9),
+        axis.text.y = element_text(size = 20),
+        axis.title.x = element_text(size = 20),
+        axis.title.y = element_text(size = 20))
+
+print(hct_amb_fec_boxplot)
+
+ggsave(filename = "data-images/hct_amb_fec_boxplot.pdf", plot = hct_amb_fec_boxplot, device = "pdf")
+ggsave(filename = "data-images/hct_amb_fec_boxplot.png", plot = hct_amb_fec_boxplot, device = "png")
+
+
+```
+
+
+
+# Glucose
+
+Primary Samples
+```{r}
+# glucose boxplot
+
+# Primary samples
+glucose_primary_boxplot <- ggplot(data = Primary_Samples, aes(x = Pregnant.Or.Atresia, y = Glu..mmol.L., fill = Ambient.Or.OAH)) +
+  geom_boxplot(aes(x = Pregnant.Or.Atresia, y = Glu..mmol.L., fill = Ambient.Or.OAH)) +
+  geom_point(aes(color = Ambient.Or.OAH), position = position_dodge(width = 0.75), alpha = 0.3, color = "black") +
+  labs(title = "Primary Glucose", x = "Parturition Type", y = "Glucose (mmol/L)") +
+  guides(fill = guide_legend((title = "Treatment Type"))) + 
+  scale_fill_manual(values = c("Ambient" = "#189bff", "OAH" = "#598c78")) +
+  theme_classic() +
+  theme(panel.background = element_rect(fill = "white"),
+        plot.background = element_rect(fill = "white"),
+        legend.background = element_rect(fill = "white", color = "black"),
+        title = element_text(size = 12),
+        plot.title = element_text(size = 30, hjust = 0.5),
+        axis.text.x = element_text(size = 10),
+        axis.text.y = element_text(size = 20),
+        axis.title.x = element_text(size = 20),
+        axis.title.y = element_text(size = 20))
+
+print(glucose_primary_boxplot)
+
+ggsave(filename = "data-images/glucose_primary_boxplot.pdf", plot = glucose_primary_boxplot, device = "pdf")
+ggsave(filename = "data-images/glucose_primary_boxplot.png", plot = glucose_primary_boxplot, device = "png")
+
+```
+
+
+Ambient Samples 
+```{r}
+# glucose boxplot
+
+# Ambient Samples
+glucose_ambient_boxplot <- ggplot(data = Ambient_Samples) + 
+  geom_boxplot(aes(x = Consensus_Brood_Condition, y = Glu..mmol.L.)) +
+  geom_point(aes(x = Consensus_Brood_Condition, y = Glu..mmol.L.), alpha = 0.5, colour = "black") +
+  labs(title = "Glucose Ambient", x = "Parturition Success", y = "Glucose (mmol/L)") +
+  facet_wrap(~ Ambient.Or.OAH) +
+  theme_classic() +
+  theme(panel.background = element_rect(fill = "white"),
+        plot.background = element_rect(fill = "white"),
+        legend.background = element_rect(fill = "white", color = "black"),
+        title = element_text(size = 12),
+        plot.title = element_text(size = 30, hjust = 0.5),
+        axis.text.x = element_text(size = 18),
+        axis.text.y = element_text(size = 20),
+        axis.title.x = element_text(size = 20),
+        axis.title.y = element_text(size = 20))
+
+print(glucose_ambient_boxplot)
+
+ggsave(filename = "data-images/glucose_ambient_boxplot.pdf", plot = glucose_ambient_boxplot, device = "pdf")
+ggsave(filename = "data-images/glucose_ambient_boxplot.png", plot = glucose_ambient_boxplot, device = "png")
+
+```
+
+
+Fecundity Samples
+```{r}
+# Glucose Scatterplot
+
+# Fecundity Samples
+glucose_all_fecundity_scatterplot <- ggplot(data = Fecundity_Samples) + 
+  geom_point(aes(x = Glu..mmol.L., y = All_Fecundity), colour = "black") +
+  labs(title = "Glucose Fecundity Samples", x = "Glucose (mmol/L)", y = "Brood Count") +
+  scale_y_continuous(breaks = c(0, 50000, 90000)) + 
+  theme_classic() +
+  theme(panel.background = element_rect(fill = "white"),
+        plot.background = element_rect(fill = "white"),
+        legend.background = element_rect(fill = "white", color = "black"),
+        plot.title = element_text(size = 15, hjust = 0.5),
+        axis.text.x = element_text(size = 20),
+        axis.text.y = element_text(size = 20),
+        axis.title.x = element_text(size = 12),
+        axis.title.y = element_text(size = 20))
+
+print(glucose_all_fecundity_scatterplot)
+
+ggsave(filename = "data-images/glucose_all_fecundity_scatterplot.pdf", plot = glucose_all_fecundity_scatterplot, device = "pdf")
+ggsave(filename = "data-images/glucose_all_fecundity_scatterplot.png", plot = glucose_all_fecundity_scatterplot, device = "png")
+
+# glucose Fecundity Count facet scatterplot by Treatment
+glucose_all_fecundity_count_facet_scatterplot_treatment <- ggplot(data = Fecundity_Samples) + 
+  geom_point(aes(x = Glu..mmol.L., y = All_Fecundity), colour = "black") +
+  labs(title = "Glucose Fecundity Samples", x = "Glucose (mmol/L)", y = "Fecundity") +
+  scale_y_continuous(breaks = c(0, 50000, 90000)) +
+  facet_wrap(~ Ambient.Or.OAH) +
+  theme_classic() +
+  theme(panel.background = element_rect(fill = "white"),
+        plot.background = element_rect(fill = "white"),
+        legend.background = element_rect(fill = "white", color = "black"),
+        plot.title = element_text(size = 15, hjust = 0.5),
+        axis.text.x = element_text(size = 10),
+        axis.text.y = element_text(size = 20),
+        axis.title.x = element_text(size = 10),
+        axis.title.y = element_text(size = 20))
+
+print(hct_all_fecundity_count_facet_scatterplot_treatment)
+
+# glucose fecundity count facet scatterplot by Fecundity Class
+glucose_fecundity_count_facet_scatterplot_fecundity_class <- ggplot(data = Fecundity_Samples) + 
+  geom_point(aes(x = Glu..mmol.L., y = All_Fecundity), colour = "black") +
+  labs(title = "Glucose Fecundity", x = "Glucose (mmol/L)", y = "Brood Count") +
+  scale_y_continuous(breaks = c(1000, 50000, 90000)) +
+  facet_wrap(~ Fecundity_Class) +
+  theme_classic() +
+  theme(panel.background = element_rect(fill = "white"),
+        plot.background = element_rect(fill = "white"),
+        legend.background = element_rect(fill = "white", color = "black"),
+        plot.title = element_text(size = 15, hjust = 0.5),
+        axis.text.x = element_text(size = 7),
+        axis.text.y = element_text(size = 15),
+        axis.title.x = element_text(size = 15),
+        axis.title.y = element_text(size = 15)) 
+
+print(glucose_fecundity_count_facet_scatterplot_fecundity_class)
+
+glucose_fecundity_count_facet_scatterplot_fecundity_class2 <- ggplot(data = Fecundity_Samples) + 
+  geom_point(aes(x = Glu..mmol.L., y = All_Fecundity), colour = "black") +
+  labs(title = "Glucose Fecundity", x = "Glucose (mmol/L)", y = "Brood Count") +
+  scale_y_continuous(breaks = c(1000, 50000, 90000)) +
+  facet_wrap(Fecundity_Class ~ Ambient.Or.OAH) +
+  theme_classic() +
+  theme(panel.background = element_rect(fill = "white"),
+        plot.background = element_rect(fill = "white"),
+        legend.background = element_rect(fill = "white", color = "black"),
+        plot.title = element_text(size = 15, hjust = 0.5),
+        axis.text.x = element_text(size = 7),
+        axis.text.y = element_text(size = 15),
+        axis.title.x = element_text(size = 15),
+        axis.title.y = element_text(size = 15)) 
+
+print(glucose_fecundity_count_facet_scatterplot_fecundity_class2)
+```
+
+```{r}
+# glucose boxplot
+
+# Fecundity Samples
+glucose_fecundity_boxplot <- ggplot(data = Fecundity_Samples) + 
+  geom_boxplot(aes(x = Fecundity_Class, y = Glu..mmol.L.)) +
+  geom_point(aes(x = Fecundity_Class, y = Glu..mmol.L.), alpha = 0.5, colour = "black") +
+  labs(title = "Fecundity Glucose", x = "Fecundity Class", y = "Glucose (mmol/L)") +
+  theme_classic() +
+  theme(panel.background = element_rect(fill = "white"),
+        plot.background = element_rect(fill = "white"),
+        legend.background = element_rect(fill = "white", color = "black"),
+        plot.title = element_text(size = 30, hjust = 0.5),
+        axis.text.x = element_text(size = 9),
+        axis.text.y = element_text(size = 20),
+        axis.title.x = element_text(size = 20),
+        axis.title.y = element_text(size = 20))
+
+print(glucose_fecundity_boxplot)
+
+ggsave(filename = "data-images/glucose_fecundity_boxplot.pdf", plot = glucose_fecundity_boxplot, device = "pdf")
+ggsave(filename = "data-images/glucose_fecundity_boxplot.png", plot = glucose_fecundity_boxplot, device = "png")
+
+
+# glucose fecundity faceted boxplot
+glucose_fecundity_facet_boxplot <- ggplot(data = Fecundity_Samples) + 
+  geom_boxplot(aes(x = Fecundity_Class, y = Glu..mmol.L.)) +
+  geom_point(aes(x = Fecundity_Class, y = Glu..mmol.L.), alpha = 0.5, colour = "black") +
+  labs(title = "Fecundity Glucose", x = "Fecundity Class", y = "Glucose (mmol/L)") +
+  facet_wrap(~ Ambient.Or.OAH) +
+  theme_classic() +
+  theme(panel.background = element_rect(fill = "white"),
+        plot.background = element_rect(fill = "white"),
+        legend.background = element_rect(fill = "white", color = "black"),
+        plot.title = element_text(size = 20, hjust = 0.5),
+        axis.text.x = element_text(size = 5),
+        axis.text.y = element_text(size = 15),
+        axis.title.x = element_text(size = 15),
+        axis.title.y = element_text(size = 15))
+
+print(glucose_fecundity_facet_boxplot)
+
+ggsave(filename = "data-images/glucose_fecundity_facet_boxplot.pdf", plot = glucose_fecundity_facet_boxplot, device = "pdf")
+ggsave(filename = "data-images/glucose_fecundity_facet_boxplot.png", plot = glucose_fecundity_facet_boxplot, device = "png")
+
+```
+
+Ambient Fecundity Samples
+```{r}
+# Glucose Scatterplot
+
+# Amb_fec Samples: 
+# Note When using Fecundity_Or_Brood_Count col, the "No Parturition" aka atresia ids are automatically removed in plots, and results display numerical count, but this may cause issues if column is called in stat tests
+# Refer to 'All_Fecundity' col (all numeric, includes atresia ids as 0)
+# Refer to 'Fecundity_No_Atresia' col (all numeric, excludes atresia ids)
+# Refer to 'Fecundity_Class' col for categorical classification of fecund data (Not 'Consensus_Fecundity' col, which is same, but raw data input)
+
+# Amb Fec Count Samples : With atresia Ids
+glucose_amb_fec_all_scatterplot <- ggplot(data = Amb_Fec_Samples) + 
+  geom_point(aes(x = Glu..mmol.L., y = All_Fecundity), colour = "black") +
+  labs(title = "Glucose", x = "Glucose (mmol/L)", y = "Fecundity") +
+  scale_y_continuous(breaks = c(0, 50000, 90000)) + 
+  facet_wrap(~ Ambient.Or.OAH) +
+  theme_classic() +
+  theme(panel.background = element_rect(fill = "white"),
+        plot.background = element_rect(fill = "white"),
+        legend.background = element_rect(fill = "white", color = "black"),
+        plot.title = element_text(size = 25, hjust = 0.5),
+        axis.text.x = element_text(size = 20),
+        axis.text.y = element_text(size = 20),
+        axis.title.x = element_text(size = 20),
+        axis.title.y = element_text(size = 20))
+
+print(glucose_amb_fec_all_scatterplot)
+
+ggsave(filename = "data-images/glucose_amb_fec_all_scatterplot.pdf", plot = glucose_amb_fec_all_scatterplot, device = "pdf")
+ggsave(filename = "data-images/glucose_amb_fec_all_scatterplot.png", plot = glucose_amb_fec_all_scatterplot, device = "png")
+
+
+# pH Amb Fec Count facet scatterplot by Fecundity Class
+glucose_amb_fec_all_facet_scatterplot_fecundity_class <- ggplot(data = Amb_Fec_Samples) + 
+  geom_point(aes(x = Glu..mmol.L., y = All_Fecundity), colour = "black") +
+  labs(title = "Glucose", x = "Glucose (mmol/L)", y = "Brood Count") +
+  scale_y_continuous(breaks = c(1000, 50000, 90000)) +
+  facet_wrap(Fecundity_Class ~ Ambient.Or.OAH) +
+  theme_classic() +
+  theme(panel.background = element_rect(fill = "white"),
+        plot.background = element_rect(fill = "white"),
+        legend.background = element_rect(fill = "white", color = "black"),
+        plot.title = element_text(size = 25, hjust = 0.5),
+        axis.text.x = element_text(size = 15),
+        axis.text.y = element_text(size = 15),
+        axis.title.x = element_text(size = 20),
+        axis.title.y = element_text(size = 20)) 
+  
+print(glucose_amb_fec_all_facet_scatterplot_fecundity_class)
+
+```
+
+
+# Na+ : Sodium
+
+Primary Samples
+
+
+
+Ambient Samples 
+
+
+
+Fecundity Samples
+```{r}
+# Na+ Scatterplot
+
+# Fecundity Samples
+sodium_all_fecundity_scatterplot <- ggplot(data = Fecundity_Samples) + 
+  geom_point(aes(x = Na...mmol.L., y = All_Fecundity), colour = "black") +
+  labs(title = "Sodium Fecundity", x = "Sodium (mmol/L)", y = "Brood Count") +
+  scale_y_continuous(breaks = c(0, 50000, 90000)) + 
+  theme_classic() +
+  theme(panel.background = element_rect(fill = "white"),
+        plot.background = element_rect(fill = "white"),
+        legend.background = element_rect(fill = "white", color = "black"),
+        plot.title = element_text(size = 25, hjust = 0.5),
+        axis.text.x = element_text(size = 10),
+        axis.text.y = element_text(size = 10),
+        axis.title.x = element_text(size = 15),
+        axis.title.y = element_text(size = 15))
+
+print(sodium_all_fecundity_scatterplot)
+
+ggsave(filename = "data-images/sodium_all_fecundity_scatterplot.pdf", plot = sodium_all_fecundity_scatterplot, device = "pdf")
+ggsave(filename = "data-images/sodium_all_fecundity_scatterplot.png", plot = sodium_all_fecundity_scatterplot, device = "png")
+
+# glucose Fecundity Count facet scatterplot by Treatment
+sodium_all_fecundity_count_facet_scatterplot_treatment <- ggplot(data = Fecundity_Samples) + 
+  geom_point(aes(x = Na...mmol.L., y = All_Fecundity), colour = "black") +
+  labs(title = "Sodium Fecundity", x = "Sodium (mmol/L)", y = "Fecundity") +
+  scale_y_continuous(breaks = c(0, 50000, 90000)) +
+  facet_wrap(~ Ambient.Or.OAH) +
+  theme_classic() +
+  theme(panel.background = element_rect(fill = "white"),
+        plot.background = element_rect(fill = "white"),
+        legend.background = element_rect(fill = "white", color = "black"),
+        plot.title = element_text(size = 25, hjust = 0.5),
+        axis.text.x = element_text(size = 10),
+        axis.text.y = element_text(size = 10),
+        axis.title.x = element_text(size = 20),
+        axis.title.y = element_text(size = 20))
+
+print(sodium_all_fecundity_count_facet_scatterplot_treatment)
+
+# Sodium fecundity count facet scatterplot by Fecundity Class
+sodium_fecundity_count_facet_scatterplot_fecundity_class <- ggplot(data = Fecundity_Samples) + 
+  geom_point(aes(x = Na...mmol.L., y = All_Fecundity), colour = "black") +
+  labs(title = "Sodium Fecundity", x = "Sodium (mmol/L)", y = "Brood Count") +
+  scale_y_continuous(breaks = c(1000, 50000, 90000)) +
+  facet_wrap(~ Fecundity_Class) +
+  theme_classic() +
+  theme(panel.background = element_rect(fill = "white"),
+        plot.background = element_rect(fill = "white"),
+        legend.background = element_rect(fill = "white", color = "black"),
+        plot.title = element_text(size = 25, hjust = 0.5),
+        axis.text.x = element_text(size = 7),
+        axis.text.y = element_text(size = 10),
+        axis.title.x = element_text(size = 15),
+        axis.title.y = element_text(size = 15)) 
+
+print(sodium_fecundity_count_facet_scatterplot_fecundity_class)
+
+sodium_fecundity_count_facet_scatterplot_fecundity_class2 <- ggplot(data = Fecundity_Samples) + 
+  geom_point(aes(x = Na...mmol.L., y = All_Fecundity), colour = "black") +
+  labs(title = "Sodium Fecundity", x = "Sodium (mmol/L)", y = "Brood Count") +
+  scale_y_continuous(breaks = c(1000, 50000, 90000)) +
+  facet_wrap(Fecundity_Class ~ Ambient.Or.OAH) +
+  theme_classic() +
+  theme(panel.background = element_rect(fill = "white"),
+        plot.background = element_rect(fill = "white"),
+        legend.background = element_rect(fill = "white", color = "black"),
+        plot.title = element_text(size = 25, hjust = 0.5),
+        axis.text.x = element_text(size = 7),
+        axis.text.y = element_text(size = 15),
+        axis.title.x = element_text(size = 15),
+        axis.title.y = element_text(size = 15)) 
+
+print(sodium_fecundity_count_facet_scatterplot_fecundity_class2)
+```
+
+
+
+```{r}
+# sodium boxplot
+
+# Fecundity Samples
+sodium_fecundity_boxplot <- ggplot(data = Fecundity_Samples) + 
+  geom_boxplot(aes(x = Fecundity_Class, y = Na...mmol.L.)) +
+  geom_point(aes(x = Fecundity_Class, y = Na...mmol.L.), alpha = 0.5, colour = "black") +
+  labs(title = "Fecundity Sodium", x = "Fecundity Class", y = "Sodium (mmol/L)") +
+  theme_classic() +
+  theme(panel.background = element_rect(fill = "white"),
+        plot.background = element_rect(fill = "white"),
+        legend.background = element_rect(fill = "white", color = "black"),
+        plot.title = element_text(size = 30, hjust = 0.5),
+        axis.text.x = element_text(size = 15),
+        axis.text.y = element_text(size = 20),
+        axis.title.x = element_text(size = 20),
+        axis.title.y = element_text(size = 20))
+
+print(sodium_fecundity_boxplot)
+
+ggsave(filename = "data-images/sodium_fecundity_boxplot.pdf", plot = sodium_fecundity_boxplot, device = "pdf")
+ggsave(filename = "data-images/sodium_fecundity_boxplot.png", plot = sodium_fecundity_boxplot, device = "png")
+
+
+# sodium fecundity faceted boxplot
+sodium_fecundity_facet_boxplot <- ggplot(data = Fecundity_Samples) + 
+  geom_boxplot(aes(x = Fecundity_Class, y = Na...mmol.L.)) +
+  geom_point(aes(x = Fecundity_Class, y = Na...mmol.L.), alpha = 0.5, colour = "black") +
+  labs(title = "Fecundity Sodium", x = "Fecundity Class", y = "Sodium (mmol/L)") +
+  facet_wrap(~ Ambient.Or.OAH) +
+  theme_classic() +
+  theme(panel.background = element_rect(fill = "white"),
+        plot.background = element_rect(fill = "white"),
+        legend.background = element_rect(fill = "white", color = "black"),
+        plot.title = element_text(size = 20, hjust = 0.5),
+        axis.text.x = element_text(size = 8),
+        axis.text.y = element_text(size = 15),
+        axis.title.x = element_text(size = 15),
+        axis.title.y = element_text(size = 15))
+
+print(sodium_fecundity_facet_boxplot)
+
+ggsave(filename = "data-images/sodium_fecundity_facet_boxplot.pdf", plot = sodium_fecundity_facet_boxplot, device = "pdf")
+ggsave(filename = "data-images/sodium_fecundity_facet_boxplot.png", plot = sodium_fecundity_facet_boxplot, device = "png")
+
+```
+
+
+Ambient Fecundity Samples
+
+
+
+# Cl- : Chloride
+
+Primary Samples
+
+
+
+Ambient Samples 
+
+
+
+Fecundity Samples
+```{r}
+# Cl- Scatterplot
+
+# Fecundity Samples
+chloride_all_fecundity_scatterplot <- ggplot(data = Fecundity_Samples) + 
+  geom_point(aes(x = Cl...mmol.L., y = All_Fecundity), colour = "black") +
+  labs(title = "Chloride Fecundity", x = "Chloride (mmol/L)", y = "Brood Count") +
+  scale_y_continuous(breaks = c(0, 50000, 90000)) + 
+  theme_classic() +
+  theme(panel.background = element_rect(fill = "white"),
+        plot.background = element_rect(fill = "white"),
+        legend.background = element_rect(fill = "white", color = "black"),
+        plot.title = element_text(size = 25, hjust = 0.5),
+        axis.text.x = element_text(size = 10),
+        axis.text.y = element_text(size = 10),
+        axis.title.x = element_text(size = 15),
+        axis.title.y = element_text(size = 15))
+
+print(chloride_all_fecundity_scatterplot)
+
+ggsave(filename = "data-images/chloride_all_fecundity_scatterplot.pdf", plot = chloride_all_fecundity_scatterplot, device = "pdf")
+ggsave(filename = "data-images/chloride_all_fecundity_scatterplot.png", plot = chloride_all_fecundity_scatterplot, device = "png")
+
+# chloride Fecundity Count facet scatterplot by Treatment
+chloride_all_fecundity_count_facet_scatterplot_treatment <- ggplot(data = Fecundity_Samples) + 
+  geom_point(aes(x = Cl...mmol.L., y = All_Fecundity), colour = "black") +
+  labs(title = "Chloride Fecundity", x = "Chloride (mmol/L)", y = "Fecundity") +
+  scale_y_continuous(breaks = c(0, 50000, 90000)) +
+  facet_wrap(~ Ambient.Or.OAH) +
+  theme_classic() +
+  theme(panel.background = element_rect(fill = "white"),
+        plot.background = element_rect(fill = "white"),
+        legend.background = element_rect(fill = "white", color = "black"),
+        plot.title = element_text(size = 25, hjust = 0.5),
+        axis.text.x = element_text(size = 10),
+        axis.text.y = element_text(size = 10),
+        axis.title.x = element_text(size = 20),
+        axis.title.y = element_text(size = 20))
+
+print(chloride_all_fecundity_count_facet_scatterplot_treatment)
+
+# Chloride fecundity count facet scatterplot by Fecundity Class
+chloride_fecundity_count_facet_scatterplot_fecundity_class <- ggplot(data = Fecundity_Samples) + 
+  geom_point(aes(x = Cl...mmol.L., y = All_Fecundity), colour = "black") +
+  labs(title = "Chloride Fecundity", x = "Chloride (mmol/L)", y = "Brood Count") +
+  scale_y_continuous(breaks = c(1000, 50000, 90000)) +
+  facet_wrap(~ Fecundity_Class) +
+  theme_classic() +
+  theme(panel.background = element_rect(fill = "white"),
+        plot.background = element_rect(fill = "white"),
+        legend.background = element_rect(fill = "white", color = "black"),
+        plot.title = element_text(size = 25, hjust = 0.5),
+        axis.text.x = element_text(size = 7),
+        axis.text.y = element_text(size = 10),
+        axis.title.x = element_text(size = 15),
+        axis.title.y = element_text(size = 15)) 
+
+print(chloride_fecundity_count_facet_scatterplot_fecundity_class)
+
+chloride_fecundity_count_facet_scatterplot_fecundity_class2 <- ggplot(data = Fecundity_Samples) + 
+  geom_point(aes(x = Cl...mmol.L., y = All_Fecundity), colour = "black") +
+  labs(title = "Chloride Fecundity", x = "Chloride (mmol/L)", y = "Brood Count") +
+  scale_y_continuous(breaks = c(1000, 50000, 90000)) +
+  facet_wrap(Fecundity_Class ~ Ambient.Or.OAH) +
+  theme_classic() +
+  theme(panel.background = element_rect(fill = "white"),
+        plot.background = element_rect(fill = "white"),
+        legend.background = element_rect(fill = "white", color = "black"),
+        plot.title = element_text(size = 25, hjust = 0.5),
+        axis.text.x = element_text(size = 7),
+        axis.text.y = element_text(size = 15),
+        axis.title.x = element_text(size = 15),
+        axis.title.y = element_text(size = 15)) 
+
+print(chloride_fecundity_count_facet_scatterplot_fecundity_class2)
+```
+
+
+
+```{r}
+# chloride boxplot
+
+# Fecundity Samples
+chloride_fecundity_boxplot <- ggplot(data = Fecundity_Samples) + 
+  geom_boxplot(aes(x = Fecundity_Class, y = Cl...mmol.L.)) +
+  geom_point(aes(x = Fecundity_Class, y = Cl...mmol.L.), alpha = 0.5, colour = "black") +
+  labs(title = "Fecundity Chloride", x = "Fecundity Class", y = "Chloride (mmol/L)") +
+  theme_classic() +
+  theme(panel.background = element_rect(fill = "white"),
+        plot.background = element_rect(fill = "white"),
+        legend.background = element_rect(fill = "white", color = "black"),
+        plot.title = element_text(size = 30, hjust = 0.5),
+        axis.text.x = element_text(size = 15),
+        axis.text.y = element_text(size = 20),
+        axis.title.x = element_text(size = 20),
+        axis.title.y = element_text(size = 20))
+
+print(chloride_fecundity_boxplot)
+
+ggsave(filename = "data-images/chloride_fecundity_boxplot.pdf", plot = chloride_fecundity_boxplot, device = "pdf")
+ggsave(filename = "data-images/chloride_fecundity_boxplot.png", plot = chloride_fecundity_boxplot, device = "png")
+
+
+# chloride fecundity faceted boxplot
+chloride_fecundity_facet_boxplot <- ggplot(data = Fecundity_Samples) + 
+  geom_boxplot(aes(x = Fecundity_Class, y = Cl...mmol.L.)) +
+  geom_point(aes(x = Fecundity_Class, y = Cl...mmol.L.), alpha = 0.5, colour = "black") +
+  labs(title = "Fecundity Chloride", x = "Fecundity Class", y = "Chloride (mmol/L)") +
+  facet_wrap(~ Ambient.Or.OAH) +
+  theme_classic() +
+  theme(panel.background = element_rect(fill = "white"),
+        plot.background = element_rect(fill = "white"),
+        legend.background = element_rect(fill = "white", color = "black"),
+        plot.title = element_text(size = 20, hjust = 0.5),
+        axis.text.x = element_text(size = 8),
+        axis.text.y = element_text(size = 15),
+        axis.title.x = element_text(size = 15),
+        axis.title.y = element_text(size = 15))
+
+print(chloride_fecundity_facet_boxplot)
+
+ggsave(filename = "data-images/chloride_fecundity_facet_boxplot.pdf", plot = chloride_fecundity_facet_boxplot, device = "pdf")
+ggsave(filename = "data-images/chloride_fecundity_facet_boxplot.png", plot = chloride_fecundity_facet_boxplot, device = "png")
+
+```
+
+
+Ambient Fecundity Samples
+
+
+
+# K+ : Potassium
+
+Primary Samples
+
+
+
+Ambient Samples 
+
+
+
+Fecundity Samples
+
+
+
+Ambient Fecundity Samples
+
+
+
+# Ca+2 : Calcium
+
+Primary Samples
+
+
+
+Ambient Samples 
+
+
+
+Fecundity Samples
+
+
+
+Ambient Fecundity Samples
+
+
+
+
+
+
+
+
