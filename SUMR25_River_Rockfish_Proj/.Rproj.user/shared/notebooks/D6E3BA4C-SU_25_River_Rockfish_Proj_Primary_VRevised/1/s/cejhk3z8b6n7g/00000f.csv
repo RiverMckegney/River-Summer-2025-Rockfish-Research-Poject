@@ -1,0 +1,8 @@
+"0","visualize(chloride_primary_lmer3, plot = ""model"", sample = 50)
+"
+"2","G1;H1;Errorh in visualize(chloride_primary_lmer3, plot = ""model"", sample = 50) : 
+  could not find function ""visualize""
+g"
+"2","G1;H1;Error during wrapuph: not that many frames on the stack
+Error: no more error handlers available (recursive errors?); invoking 'abort' restart
+g"

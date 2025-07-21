@@ -1,0 +1,29 @@
+"0",""
+"0","# Best guess method: Treatment fixed, pregnancy fixed & random"
+"0","# lm model of primary data"
+"0",""
+"0","potassium_primary_lmer <- lmer(K...mmol.L. ~ Ambient.Or.OAH * Pregnant.Or.Atresia + (1|Pregnant.Or.Atresia), data = Primary_Samples)"
+"2","G1;H1;Errorh in lmer(K...mmol.L. ~ Ambient.Or.OAH * Pregnant.Or.Atresia + (1 |  : 
+  could not find function ""lmer""
+Error during wrapup: not that many frames on the stack
+Error: no more error handlers available (recursive errors?); invoking 'abort' restart
+g"
+"0","# Second best guess method:"
+"0","potassium_primary_lmer2 <- lmer(K...mmol.L. ~ Pregnant.Or.Atresia * Ambient.Or.OAH + (1|Ambient.Or.OAH), data = Primary_Samples)"
+"2","G1;H1;Errorh in lmer(K...mmol.L. ~ Pregnant.Or.Atresia * Ambient.Or.OAH + (1 |  : 
+  could not find function ""lmer""
+Error during wrapup: not that many frames on the stack
+Error: no more error handlers available (recursive errors?); invoking 'abort' restart
+g"
+"0","visualize(potassium_primary_lmer, plot = ""model"", sample = 50)"
+"2","G1;H1;Errorh in visualize(potassium_primary_lmer, plot = ""model"", sample = 50) : 
+  could not find function ""visualize""
+Error during wrapup: not that many frames on the stack
+Error: no more error handlers available (recursive errors?); invoking 'abort' restart
+g"
+"0","visualize(potassium_primary_lmer2, plot = ""model"", sample = 50)"
+"2","G1;H1;Errorh in visualize(potassium_primary_lmer2, plot = ""model"", sample = 50) : 
+  could not find function ""visualize""
+Error during wrapup: not that many frames on the stack
+Error: no more error handlers available (recursive errors?); invoking 'abort' restart
+g"
