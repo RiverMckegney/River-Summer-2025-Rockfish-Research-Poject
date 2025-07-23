@@ -1,0 +1,14 @@
+"0","DunnTest(Ca....mmol.L. ~ Fecundity_Class, data = Amb_Fec_Samples)
+"
+"1","
+ Dunn's test of multiple comparisons using rank sums : holm  
+
+"
+"1","                             mean.rank.diff   pval    
+Low (~1,000s)-High (>50,000)      -2.500000 0.5686    
+Atresia-High (>50,000)            -9.528846 0.0216 *  
+Atresia-Low (~1,000s)             -7.028846 0.0948 .  
+---
+Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1
+
+"

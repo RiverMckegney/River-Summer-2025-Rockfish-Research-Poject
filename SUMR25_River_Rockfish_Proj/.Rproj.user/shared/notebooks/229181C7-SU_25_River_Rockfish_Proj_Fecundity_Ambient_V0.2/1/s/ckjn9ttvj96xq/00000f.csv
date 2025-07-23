@@ -1,0 +1,43 @@
+"0","# hct"
+"0","# Amb Fec No Atresia Class regression model"
+"0",""
+"0","hct_amb_fec_no_atresia_aov_cat <- aov(Hct.... ~ Fecundity_Class, data = Amb_Fec_No_Atresia_Samples)"
+"0",""
+"0","summary(hct_amb_fec_no_atresia_aov_cat)"
+"1","                Df Sum Sq Mean Sq F value Pr(>F)
+Fecundity_Class  1  23.12   23.12   1.904  0.217
+Residuals        6  72.84   12.14               
+"
+"0","TukeyHSD(hct_amb_fec_no_atresia_aov_cat)"
+"1","  Tukey multiple comparisons of means
+    95% family-wise confidence level
+
+Fit: aov(formula = Hct.... ~ Fecundity_Class, data = Amb_Fec_No_Atresia_Samples)
+
+$Fecundity_Class
+                             diff       lwr      upr     p adj
+Low (~1,000s)-High (>50,000) -3.4 -9.428547 2.628547 0.2167991
+
+"
+"0","# Normality test"
+"0","shapiro.test(Amb_Fec_No_Atresia_Samples$Hct....)"
+"1","
+	Shapiro-Wilk normality test
+
+data:  Amb_Fec_No_Atresia_Samples$Hct....
+W = 0.97097, p-value = 0.9055
+
+"
+"0","# Parametric variance test:"
+"0","bartlett.test(Hct.... ~ Fecundity_Class, data = Amb_Fec_No_Atresia_Samples)"
+"1","
+	Bartlett test of homogeneity of variances
+
+data:  Hct.... by Fecundity_Class
+Bartlett's K-squared = 0.45049, df = 1, p-value = 0.5021
+
+"
+"0","# Non-parametric variance test:"
+"0","# Levene's test requires a categorical variable"
+"0","#LeveneTest(Hct.... ~ Fecundity_Class, data = Amb_Fec_No_Atresia_Samples)"
+"0",""

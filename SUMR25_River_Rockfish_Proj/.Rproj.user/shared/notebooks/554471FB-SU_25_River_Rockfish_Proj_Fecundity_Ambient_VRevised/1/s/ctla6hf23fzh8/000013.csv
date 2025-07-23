@@ -1,0 +1,22 @@
+"0","summary(pH_amb_fec_lm)
+"
+"1","
+Call:
+lm(formula = pH ~ All_Fecundity, data = Amb_Fec_Samples)
+
+Residuals:
+     Min       1Q   Median       3Q      Max 
+-0.15988 -0.04288 -0.01188  0.07112  0.21212 
+
+Coefficients:
+               Estimate Std. Error t value Pr(>|t|)    
+(Intercept)   7.387e+00  2.387e-02  309.51   <2e-16 ***
+All_Fecundity 7.172e-07  6.579e-07    1.09    0.289    
+---
+Signif. codes:  0 ‘***’ 0.001 ‘**’ 0.01 ‘*’ 0.05 ‘.’ 0.1 ‘ ’ 1
+
+Residual standard error: 0.09148 on 19 degrees of freedom
+Multiple R-squared:  0.05886,	Adjusted R-squared:  0.009329 
+F-statistic: 1.188 on 1 and 19 DF,  p-value: 0.2893
+
+"

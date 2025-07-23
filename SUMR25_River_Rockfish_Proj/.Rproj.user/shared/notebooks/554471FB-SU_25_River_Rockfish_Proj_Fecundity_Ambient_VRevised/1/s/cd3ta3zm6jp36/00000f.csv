@@ -1,0 +1,15 @@
+"0","# pH"
+"0",""
+"0","# Amb Fec samples"
+"0",""
+"0","# test with lmer"
+"0","bartlett.test(pH ~ Fecundity_Class, Amb_Fec_Samples)"
+"1","
+	Bartlett test of homogeneity of variances
+
+data:  pH by Fecundity_Class
+Bartlett's K-squared = 1.4521, df = 2, p-value = 0.4838
+
+"
+"0","# leveneTest() "
+"0",""

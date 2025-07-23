@@ -1,0 +1,13 @@
+"0","# Density plot"
+"0",""
+"0","Amb_Fec_No_Atresia_Samples %>%"
+"0","  ggplot(aes(x = Na...mmol.L.)) +"
+"0","  stat_function(fun = dnorm, args = c(mean = mean(Amb_Fec_No_Atresia_Samples$Na...mmol.L.), sd = sd(Amb_Fec_No_Atresia_Samples$Na...mmol.L.)), aes(col = ""Normal Distribution""), show.legend = TRUE) +"
+"0","  geom_density(aes(col = ""Sample Density""), show.legend = TRUE) +"
+"0","  labs(title = ""Sodium Weight Adj Fecundity Sample Distribution"") +"
+"0","  scale_color_manual(""Distribution"", values = c(""Normal Distribution"" = ""green"", ""Sample Density"" = ""black""))"
+"2","Warning in gzfile(file, ""wb"") :
+  cannot open compressed file 'C:/Users/rmcke/OneDrive/Documents/Summer_2025_Rockfish_Research_Project/SUMR25_River_Rockfish_Proj/.Rproj.user/shared/notebooks/229181C7-SU_25_River_Rockfish_Proj_Fecundity_Ambient_V0.2/1/0DAB469D26582e1/cj5wfr6i8mba0_t/f8a81edb149d454b9b7f294ae6d8eea3.snapshot', probable reason 'No such file or directory'
+"
+"2","G1;H1;Errorh in gzfile(file, ""wb"") : cannot open the connection
+g"

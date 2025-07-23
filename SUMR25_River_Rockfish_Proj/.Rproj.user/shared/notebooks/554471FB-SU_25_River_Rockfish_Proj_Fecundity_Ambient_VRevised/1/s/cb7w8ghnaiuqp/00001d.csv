@@ -1,0 +1,23 @@
+"0","# pH Amb Fec No Atresia facet scatterplot by Fecundity Class"
+"0","pH_amb_fec_no_atresia_facet_scatterplot_fecundity_class <- ggplot(data = Amb_Fec_Samples) + "
+"0","  geom_point(aes(x = pH, y = Fecundity_No_Atresia), colour = ""black"") +"
+"0","  labs(title = ""pH"", x = ""pH"", y = ""Fecundity"") +"
+"0","  scale_y_continuous(breaks = c(1000, 50000, 90000)) +"
+"0","  facet_wrap(Fecundity_Class ~ Ambient.Or.OAH) +"
+"0","  theme_classic() +"
+"0","  theme(panel.background = element_rect(fill = ""white""),"
+"0","        plot.background = element_rect(fill = ""white""),"
+"0","        legend.background = element_rect(fill = ""white"", color = ""black""),"
+"0","        plot.title = element_text(size = 25, hjust = 0.5),"
+"0","        axis.text.x = element_text(size = 15),"
+"0","        axis.text.y = element_text(size = 15),"
+"0","        axis.title.x = element_text(size = 20),"
+"0","        axis.title.y = element_text(size = 20)) "
+"0","  "
+"0",""
+"0","print(pH_amb_fec_no_atresia_facet_scatterplot_fecundity_class)"
+"2","Warning in gzfile(file, ""wb"") :
+  cannot open compressed file 'C:/Users/rmcke/OneDrive/Documents/Summer_2025_Rockfish_Research_Project/SUMR25_River_Rockfish_Proj/.Rproj.user/shared/notebooks/554471FB-SU_25_River_Rockfish_Proj_Fecundity_Ambient_VRevised/1/0DAB469Dc087797b/cb7w8ghnaiuqp_t/4b9ff7bcc28344c9a7f9248dd8acc40a.snapshot', probable reason 'No such file or directory'
+"
+"2","G1;H1;Errorh in gzfile(file, ""wb"") : cannot open the connection
+g"

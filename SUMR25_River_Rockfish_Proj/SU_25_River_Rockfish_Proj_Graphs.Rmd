@@ -887,6 +887,7 @@ Fecundity Samples
 # Fecundity Samples
 glucose_all_fecundity_scatterplot <- ggplot(data = Fecundity_Samples) + 
   geom_point(aes(x = Glu..mmol.L., y = All_Fecundity), colour = "black") +
+  geom_smooth(aes(x = Glu..mmol.L., y = All_Fecundity), method = "lm") +
   labs(title = "Glucose Fecundity Samples", x = "Glucose (mmol/L)", y = "Brood Count") +
   scale_y_continuous(breaks = c(0, 50000, 90000)) + 
   theme_classic() +

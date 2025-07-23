@@ -1,0 +1,11 @@
+"0","# Parametric variance test: 
+# Bartlett's test requires a categorical variable
+bartlett.test(Ca....mmol.L. ~ Fecundity_Class, data = Amb_Fec_No_Atresia_Samples)
+"
+"1","
+	Bartlett test of homogeneity of variances
+
+data:  Ca....mmol.L. by Fecundity_Class
+Bartlett's K-squared = 0.2072, df = 1, p-value = 0.649
+
+"

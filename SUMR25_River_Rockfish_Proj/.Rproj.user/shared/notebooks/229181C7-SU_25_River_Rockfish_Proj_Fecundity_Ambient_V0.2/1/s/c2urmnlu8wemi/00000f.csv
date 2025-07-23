@@ -1,0 +1,73 @@
+"0","# K+"
+"0","# Amb Fec Class regression model"
+"0",""
+"0","potassium_amb_fec_aov_cat <- aov(K...mmol.L. ~ Fecundity_Class, data = Amb_Fec_Samples)"
+"0",""
+"0","summary(potassium_amb_fec_aov_cat)"
+"1","                Df Sum Sq Mean Sq F value Pr(>F)
+Fecundity_Class  2 0.1113 0.05563   0.796  0.466
+Residuals       18 1.2583 0.06990               
+"
+"0","TukeyHSD(potassium_amb_fec_aov_cat)"
+"1","  Tukey multiple comparisons of means
+    95% family-wise confidence level
+
+Fit: aov(formula = K...mmol.L. ~ Fecundity_Class, data = Amb_Fec_Samples)
+
+$Fecundity_Class
+                                  diff        lwr       upr     p adj
+Low (~1,000s)-High (>50,000) 0.0250000 -0.4521380 0.5021380 0.9901955
+Atresia-High (>50,000)       0.1615385 -0.2242789 0.5473558 0.5449631
+Atresia-Low (~1,000s)        0.1365385 -0.2492789 0.5223558 0.6452587
+
+"
+"0","# Normality test"
+"0","shapiro.test(Amb_Fec_Samples$K...mmol.L.) "
+"1","
+	Shapiro-Wilk normality test
+
+data:  Amb_Fec_Samples$K...mmol.L.
+W = 0.81347, p-value = 0.001062
+
+"
+"0","# Parametric variance test:"
+"0","# Bartlett's test requires a categorical variable"
+"0","bartlett.test(K...mmol.L. ~ Fecundity_Class, data = Amb_Fec_Samples) "
+"1","
+	Bartlett test of homogeneity of variances
+
+data:  K...mmol.L. by Fecundity_Class
+Bartlett's K-squared = 4.6368, df = 2, p-value = 0.09843
+
+"
+"0","# not normal"
+"0",""
+"0","# Nonparametric variance test:"
+"0","# Levene's test requires a categorical variable "
+"0","LeveneTest(K...mmol.L. ~ Fecundity_Class, data = Amb_Fec_Samples)"
+"1","Levene's Test for Homogeneity of Variance (center = median)
+      Df F value Pr(>F)
+group  2  0.7708 0.4773
+      18               
+"
+"0","# Non-parametric stat test"
+"0","kruskal.test(K...mmol.L. ~ Fecundity_Class, data = Amb_Fec_Samples)"
+"1","
+	Kruskal-Wallis rank sum test
+
+data:  K...mmol.L. by Fecundity_Class
+Kruskal-Wallis chi-squared = 1.2081, df = 2, p-value = 0.5466
+
+"
+"0","DunnTest(K...mmol.L. ~ Fecundity_Class, data = Amb_Fec_Samples)"
+"1","
+ Dunn's test of multiple comparisons using rank sums : holm  
+
+                             mean.rank.diff   pval    
+Low (~1,000s)-High (>50,000)       0.375000 1.0000    
+Atresia-High (>50,000)             3.115385 1.0000    
+Atresia-Low (~1,000s)              2.740385 1.0000    
+---
+Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1
+
+"

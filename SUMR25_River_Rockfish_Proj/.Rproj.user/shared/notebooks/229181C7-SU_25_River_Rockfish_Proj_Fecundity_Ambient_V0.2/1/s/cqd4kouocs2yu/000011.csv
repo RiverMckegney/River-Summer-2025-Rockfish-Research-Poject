@@ -1,0 +1,32 @@
+"0","# Cl-"
+"0",""
+"0","# Amb Fec No Atresia regression model"
+"0",""
+"0","chloride_amb_fec_no_atresia_lm <- lm(Cl...mmol.L. ~ All_Fecundity, data = Amb_Fec_No_Atresia_Samples)"
+"0",""
+"0","chloride_amb_fec_no_atresia_lm_res <- residuals(chloride_amb_fec_no_atresia_lm)"
+"0",""
+"0","# p-value significant if (a < 0.1 or a < 0.05)"
+"0","summary(chloride_amb_fec_no_atresia_lm)"
+"1","
+Call:
+lm(formula = Cl...mmol.L. ~ All_Fecundity, data = Amb_Fec_No_Atresia_Samples)
+
+Residuals:
+    Min      1Q  Median      3Q     Max 
+-3.7429 -1.9322 -0.7849  1.5874  5.4548 
+
+Coefficients:
+               Estimate Std. Error t value Pr(>|t|)    
+(Intercept)   1.569e+02  2.551e+00  61.516 1.24e-09 ***
+All_Fecundity 1.588e-05  4.340e-05   0.366    0.727    
+---
+Signif. codes:  0 ‘***’ 0.001 ‘**’ 0.01 ‘*’ 0.05 ‘.’ 0.1 ‘ ’ 1
+
+Residual standard error: 3.317 on 6 degrees of freedom
+Multiple R-squared:  0.02181,	Adjusted R-squared:  -0.1412 
+F-statistic: 0.1338 on 1 and 6 DF,  p-value: 0.7271
+
+"
+"0","chloride_amb_fec_no_atresia_lm_res_plot <- simulateResiduals(fittedModel = chloride_amb_fec_no_atresia_lm)"
+"0","plot(chloride_amb_fec_no_atresia_lm_res_plot)"

@@ -1,0 +1,10 @@
+"0","# Normality test
+shapiro.test(calcium_amb_fec_no_atresia_lm_res)
+"
+"1","
+	Shapiro-Wilk normality test
+
+data:  calcium_amb_fec_no_atresia_lm_res
+W = 0.88767, p-value = 0.2226
+
+"

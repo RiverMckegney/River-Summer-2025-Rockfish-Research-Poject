@@ -1,0 +1,44 @@
+"0","# Cl-"
+"0","# Amb Fec No Atresia Class regression model"
+"0",""
+"0","chloride_amb_fec_no_atresia_aov_cat <- aov(Cl...mmol.L. ~ Fecundity_Class, data = Amb_Fec_No_Atresia_Samples)"
+"0",""
+"0","summary(chloride_amb_fec_no_atresia_aov_cat)"
+"1","                Df Sum Sq Mean Sq F value Pr(>F)
+Fecundity_Class  1    0.5    0.50   0.045  0.839
+Residuals        6   67.0   11.17               
+"
+"0","TukeyHSD(chloride_amb_fec_no_atresia_aov_cat)"
+"1","  Tukey multiple comparisons of means
+    95% family-wise confidence level
+
+Fit: aov(formula = Cl...mmol.L. ~ Fecundity_Class, data = Amb_Fec_No_Atresia_Samples)
+
+$Fecundity_Class
+                             diff       lwr      upr     p adj
+Low (~1,000s)-High (>50,000) -0.5 -6.281827 5.281827 0.8394208
+
+"
+"0","# Normality Test"
+"0","shapiro.test(Amb_Fec_No_Atresia_Samples$Cl...mmol.L.)"
+"1","
+	Shapiro-Wilk normality test
+
+data:  Amb_Fec_No_Atresia_Samples$Cl...mmol.L.
+W = 0.94381, p-value = 0.6489
+
+"
+"0","# Parametric variance test: "
+"0","# Bartlett's test requires a categorical variable"
+"0","bartlett.test(Cl...mmol.L. ~ Fecundity_Class, data = Amb_Fec_No_Atresia_Samples)"
+"1","
+	Bartlett test of homogeneity of variances
+
+data:  Cl...mmol.L. by Fecundity_Class
+Bartlett's K-squared = 0.13223, df = 1, p-value = 0.7161
+
+"
+"0","# Nonparametric variance test:"
+"0","# Levene's test requires a categorical variable "
+"0","#LeveneTest(Cl...mmol.L. ~ Fecundity_Class, data = Amb_Fec_No_Atresia_Samples)"
+"0",""

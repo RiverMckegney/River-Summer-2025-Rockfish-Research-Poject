@@ -1,0 +1,14 @@
+"0",""
+"0"," pdf(""data-images/amb_fec_no_atresia_sample_size_table.pdf"")"
+"0"," grid.table(amb_fec_no_atresia_sample_size_table)"
+"0"," dev.off()"
+"1","null device 
+          1 
+"
+"0"," "
+"0"," png(""data-images/amb_fec_no_atresia_sample_size_table.png"")"
+"0"," grid.table(amb_fec_no_atresia_sample_size_table)"
+"0"," dev.off()"
+"1","null device 
+          1 
+"

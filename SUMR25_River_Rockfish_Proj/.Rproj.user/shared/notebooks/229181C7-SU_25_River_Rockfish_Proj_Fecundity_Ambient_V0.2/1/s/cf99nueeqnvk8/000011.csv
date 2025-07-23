@@ -1,0 +1,32 @@
+"0","# glucose"
+"0",""
+"0","# Amb Fec No Atresia regression model"
+"0",""
+"0","glucose_amb_fec_no_atresia_lm <- lm(Glu..mmol.L. ~ All_Fecundity, data = Amb_Fec_No_Atresia_Samples)"
+"0",""
+"0","glucose_amb_fec_no_atresia_lm_res <- residuals(glucose_amb_fec_no_atresia_lm)"
+"0",""
+"0","# p-value significant if (a < 0.1 or a < 0.05)"
+"0","summary(glucose_amb_fec_no_atresia_lm)"
+"1","
+Call:
+lm(formula = Glu..mmol.L. ~ All_Fecundity, data = Amb_Fec_No_Atresia_Samples)
+
+Residuals:
+    Min      1Q  Median      3Q     Max 
+-0.6868 -0.2944 -0.1433  0.1285  1.2066 
+
+Coefficients:
+               Estimate Std. Error t value Pr(>|t|)  
+(Intercept)   1.359e+00  4.773e-01   2.848   0.0293 *
+All_Fecundity 4.852e-06  8.120e-06   0.597   0.5720  
+---
+Signif. codes:  0 ‘***’ 0.001 ‘**’ 0.01 ‘*’ 0.05 ‘.’ 0.1 ‘ ’ 1
+
+Residual standard error: 0.6206 on 6 degrees of freedom
+Multiple R-squared:  0.05616,	Adjusted R-squared:  -0.1012 
+F-statistic: 0.357 on 1 and 6 DF,  p-value: 0.572
+
+"
+"0","glucose_amb_fec_no_atresia_lm_res_plot <- simulateResiduals(fittedModel = glucose_amb_fec_no_atresia_lm)"
+"0","plot(glucose_amb_fec_no_atresia_lm_res_plot)"

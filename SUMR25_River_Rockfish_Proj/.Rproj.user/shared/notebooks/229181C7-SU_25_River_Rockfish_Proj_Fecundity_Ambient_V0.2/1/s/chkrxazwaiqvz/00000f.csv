@@ -1,0 +1,44 @@
+"0","# K+"
+"0","# Amb Fec No Atresia Class regression model"
+"0",""
+"0","potassium_amb_fec_no_atresia_aov_cat <- aov(K...mmol.L. ~ Fecundity_Class, data = Amb_Fec_No_Atresia_Samples)"
+"0",""
+"0","summary(potassium_amb_fec_no_atresia_aov_cat)"
+"1","                Df  Sum Sq Mean Sq F value Pr(>F)
+Fecundity_Class  1 0.00125 0.00125   0.051  0.829
+Residuals        6 0.14750 0.02458               
+"
+"0","TukeyHSD(potassium_amb_fec_no_atresia_aov_cat)"
+"1","  Tukey multiple comparisons of means
+    95% family-wise confidence level
+
+Fit: aov(formula = K...mmol.L. ~ Fecundity_Class, data = Amb_Fec_No_Atresia_Samples)
+
+$Fecundity_Class
+                              diff        lwr       upr     p adj
+Low (~1,000s)-High (>50,000) 0.025 -0.2462837 0.2962837 0.8290795
+
+"
+"0","# Normality Test"
+"0","shapiro.test(Amb_Fec_No_Atresia_Samples$K...mmol.L.)"
+"1","
+	Shapiro-Wilk normality test
+
+data:  Amb_Fec_No_Atresia_Samples$K...mmol.L.
+W = 0.89952, p-value = 0.2861
+
+"
+"0","# Parametric variance test: "
+"0","# Bartlett's test requires a categorical variable"
+"0","bartlett.test(K...mmol.L. ~ Fecundity_Class, data = Amb_Fec_No_Atresia_Samples)"
+"1","
+	Bartlett test of homogeneity of variances
+
+data:  K...mmol.L. by Fecundity_Class
+Bartlett's K-squared = 1.9479, df = 1, p-value = 0.1628
+
+"
+"0","# Nonparametric variance test:"
+"0","# Levene's test requires a categorical variable "
+"0","#LeveneTest(K...mmol.L. ~ Fecundity_Class, data = Amb_Fec_No_Atresia_Samples)"
+"0",""

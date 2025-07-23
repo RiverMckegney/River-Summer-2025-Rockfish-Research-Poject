@@ -1,0 +1,64 @@
+"0","# Na+"
+"0","# Amb Fec Class regression model"
+"0",""
+"0","sodium_amb_fec_aov_cat <- aov(Na...mmol.L. ~ Fecundity_Class, data = Amb_Fec_Samples)"
+"0",""
+"0","summary(sodium_amb_fec_aov_cat)"
+"1","                Df Sum Sq Mean Sq F value Pr(>F)
+Fecundity_Class  2  156.8   78.38   0.865  0.438
+Residuals       18 1631.8   90.66               
+"
+"0","TukeyHSD(sodium_amb_fec_aov_cat)"
+"1","  Tukey multiple comparisons of means
+    95% family-wise confidence level
+
+Fit: aov(formula = Na...mmol.L. ~ Fecundity_Class, data = Amb_Fec_Samples)
+
+$Fecundity_Class
+                                  diff       lwr      upr     p adj
+Low (~1,000s)-High (>50,000) -2.000000 -19.18271 15.18271 0.9526465
+Atresia-High (>50,000)        4.480769  -9.41330 18.37484 0.6939179
+Atresia-Low (~1,000s)         6.480769  -7.41330 20.37484 0.4737484
+
+"
+"0","# Normality test"
+"0","shapiro.test(Amb_Fec_Samples$Na...mmol.L.) # not normal distribution"
+"1","
+	Shapiro-Wilk normality test
+
+data:  Amb_Fec_Samples$Na...mmol.L.
+W = 0.52676, p-value = 3.625e-07
+
+"
+"0","# Parametric variance test:"
+"0","# Bartlett's test requires a categorical variable"
+"0","bartlett.test(Na...mmol.L. ~ Fecundity_Class, data = Amb_Fec_Samples) "
+"1","
+	Bartlett test of homogeneity of variances
+
+data:  Na...mmol.L. by Fecundity_Class
+Bartlett's K-squared = 7.4634, df = 2, p-value = 0.02395
+
+"
+"0","# not normal"
+"0",""
+"0","# Nonparametric variance test:"
+"0","# Levene's test requires a categorical variable "
+"0","LeveneTest(Na...mmol.L. ~ Fecundity_Class, data = Amb_Fec_Samples)"
+"1","Levene's Test for Homogeneity of Variance (center = median)
+      Df F value Pr(>F)
+group  2  0.2098 0.8127
+      18               
+"
+"0","# passes nonparametric standards"
+"0",""
+"0","# Nonparametric test"
+"0",""
+"0","kruskal.test(Na...mmol.L. ~ Fecundity_Class, data = Amb_Fec_Samples)"
+"1","
+	Kruskal-Wallis rank sum test
+
+data:  Na...mmol.L. by Fecundity_Class
+Kruskal-Wallis chi-squared = 2.8608, df = 2, p-value = 0.2392
+
+"

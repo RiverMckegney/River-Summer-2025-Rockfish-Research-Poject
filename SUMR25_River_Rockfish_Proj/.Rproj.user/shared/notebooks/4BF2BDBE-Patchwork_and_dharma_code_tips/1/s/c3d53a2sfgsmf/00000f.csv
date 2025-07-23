@@ -1,0 +1,37 @@
+"0","# Run model"
+"0","m1 <- lmer(na ~ rolling_avg_10 + (1|date) + (1|Total_Time_hours) + (1|new_gonad_stage) , data = na)"
+"2","G1;H1;Errorh in lmer(na ~ rolling_avg_10 + (1 | date) + (1 | Total_Time_hours) +  : 
+  could not find function ""lmer""
+Error during wrapup: not that many frames on the stack
+Error: no more error handlers available (recursive errors?); invoking 'abort' restart
+g"
+"0","# Summary of Model"
+"0","summary(m1)"
+"2","G1;H1;Errorh: object 'm1' not found
+g"
+"2","G1;H1;Error during wrapuph: not that many frames on the stack
+Error: no more error handlers available (recursive errors?); invoking 'abort' restart
+g"
+"0","# Extract residuals"
+"0","residuals_m1 <- residuals(m1)"
+"2","G1;H1;Errorh: object 'm1' not found
+Error during wrapup: not that many frames on the stack
+Error: no more error handlers available (recursive errors?); invoking 'abort' restart
+g"
+"0","# Run the shapiro "
+"0","shapiro.test(residuals_m1)"
+"2","G1;H1;Errorh: object 'residuals_m1' not found
+Error during wrapup: not that many frames on the stack
+Error: no more error handlers available (recursive errors?); invoking 'abort' restart
+g"
+"0","# test the residuals futhur through the dharma package "
+"0","simulated_res <- simulateResiduals(fittedModel = m1) #model looks good"
+"2","G1;H1;Errorh: object 'm1' not found
+Error during wrapup: not that many frames on the stack
+Error: no more error handlers available (recursive errors?); invoking 'abort' restart
+g"
+"0","plot(simulated_res) #model looks good "
+"2","G1;H1;Errorh: object 'simulated_res' not found
+Error during wrapup: not that many frames on the stack
+Error: no more error handlers available (recursive errors?); invoking 'abort' restart
+g"

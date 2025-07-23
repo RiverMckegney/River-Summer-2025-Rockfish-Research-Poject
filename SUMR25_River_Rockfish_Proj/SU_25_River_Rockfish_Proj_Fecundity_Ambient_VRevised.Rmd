@@ -590,7 +590,35 @@ pH_amb_fec_no_atresia_facet_scatterplot_fecundity_class <- ggplot(data = Amb_Fec
   
 
 print(pH_amb_fec_no_atresia_facet_scatterplot_fecundity_class)
+
 ```
+
+```{r}
+# Weight adjusted scatterplot 
+
+# Amb Fec only scatterplot: atresia ids removed
+pH_amb_fec_no_atresia_weight_adj_scatterplot <- ggplot(data = Amb_Fec_Samples) + 
+  geom_point(aes(x = pH, y = Weight_Adjusted_Fecundity_Fecundity.Mean_Weight), colour = "black") +
+  labs(title = "pH", x = "pH", y = "Weight Adjusted Fecundity") +
+  scale_y_continuous() + 
+  theme_classic() +
+  facet_wrap(~ Ambient.Or.OAH) +
+  theme(panel.background = element_rect(fill = "white"),
+        plot.background = element_rect(fill = "white"),
+        legend.background = element_rect(fill = "white", color = "black"),
+        plot.title = element_text(size = 25, hjust = 0.5),
+        axis.text.x = element_text(size = 20),
+        axis.text.y = element_text(size = 20),
+        axis.title.x = element_text(size = 20),
+        axis.title.y = element_text(size = 20))
+
+print(pH_amb_fec_no_atresia_weight_adj_scatterplot)
+
+ggsave(filename = "data-images/pH_amb_fec_no_atresia_weight_adj_scatterplot.pdf", plot = pH_amb_fec_no_atresia_weight_adj_scatterplot, device = "pdf")
+ggsave(filename = "data-images/pH_amb_fec_no_atresia_weight_adj_scatterplot.png", plot = pH_amb_fec_no_atresia_weight_adj_scatterplot, device = "png")
+
+```
+
 
 
 pH Boxplot
@@ -678,6 +706,22 @@ Model Design
 require(flexplot)
 
 # Amb Fec regression model
+
+pH_amb_fec_lm <- lm(pH ~ All_Fecundity, data = Amb_Fec_Samples)
+
+pH_amb_fec_lm_res <- residuals(pH_amb_fec_lm)
+
+summary(pH_amb_fec_lm)
+
+pH_amb_fec_lm_res_plot <- simulateResiduals(fittedModel = pH_amb_fec_lm)
+plot(pH_amb_fec_lm_res_plot)
+
+pH_amb_fec_lm_cat <- lm(pH ~ Fecundity_Class)
+
+pH_amb_fec_lm_res <- residuals(pH_amb_fec_lm)
+
+pH_amb_fec_lm_res_plot <- simulateResiduals(fittedModel = pH_amb_fec_lm)
+plot(pH_amb_fec_lm_res_plot)
 
 pH_amb_fec_lmer <- lmer(pH ~ All_Fecundity + (All_Fecundity | Fecundity_Class), data = Amb_Fec_Samples)
 visualize(pH_amb_fec_lmer, plot = "model")

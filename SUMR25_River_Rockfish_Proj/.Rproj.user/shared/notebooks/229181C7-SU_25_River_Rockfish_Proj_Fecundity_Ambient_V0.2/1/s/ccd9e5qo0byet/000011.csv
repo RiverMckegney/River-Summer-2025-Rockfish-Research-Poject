@@ -1,0 +1,36 @@
+"0","# pH"
+"0",""
+"0","# Install flexplot"
+"0","# devtools::install_github(""dustinfife/flexplot"", ref=""development"")"
+"0","require(flexplot)"
+"0",""
+"0","# Amb Fec No Atresia regression model"
+"0",""
+"0","pH_amb_fec_no_atresia_lm <- lm(pH ~ All_Fecundity, data = Amb_Fec_No_Atresia_Samples)"
+"0",""
+"0","pH_amb_fec_no_atresia_lm_res <- residuals(pH_amb_fec_no_atresia_lm)"
+"0",""
+"0","# p-value significant if (a < 0.1 or a < 0.05)"
+"0","summary(pH_amb_fec_no_atresia_lm)"
+"1","
+Call:
+lm(formula = pH ~ All_Fecundity, data = Amb_Fec_No_Atresia_Samples)
+
+Residuals:
+     Min       1Q   Median       3Q      Max 
+-0.11708 -0.02362  0.01396  0.03114  0.06929 
+
+Coefficients:
+                Estimate Std. Error t value Pr(>|t|)    
+(Intercept)    7.465e+00  5.090e-02 146.673 6.77e-12 ***
+All_Fecundity -4.664e-07  8.660e-07  -0.539     0.61    
+---
+Signif. codes:  0 ‘***’ 0.001 ‘**’ 0.01 ‘*’ 0.05 ‘.’ 0.1 ‘ ’ 1
+
+Residual standard error: 0.06619 on 6 degrees of freedom
+Multiple R-squared:  0.04611,	Adjusted R-squared:  -0.1129 
+F-statistic:  0.29 on 1 and 6 DF,  p-value: 0.6096
+
+"
+"0","pH_amb_fec_no_atresia_lm_res_plot <- simulateResiduals(fittedModel = pH_amb_fec_no_atresia_lm)"
+"0","plot(pH_amb_fec_no_atresia_lm_res_plot)"

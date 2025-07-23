@@ -1,0 +1,43 @@
+"0","# pH"
+"0","# Amb Fec No Atresia Class regression model"
+"0",""
+"0","pH_amb_fec_no_atresia_aov_cat <- aov(pH ~ Fecundity_Class, data = Amb_Fec_No_Atresia_Samples)"
+"0",""
+"0","summary(pH_amb_fec_no_atresia_aov_cat)"
+"1","                Df   Sum Sq  Mean Sq F value Pr(>F)
+Fecundity_Class  1 0.001431 0.001431   0.329  0.587
+Residuals        6 0.026126 0.004354               
+"
+"0","TukeyHSD(pH_amb_fec_no_atresia_aov_cat)"
+"1","  Tukey multiple comparisons of means
+    95% family-wise confidence level
+
+Fit: aov(formula = pH ~ Fecundity_Class, data = Amb_Fec_No_Atresia_Samples)
+
+$Fecundity_Class
+                                diff         lwr       upr     p adj
+Low (~1,000s)-High (>50,000) 0.02675 -0.08742264 0.1409226 0.5872711
+
+"
+"0","# Normality test"
+"0","shapiro.test(Amb_Fec_No_Atresia_Samples$pH)"
+"1","
+	Shapiro-Wilk normality test
+
+data:  Amb_Fec_No_Atresia_Samples$pH
+W = 0.93569, p-value = 0.5693
+
+"
+"0","# Parametric variance test:"
+"0","bartlett.test(pH ~ Fecundity_Class, data = Amb_Fec_No_Atresia_Samples)"
+"1","
+	Bartlett test of homogeneity of variances
+
+data:  pH by Fecundity_Class
+Bartlett's K-squared = 0.30998, df = 1, p-value = 0.5777
+
+"
+"0","# Nonparametric variance test:"
+"0","# Levene's test requires a categorical variable "
+"0","#LeveneTest(pH ~ Fecundity_Class, data = Amb_Fec_No_Atresia_Samples)"
+"0",""

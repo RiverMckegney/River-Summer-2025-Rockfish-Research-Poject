@@ -1,0 +1,67 @@
+"0","# Glucose"
+"0","# Amb Fec Class regression model"
+"0",""
+"0","glucose_amb_fec_aov_cat <- aov(Glu..mmol.L. ~ Fecundity_Class, data = Amb_Fec_Samples)"
+"0",""
+"0","summary(glucose_amb_fec_aov_cat)"
+"1","                Df Sum Sq Mean Sq F value Pr(>F)
+Fecundity_Class  2  1.208  0.6041   1.317  0.293
+Residuals       18  8.257  0.4587               
+"
+"0","TukeyHSD(glucose_amb_fec_aov_cat)"
+"1","  Tukey multiple comparisons of means
+    95% family-wise confidence level
+
+Fit: aov(formula = Glu..mmol.L. ~ Fecundity_Class, data = Amb_Fec_Samples)
+
+$Fecundity_Class
+                              diff        lwr      upr     p adj
+Low (~1,000s)-High (>50,000) 0.125 -1.0973103 1.347310 0.9632210
+Atresia-High (>50,000)       0.550 -0.4383693 1.538369 0.3518867
+Atresia-Low (~1,000s)        0.425 -0.5633693 1.413369 0.5277964
+
+"
+"0","# Normality test:"
+"0","shapiro.test(Amb_Fec_Samples$Glu..mmol.L.)"
+"1","
+	Shapiro-Wilk normality test
+
+data:  Amb_Fec_Samples$Glu..mmol.L.
+W = 0.85634, p-value = 0.005473
+
+"
+"0","# Parametric variance test:"
+"0","# Bartlett's test requires a categorical variable "
+"0","bartlett.test(Glu..mmol.L. ~ Fecundity_Class, data = Amb_Fec_Samples)"
+"1","
+	Bartlett test of homogeneity of variances
+
+data:  Glu..mmol.L. by Fecundity_Class
+Bartlett's K-squared = 3.669, df = 2, p-value = 0.1597
+
+"
+"0","# Non-parametric variance test:"
+"0","# Levene's test requires a categorical variable "
+"0","#LeveneTest(Glu..mmol.L. ~ Fecundity_Class, data = Amb_Fec_Samples)"
+"0",""
+"0","# Non-parametric stat test:"
+"0","kruskal.test(Glu..mmol.L. ~ Fecundity_Class, data = Amb_Fec_Samples)"
+"1","
+	Kruskal-Wallis rank sum test
+
+data:  Glu..mmol.L. by Fecundity_Class
+Kruskal-Wallis chi-squared = 4.0755, df = 2, p-value = 0.1303
+
+"
+"0","DunnTest(Glu..mmol.L. ~ Fecundity_Class, data = Amb_Fec_Samples)"
+"1","
+ Dunn's test of multiple comparisons using rank sums : holm  
+
+                             mean.rank.diff   pval    
+Low (~1,000s)-High (>50,000)       2.625000 0.5480    
+Atresia-High (>50,000)             6.663462 0.1778    
+Atresia-Low (~1,000s)              4.038462 0.5060    
+---
+Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1
+
+"

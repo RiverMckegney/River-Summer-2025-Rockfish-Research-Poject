@@ -504,15 +504,24 @@ require(flexplot)
 
 # Best guess method: Treatment fixed, 
 # lm model of primary data
-pH_primary_lmer <- lmer(pH ~ Ambient.Or.OAH * Pregnant.Or.Atresia + (1|Pregnant.Or.Atresia), data = Primary_Samples)
+pH_primary_lm <- lm(pH ~ Ambient.Or.OAH, data = Primary_Samples)
+summary(pH_primary_lm)
 
-# Second best guess method:
-pH_primary_lmer2 <- lmer(pH ~ Pregnant.Or.Atresia * Ambient.Or.OAH + (1|Pregnant.Or.Atresia) + (1|Ambient.Or.OAH), data = Primary_Samples)
+pH_primary_lm2 <- lm(pH ~ Ambient.Or.OAH * Pregnant.Or.Atresia, data = Primary_Samples)
+summary(pH_primary_lm)
 
-visualize(pH_primary_lmer, plot = "model", sample = 50)
-visualize(pH_primary_lmer2, plot = "model", sample = 50)
+pH_primary_aov <- aov(pH ~ Ambient.Or.OAH * Pregnant.Or.Atresia, data = Primary_Samples)
+summary(pH_primary_aov)
+
+res <- residuals(pH_primary_lm)
+
+pH_primary_simres_plot <- simulateResiduals(fittedModel = pH_primary_lm)
+plot(pH_primary_simres_plot)
+
+testOutliers(pH_primary_simres_plot)
 
 ```
+
 
 
 
@@ -1769,7 +1778,7 @@ Model Design:
 # Best guess method: Treatment fixed, pregnancy fixed & random
 # lm model of primary data
 
-calcium_primary_lmer <- lmer(Ca....mmol.L. ~ Ambient.Or.OAH * Pregnant.Or.Atresia + (1|Pregnant.Or.Atresia), data = Primary_Samples)
+calcium_primary_lmer <- lm(Ca....mmol.L. ~ Ambient.Or.OAH * Pregnant.Or.Atresia + (1|Pregnant.Or.Atresia), data = Primary_Samples)
 
 # Second best guess method:
 calcium_primary_lmer2 <- lmer(Ca....mmol.L. ~ Pregnant.Or.Atresia * Ambient.Or.OAH  + (1|Ambient.Or.OAH), data = Primary_Samples)
