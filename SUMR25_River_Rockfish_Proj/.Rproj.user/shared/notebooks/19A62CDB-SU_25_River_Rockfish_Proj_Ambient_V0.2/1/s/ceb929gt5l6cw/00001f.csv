@@ -1,0 +1,10 @@
+"0","# Normality test
+shapiro.test(residuals(hct_amb_fec_no_atresia_lm))
+"
+"1","
+	Shapiro-Wilk normality test
+
+data:  residuals(hct_amb_fec_no_atresia_lm)
+W = 0.89945, p-value = 0.2161
+
+"

@@ -1,0 +1,55 @@
+"0","# ph"
+"0","# Primary Samples"
+"0",""
+"0","# Regression Model pt 2"
+"0",""
+"0","# Individually assess parameter to parturition groups & treatment groups"
+"0","pH_primary_lm1 <- lm(pH ~ Pregnant.Or.Atresia, data = Primary_Samples)"
+"0",""
+"0","pH_primary_lm2 <- lm(pH ~ Ambient.Or.OAH, data = Primary_Samples)"
+"0",""
+"0","# p-value significant if (a < 0.1 or a < 0.05)"
+"0","summary(pH_primary_lm1) # Significant"
+"1","
+Call:
+lm(formula = pH ~ Pregnant.Or.Atresia, data = Primary_Samples)
+
+Residuals:
+      Min        1Q    Median        3Q       Max 
+-0.152056 -0.057714  0.000944  0.042900  0.257944 
+
+Coefficients:
+                      Estimate Std. Error t value Pr(>|t|)    
+(Intercept)            7.39183    0.01833  403.29   <2e-16 ***
+Pregnant.Or.Atresia.L -0.07180    0.02592   -2.77   0.0102 *  
+---
+Signif. codes:  0 ‘***’ 0.001 ‘**’ 0.01 ‘*’ 0.05 ‘.’ 0.1 ‘ ’ 1
+
+Residual standard error: 0.09295 on 26 degrees of freedom
+Multiple R-squared:  0.2279,	Adjusted R-squared:  0.1982 
+F-statistic: 7.673 on 1 and 26 DF,  p-value: 0.01021
+
+"
+"0","summary(pH_primary_lm2) # Significant"
+"1","
+Call:
+lm(formula = pH ~ Ambient.Or.OAH, data = Primary_Samples)
+
+Residuals:
+     Min       1Q   Median       3Q      Max 
+-0.17414 -0.06893 -0.01614  0.06336  0.19786 
+
+Coefficients:
+                 Estimate Std. Error t value Pr(>|t|)    
+(Intercept)       7.35350    0.02111 348.403   <2e-16 ***
+Ambient.Or.OAH.L -0.06738    0.02985  -2.257   0.0326 *  
+---
+Signif. codes:  0 ‘***’ 0.001 ‘**’ 0.01 ‘*’ 0.05 ‘.’ 0.1 ‘ ’ 1
+
+Residual standard error: 0.09672 on 26 degrees of freedom
+Multiple R-squared:  0.1639,	Adjusted R-squared:  0.1317 
+F-statistic: 5.095 on 1 and 26 DF,  p-value: 0.03262
+
+"
+"0","pH_primary_lm_res_plot1 <- simulateResiduals(fittedModel = pH_primary_lm1)"
+"0","plot(pH_primary_lm_res_plot1)"

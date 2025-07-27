@@ -1,0 +1,17 @@
+"0","# Nonparametric stat test: Dunns
+DunnTest(Glu..mmol.L. ~ Consensus_Brood_Condition, data = Ambient_Samples)
+"
+"1","
+ Dunn's test of multiple comparisons using rank sums : holm  
+
+                  mean.rank.diff   pval    
+Normal-Excellent      -3.5000000 1.0000    
+Low-Excellent         -2.8333333 1.0000    
+Atresia-Excellent      2.5384615 1.0000    
+Low-Normal             0.6666667 1.0000    
+Atresia-Normal         6.0384615 0.5244    
+Atresia-Low            5.3717949 0.8733    
+---
+Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1
+
+"

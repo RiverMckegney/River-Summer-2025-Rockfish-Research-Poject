@@ -1,0 +1,65 @@
+"0","# chloride"
+"0","# Primary Samples"
+"0",""
+"0","# Regression Model "
+"0","# p-value significant if (a < 0.1 or a < 0.05)"
+"0",""
+"0","chloride_primary_lm_int <- lm(Cl...mmol.L. ~ Pregnant.Or.Atresia * Ambient.Or.OAH, data = Primary_Samples) # not significant"
+"0","summary(chloride_primary_lm_int)"
+"1","
+Call:
+lm(formula = Cl...mmol.L. ~ Pregnant.Or.Atresia * Ambient.Or.OAH, 
+    data = Primary_Samples)
+
+Residuals:
+   Min     1Q Median     3Q    Max 
+-7.462 -2.050 -0.200  1.654  7.538 
+
+Coefficients:
+                                        Estimate Std. Error t value
+(Intercept)                            158.85288    0.89826 176.845
+Pregnant.Or.Atresia.L                   -0.03128    1.27033  -0.025
+Ambient.Or.OAH.L                         1.05658    1.27033   0.832
+Pregnant.Or.Atresia.L:Ambient.Or.OAH.L  -0.75577    1.79652  -0.421
+                                       Pr(>|t|)    
+(Intercept)                              <2e-16 ***
+Pregnant.Or.Atresia.L                     0.981    
+Ambient.Or.OAH.L                          0.414    
+Pregnant.Or.Atresia.L:Ambient.Or.OAH.L    0.678    
+---
+Signif. codes:  0 ‘***’ 0.001 ‘**’ 0.01 ‘*’ 0.05 ‘.’ 0.1 ‘ ’ 1
+
+Residual standard error: 3.783 on 24 degrees of freedom
+Multiple R-squared:  0.03231,	Adjusted R-squared:  -0.08865 
+F-statistic: 0.2671 on 3 and 24 DF,  p-value: 0.8484
+
+"
+"0","chloride_primary_lm_add <- lm(Cl...mmol.L. ~ Pregnant.Or.Atresia + Ambient.Or.OAH, data = Primary_Samples)"
+"0","summary(chloride_primary_lm_add)"
+"1","
+Call:
+lm(formula = Cl...mmol.L. ~ Pregnant.Or.Atresia + Ambient.Or.OAH, 
+    data = Primary_Samples)
+
+Residuals:
+    Min      1Q  Median      3Q     Max 
+-7.3326 -2.0528 -0.4339  1.8667  7.6674 
+
+Coefficients:
+                      Estimate Std. Error t value Pr(>|t|)    
+(Intercept)           158.7473     0.8482 187.160   <2e-16 ***
+Pregnant.Or.Atresia.L   0.2638     1.0415   0.253    0.802    
+Ambient.Or.OAH.L        0.8503     1.1525   0.738    0.467    
+---
+Signif. codes:  0 ‘***’ 0.001 ‘**’ 0.01 ‘*’ 0.05 ‘.’ 0.1 ‘ ’ 1
+
+Residual standard error: 3.721 on 25 degrees of freedom
+Multiple R-squared:  0.02517,	Adjusted R-squared:  -0.05281 
+F-statistic: 0.3228 on 2 and 25 DF,  p-value: 0.7271
+
+"
+"0","# chloride_primary_lm_res_plot <- simulateResiduals(fittedModel = chloride_primary_lm_int)"
+"0","# plot(chloride_primary_lm_res_plot)"
+"0",""
+"0","chloride_primary_lm_res_plot <- simulateResiduals(fittedModel = chloride_primary_lm_add)"
+"0","plot(chloride_primary_lm_res_plot) # quantile deviations detected"

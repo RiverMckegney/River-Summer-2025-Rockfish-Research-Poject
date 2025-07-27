@@ -1,0 +1,10 @@
+"0","# Parametric Variance test (Bartlett's test): require at least 2 obs for each group
+bartlett.test(Cl...mmol.L. ~ Fecundity_Class, data = Ambient_Samples)
+"
+"1","
+	Bartlett test of homogeneity of variances
+
+data:  Cl...mmol.L. by Fecundity_Class
+Bartlett's K-squared = 0.82247, df = 2, p-value = 0.6628
+
+"

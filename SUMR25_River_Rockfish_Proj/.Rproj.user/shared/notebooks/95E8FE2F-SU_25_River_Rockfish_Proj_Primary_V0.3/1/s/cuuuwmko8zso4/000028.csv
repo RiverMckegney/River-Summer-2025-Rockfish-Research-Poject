@@ -1,0 +1,63 @@
+"0","# Residuals of model for shapiro test"
+"0","chloride_primary_lm_int_res <- residuals(chloride_primary_lm_int) "
+"0","chloride_primary_lm_add_res <- residuals(chloride_primary_lm_add)"
+"0",""
+"0",""
+"0","# Normality test"
+"0","shapiro.test(chloride_primary_lm_int_res) # normal"
+"1","
+	Shapiro-Wilk normality test
+
+data:  chloride_primary_lm_int_res
+W = 0.96898, p-value = 0.5534
+
+"
+"0","shapiro.test(chloride_primary_lm_add_res) # normal"
+"1","
+	Shapiro-Wilk normality test
+
+data:  chloride_primary_lm_add_res
+W = 0.96953, p-value = 0.5681
+
+"
+"0","# Scedasticity test: "
+"0","# bartlett's test parametric"
+"0","bartlett.test(Cl...mmol.L. ~ Pregnant.Or.Atresia, data = Primary_Samples) "
+"1","
+	Bartlett test of homogeneity of variances
+
+data:  Cl...mmol.L. by Pregnant.Or.Atresia
+Bartlett's K-squared = 0.76057, df = 1, p-value = 0.3832
+
+"
+"0","bartlett.test(Cl...mmol.L. ~ Ambient.Or.OAH, data = Primary_Samples)"
+"1","
+	Bartlett test of homogeneity of variances
+
+data:  Cl...mmol.L. by Ambient.Or.OAH
+Bartlett's K-squared = 3.6573, df = 1, p-value = 0.05582
+
+"
+"0","# Levene's test if nonparametric"
+"0","leveneTest(Cl...mmol.L. ~ Pregnant.Or.Atresia * Ambient.Or.OAH, data = Primary_Samples)"
+"1","Levene's Test for Homogeneity of Variance (center = median)
+      Df F value Pr(>F)
+group  3  1.2426 0.3162
+      24               
+"
+"0","leveneTest(Cl...mmol.L. ~ Pregnant.Or.Atresia, data = Primary_Samples)"
+"1","Levene's Test for Homogeneity of Variance (center = median)
+      Df F value Pr(>F)
+group  1  0.1495 0.7021
+      26               
+"
+"0","leveneTest(Cl...mmol.L. ~ Ambient.Or.OAH, data = Primary_Samples)"
+"1","Levene's Test for Homogeneity of Variance (center = median)
+      Df F value  Pr(>F)  
+group  1  2.9761 0.09637 .
+      26                  
+---
+Signif. codes:  0 ‘***’ 0.001 ‘**’ 0.01 ‘*’ 0.05 ‘.’ 0.1 ‘ ’ 1
+"
+"0","# Non-parametric regression test???:"
+"0",""

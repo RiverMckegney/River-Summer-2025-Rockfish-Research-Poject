@@ -1,0 +1,48 @@
+"0","# Cl-"
+"0","# Primary Samples"
+"0",""
+"0","# Interactive aov model"
+"0","chloride_primary_aov_int <- aov(Cl...mmol.L. ~ Pregnant.Or.Atresia * Ambient.Or.OAH, data = Primary_Samples)"
+"0","summary(chloride_primary_aov_int) # interaction not significant"
+"1","                                   Df Sum Sq Mean Sq F value Pr(>F)
+Pregnant.Or.Atresia                 1    1.4   1.400   0.098  0.757
+Ambient.Or.OAH                      1    7.5   7.536   0.526  0.475
+Pregnant.Or.Atresia:Ambient.Or.OAH  1    2.5   2.533   0.177  0.678
+Residuals                          24  343.5  14.314               
+"
+"0","# Additive aov model"
+"0","# If interaction not significant (p-value > 0.05), use additive model"
+"0","chloride_primary_aov_add <- aov(Cl...mmol.L. ~ Pregnant.Or.Atresia + Ambient.Or.OAH, data = Primary_Samples)"
+"0","summary(chloride_primary_aov_add)"
+"1","                    Df Sum Sq Mean Sq F value Pr(>F)
+Pregnant.Or.Atresia  1    1.4   1.400   0.101  0.753
+Ambient.Or.OAH       1    7.5   7.536   0.544  0.467
+Residuals           25  346.1  13.843               
+"
+"0","# Parametric Post-Hoc: Tukey's HSD test"
+"0","TukeyHSD(chloride_primary_aov_add)"
+"1","  Tukey multiple comparisons of means
+    95% family-wise confidence level
+
+Fit: aov(formula = Cl...mmol.L. ~ Pregnant.Or.Atresia + Ambient.Or.OAH, data = Primary_Samples)
+
+$Pregnant.Or.Atresia
+                              diff       lwr     upr     p adj
+Atresia-Post Parturition 0.4666667 -2.555517 3.48885 0.7531103
+
+$Ambient.Or.OAH
+                diff       lwr      upr     p adj
+OAH-Ambient 1.193651 -2.150597 4.537899 0.4691166
+
+"
+"0","# Normality plot"
+"0",""
+"0","# Qqplot: Residuals of aov or lm model (plot residuals of aov vs lm are identical)"
+"0","chloride_primary_res_qqplot <- ggqqplot(residuals(aov(Cl...mmol.L. ~ Pregnant.Or.Atresia + Ambient.Or.OAH, data = Primary_Samples))) +"
+"0","labs(title = ""Chloride Interactive Residual QQplot"","
+"0","     subtitle = ""residuals(aov(Cl...mmol.L. ~ Pregnant.Or.Atresia * Ambient.Or.OAH, data = Primary_Samples))"","
+"0","                               x = ""Chloride Theoretical Quantiles (Predicted values)"","
+"0","                               y = ""Chloride Sample Quantiles"") +"
+"0","  theme(plot.title = element_text(hjust = 0.5),"
+"0","        plot.subtitle = element_text(size = 10, hjust = 0.5))"
+"0","print(chloride_primary_res_qqplot)"

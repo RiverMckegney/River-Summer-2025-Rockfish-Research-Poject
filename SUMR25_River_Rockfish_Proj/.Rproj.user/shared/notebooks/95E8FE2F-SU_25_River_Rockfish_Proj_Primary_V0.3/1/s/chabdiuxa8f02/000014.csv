@@ -1,0 +1,53 @@
+"0","# chloride"
+"0","# Primary Samples"
+"0",""
+"0","# Regression Model pt 2"
+"0",""
+"0","# Individually assess parameter to parturition groups & treatment groups"
+"0","# p-value significant if (a < 0.1 or a < 0.05)"
+"0","chloride_primary_lm1 <- lm(Cl...mmol.L. ~ Pregnant.Or.Atresia, data = chloride_primary_sqrt)"
+"0","summary(chloride_primary_lm1) "
+"1","
+Call:
+lm(formula = Cl...mmol.L. ~ Pregnant.Or.Atresia, data = chloride_primary_sqrt)
+
+Residuals:
+      Min        1Q    Median        3Q       Max 
+-0.307152 -0.087238  0.003367  0.068150  0.288741 
+
+Coefficients:
+                      Estimate Std. Error t value Pr(>|t|)    
+(Intercept)           12.58630    0.02887 436.038   <2e-16 ***
+Pregnant.Or.Atresia.L  0.01282    0.04082   0.314    0.756    
+---
+Signif. codes:  0 ‘***’ 0.001 ‘**’ 0.01 ‘*’ 0.05 ‘.’ 0.1 ‘ ’ 1
+
+Residual standard error: 0.1464 on 26 degrees of freedom
+Multiple R-squared:  0.003776,	Adjusted R-squared:  -0.03454 
+F-statistic: 0.09856 on 1 and 26 DF,  p-value: 0.7561
+
+"
+"0","chloride_primary_lm2 <- lm(Cl...mmol.L. ~ Ambient.Or.OAH, data = chloride_primary_sqrt)"
+"0","summary(chloride_primary_lm2) "
+"1","
+Call:
+lm(formula = Cl...mmol.L. ~ Ambient.Or.OAH, data = chloride_primary_sqrt)
+
+Residuals:
+     Min       1Q   Median       3Q      Max 
+-0.28820 -0.08641 -0.01170  0.07993  0.30769 
+
+Coefficients:
+                 Estimate Std. Error t value Pr(>|t|)    
+(Intercept)      12.60136    0.03163 398.457   <2e-16 ***
+Ambient.Or.OAH.L  0.03528    0.04473   0.789    0.437    
+---
+Signif. codes:  0 ‘***’ 0.001 ‘**’ 0.01 ‘*’ 0.05 ‘.’ 0.1 ‘ ’ 1
+
+Residual standard error: 0.1449 on 26 degrees of freedom
+Multiple R-squared:  0.02338,	Adjusted R-squared:  -0.01418 
+F-statistic: 0.6224 on 1 and 26 DF,  p-value: 0.4373
+
+"
+"0","chloride_primary_lm_res_plot1 <- simulateResiduals(fittedModel = chloride_primary_lm1)"
+"0","plot(chloride_primary_lm_res_plot1)"

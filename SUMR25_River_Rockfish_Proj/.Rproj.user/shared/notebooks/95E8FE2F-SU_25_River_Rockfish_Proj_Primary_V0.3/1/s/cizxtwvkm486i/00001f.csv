@@ -1,0 +1,23 @@
+"0",""
+"0","# For shapiro test"
+"0","glucose_primary_lm_res1 <- residuals(glucose_primary_lm1)"
+"0",""
+"0","glucose_primary_lm_res2 <- residuals(glucose_primary_lm2)"
+"0",""
+"0","# Normality test"
+"0","shapiro.test(glucose_primary_lm_res1) # Non-parametric"
+"1","
+	Shapiro-Wilk normality test
+
+data:  glucose_primary_lm_res1
+W = 0.79757, p-value = 9.675e-05
+
+"
+"0","shapiro.test(glucose_primary_lm_res2) # Non-parametric"
+"1","
+	Shapiro-Wilk normality test
+
+data:  glucose_primary_lm_res2
+W = 0.8557, p-value = 0.001221
+
+"

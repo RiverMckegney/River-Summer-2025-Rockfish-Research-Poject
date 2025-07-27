@@ -1,0 +1,89 @@
+"0",""
+"0","# Normality Test"
+"0","shapiro.test(Primary_Samples$Cl...mmol.L.)"
+"1","
+	Shapiro-Wilk normality test
+
+data:  Primary_Samples$Cl...mmol.L.
+W = 0.97188, p-value = 0.6318
+
+"
+"0","shapiro.test(residuals(lm(Cl...mmol.L. ~ Pregnant.Or.Atresia * Ambient.Or.OAH, data = Primary_Samples)))"
+"1","
+	Shapiro-Wilk normality test
+
+data:  residuals(lm(Cl...mmol.L. ~ Pregnant.Or.Atresia * Ambient.Or.OAH, data = Primary_Samples))
+W = 0.96898, p-value = 0.5534
+
+"
+"0","# Parametric variance test:"
+"0","bartlett.test(Cl...mmol.L. ~ Pregnant.Or.Atresia, data = Primary_Samples) "
+"1","
+	Bartlett test of homogeneity of variances
+
+data:  Cl...mmol.L. by Pregnant.Or.Atresia
+Bartlett's K-squared = 0.76057, df = 1, p-value = 0.3832
+
+"
+"0","bartlett.test(Cl...mmol.L. ~ Ambient.Or.OAH, data = Primary_Samples)"
+"1","
+	Bartlett test of homogeneity of variances
+
+data:  Cl...mmol.L. by Ambient.Or.OAH
+Bartlett's K-squared = 3.6573, df = 1, p-value = 0.05582
+
+"
+"0","# Nonparametric variance test:"
+"0","LeveneTest(Cl...mmol.L. ~ Pregnant.Or.Atresia, data = Primary_Samples)"
+"1","Levene's Test for Homogeneity of Variance (center = median)
+      Df F value Pr(>F)
+group  1  0.1495 0.7021
+      26               
+"
+"0","leveneTest(Cl...mmol.L. ~ Ambient.Or.OAH, data = Primary_Samples)"
+"1","Levene's Test for Homogeneity of Variance (center = median)
+      Df F value  Pr(>F)  
+group  1  2.9761 0.09637 .
+      26                  
+---
+Signif. codes:  0 ‘***’ 0.001 ‘**’ 0.01 ‘*’ 0.05 ‘.’ 0.1 ‘ ’ 1
+"
+"0","# Nonparametric Stat test & Post-Hoc:"
+"0",""
+"0","kruskal.test(Cl...mmol.L. ~ Pregnant.Or.Atresia, data = Primary_Samples)"
+"1","
+	Kruskal-Wallis rank sum test
+
+data:  Cl...mmol.L. by Pregnant.Or.Atresia
+Kruskal-Wallis chi-squared = 0.23333, df = 1, p-value = 0.6291
+
+"
+"0","kruskal.test(Cl...mmol.L. ~ Ambient.Or.OAH, data = Primary_Samples)"
+"1","
+	Kruskal-Wallis rank sum test
+
+data:  Cl...mmol.L. by Ambient.Or.OAH
+Kruskal-Wallis chi-squared = 1.1429, df = 1, p-value = 0.285
+
+"
+"0","DunnTest(Cl...mmol.L. ~ Pregnant.Or.Atresia, data = Primary_Samples)"
+"1","
+ Dunn's test of multiple comparisons using rank sums : holm  
+
+                         mean.rank.diff   pval    
+Atresia-Post Parturition       1.555556 0.6291    
+---
+Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1
+
+"
+"0","DunnTest(Cl...mmol.L. ~ Ambient.Or.OAH, data = Primary_Samples)"
+"1","
+ Dunn's test of multiple comparisons using rank sums : holm  
+
+            mean.rank.diff   pval    
+OAH-Ambient       3.809524 0.2850    
+---
+Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1
+
+"
+"0","visualize(chloride_primary_aov_add)"

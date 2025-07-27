@@ -1,0 +1,9 @@
+"0","shapiro.test(residuals(aov(Cl...mmol.L. ~ Fecundity_Class, data = Ambient_Samples)))
+"
+"1","
+	Shapiro-Wilk normality test
+
+data:  residuals(aov(Cl...mmol.L. ~ Fecundity_Class, data = Ambient_Samples))
+W = 0.96555, p-value = 0.6339
+
+"

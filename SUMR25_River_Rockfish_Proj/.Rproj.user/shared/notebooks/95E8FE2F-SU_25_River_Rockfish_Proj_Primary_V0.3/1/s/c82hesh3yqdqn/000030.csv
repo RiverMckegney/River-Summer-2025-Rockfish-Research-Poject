@@ -1,0 +1,93 @@
+"0",""
+"0","# Normality Test"
+"0","shapiro.test(Primary_Samples$Na...mmol.L.)"
+"1","
+	Shapiro-Wilk normality test
+
+data:  Primary_Samples$Na...mmol.L.
+W = 0.52152, p-value = 1.916e-08
+
+"
+"0","shapiro.test(residuals(lm(Na...mmol.L. ~ Pregnant.Or.Atresia * Ambient.Or.OAH, data = Primary_Samples)))"
+"1","
+	Shapiro-Wilk normality test
+
+data:  residuals(lm(Na...mmol.L. ~ Pregnant.Or.Atresia * Ambient.Or.OAH, data = Primary_Samples))
+W = 0.56167, p-value = 5.246e-08
+
+"
+"0","# Parametric variance test:"
+"0","bartlett.test(Na...mmol.L. ~ Pregnant.Or.Atresia, data = Primary_Samples) "
+"1","
+	Bartlett test of homogeneity of variances
+
+data:  Na...mmol.L. by Pregnant.Or.Atresia
+Bartlett's K-squared = 10.874, df = 1, p-value = 0.0009751
+
+"
+"0","bartlett.test(Na...mmol.L. ~ Ambient.Or.OAH, data = Primary_Samples)"
+"1","
+	Bartlett test of homogeneity of variances
+
+data:  Na...mmol.L. by Ambient.Or.OAH
+Bartlett's K-squared = 8.4559, df = 1, p-value = 0.003639
+
+"
+"0","# Nonparametric variance test:"
+"0","LeveneTest(Na...mmol.L. ~ Pregnant.Or.Atresia, data = Primary_Samples)"
+"1","Levene's Test for Homogeneity of Variance (center = median)
+      Df F value Pr(>F)
+group  1  0.4826 0.4934
+      26               
+"
+"0","leveneTest(Na...mmol.L. ~ Ambient.Or.OAH, data = Primary_Samples)"
+"1","Levene's Test for Homogeneity of Variance (center = median)
+      Df F value Pr(>F)
+group  1  0.2851 0.5979
+      26               
+"
+"0","# Nonparametric Stat test & Post-Hoc:"
+"0",""
+"0","kruskal.test(Na...mmol.L. ~ Pregnant.Or.Atresia, data = Primary_Samples)"
+"1","
+	Kruskal-Wallis rank sum test
+
+data:  Na...mmol.L. by Pregnant.Or.Atresia
+Kruskal-Wallis chi-squared = 0.084351, df = 1, p-value =
+0.7715
+
+"
+"0","kruskal.test(Na...mmol.L. ~ Ambient.Or.OAH, data = Primary_Samples)"
+"1","
+	Kruskal-Wallis rank sum test
+
+data:  Na...mmol.L. by Ambient.Or.OAH
+Kruskal-Wallis chi-squared = 2.8469, df = 1, p-value = 0.09155
+
+"
+"0","DunnTest(Na...mmol.L. ~ Pregnant.Or.Atresia, data = Primary_Samples)"
+"1","
+ Dunn's test of multiple comparisons using rank sums : holm  
+
+"
+"1","                         mean.rank.diff   pval    
+Atresia-Post Parturition      0.9333333 0.7715    
+---
+Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1
+
+"
+"0","DunnTest(Na...mmol.L. ~ Ambient.Or.OAH, data = Primary_Samples)"
+"1","
+ Dunn's test of multiple comparisons using rank sums : holm  
+
+            mean.rank.diff   pval    
+OAH-Ambient             -6 0.0916 .  
+---
+Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1
+
+"
+"0","sodium_primary_aov_res_plot <- simulateResiduals(fittedModel = sodium_primary_aov_add)"
+"2","G2;H2;Warningh in checkModel(fittedModel) :
+  DHARMa: fittedModel not in class of supported models. Absolutely no guarantee that this will work!g
+"
+"0","plot(sodium_primary_aov_res_plot) # KS significant"

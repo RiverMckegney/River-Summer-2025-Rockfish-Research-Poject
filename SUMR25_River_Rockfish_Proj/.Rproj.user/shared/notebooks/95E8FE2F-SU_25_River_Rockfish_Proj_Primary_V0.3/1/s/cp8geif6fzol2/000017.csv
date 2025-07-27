@@ -1,0 +1,40 @@
+"0",""
+"0","# Residuals of model for shapiro test"
+"0","# hct_primary_lm_int_res <- residuals(hct_primary_lm_int) # does not work"
+"0","hct_primary_lm_add_res <- residuals(hct_primary_lm_add)"
+"0",""
+"0","# Normality test"
+"0","#shapiro.test(hct_primary_lm_int_res) # does not work"
+"0","shapiro.test(hct_primary_lm_add_res)"
+"1","
+	Shapiro-Wilk normality test
+
+data:  hct_primary_lm_add_res
+W = 0.96235, p-value = 0.3959
+
+"
+"0","# Scedasticity test: "
+"0","# bartlett's test parametric"
+"0","bartlett.test(Hct.... ~ Pregnant.Or.Atresia, data = Primary_Samples) "
+"1","
+	Bartlett test of homogeneity of variances
+
+data:  Hct.... by Pregnant.Or.Atresia
+Bartlett's K-squared = 0.16489, df = 1, p-value = 0.6847
+
+"
+"0","bartlett.test(Hct.... ~ Ambient.Or.OAH, data = Primary_Samples)"
+"1","
+	Bartlett test of homogeneity of variances
+
+data:  Hct.... by Ambient.Or.OAH
+Bartlett's K-squared = 0.66339, df = 1, p-value = 0.4154
+
+"
+"0","# Levene's test if nonparametric"
+"0","# leveneTest(Hct.... ~ Pregnant.Or.Atresia * Ambient.Or.OAH, data = Primary_Samples)"
+"0","# leveneTest(Hct.... ~ Pregnant.Or.Atresia, data = Primary_Samples) "
+"0","# leveneTest(Hct.... ~ Ambient.Or.OAH, data = Primary_Samples)"
+"0",""
+"0","# Non-parametric regression test???:"
+"0",""

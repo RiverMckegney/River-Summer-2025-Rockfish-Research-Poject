@@ -1,0 +1,3 @@
+"0",""
+"0","glucose_primary_lm_res_plot2 <- simulateResiduals(fittedModel = glucose_primary_lm2)"
+"0","plot(glucose_primary_lm_res_plot2)"

@@ -1,0 +1,9 @@
+"0","bartlett.test(Hct.... ~ Fecundity_Class, data = Ambient_Samples)
+"
+"1","
+	Bartlett test of homogeneity of variances
+
+data:  Hct.... by Fecundity_Class
+Bartlett's K-squared = 1.7219, df = 2, p-value = 0.4228
+
+"

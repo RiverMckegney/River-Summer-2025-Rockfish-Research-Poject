@@ -1,0 +1,10 @@
+"0","# Normailty test
+shapiro.test(residuals(sodium_amb_fec_no_atresia_lm))
+"
+"1","
+	Shapiro-Wilk normality test
+
+data:  residuals(sodium_amb_fec_no_atresia_lm)
+W = 0.86592, p-value = 0.08956
+
+"

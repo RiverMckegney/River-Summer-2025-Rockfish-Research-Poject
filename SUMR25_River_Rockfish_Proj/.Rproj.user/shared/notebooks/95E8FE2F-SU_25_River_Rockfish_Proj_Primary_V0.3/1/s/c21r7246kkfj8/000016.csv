@@ -1,0 +1,3 @@
+"0",""
+"0","potassium_primary_lm_res_plot2 <- simulateResiduals(fittedModel = potassium_primary_lm2)"
+"0","plot(potassium_primary_lm_res_plot2)"

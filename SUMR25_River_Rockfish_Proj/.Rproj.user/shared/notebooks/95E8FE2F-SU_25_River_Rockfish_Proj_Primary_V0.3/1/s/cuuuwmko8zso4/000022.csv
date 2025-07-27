@@ -1,0 +1,62 @@
+"0","# Transform data: square root"
+"0","chloride_primary_sqrt <- Primary_Samples %>%"
+"0","  mutate(Cl...mmol.L. = sqrt(Cl...mmol.L.))"
+"0",""
+"0","# Rerun lm model with square root transformed data"
+"0","chloride_primary_sqrt_lm_int <- lm(Cl...mmol.L. ~ Pregnant.Or.Atresia * Ambient.Or.OAH, data = chloride_primary_sqrt) "
+"0","summary(chloride_primary_sqrt_lm_int) # still not significant"
+"1","
+Call:
+lm(formula = Cl...mmol.L. ~ Pregnant.Or.Atresia * Ambient.Or.OAH, 
+    data = chloride_primary_sqrt)
+
+Residuals:
+      Min        1Q    Median        3Q       Max 
+-0.298717 -0.081125 -0.007769  0.066405  0.297176 
+
+Coefficients:
+                                        Estimate Std. Error t value
+(Intercept)                            12.603101   0.035643 353.591
+Pregnant.Or.Atresia.L                  -0.001406   0.050407  -0.028
+Ambient.Or.OAH.L                        0.042392   0.050407   0.841
+Pregnant.Or.Atresia.L:Ambient.Or.OAH.L -0.029585   0.071286  -0.415
+                                       Pr(>|t|)    
+(Intercept)                              <2e-16 ***
+Pregnant.Or.Atresia.L                     0.978    
+Ambient.Or.OAH.L                          0.409    
+Pregnant.Or.Atresia.L:Ambient.Or.OAH.L    0.682    
+---
+Signif. codes:  0 ‘***’ 0.001 ‘**’ 0.01 ‘*’ 0.05 ‘.’ 0.1 ‘ ’ 1
+
+Residual standard error: 0.1501 on 24 degrees of freedom
+Multiple R-squared:  0.03267,	Adjusted R-squared:  -0.08825 
+F-statistic: 0.2702 on 3 and 24 DF,  p-value: 0.8462
+
+"
+"0","chloride_primary_sqrt_lm_add <- lm(Cl...mmol.L. ~ Pregnant.Or.Atresia + Ambient.Or.OAH, data = chloride_primary_sqrt)"
+"0","summary(chloride_primary_sqrt_lm_add)"
+"1","
+Call:
+lm(formula = Cl...mmol.L. ~ Pregnant.Or.Atresia + Ambient.Or.OAH, 
+    data = chloride_primary_sqrt)
+
+Residuals:
+     Min       1Q   Median       3Q      Max 
+-0.29367 -0.08112 -0.01648  0.07480  0.30222 
+
+Coefficients:
+                      Estimate Std. Error t value Pr(>|t|)    
+(Intercept)           12.59897    0.03365 374.377   <2e-16 ***
+Pregnant.Or.Atresia.L  0.01015    0.04132   0.246    0.808    
+Ambient.Or.OAH.L       0.03432    0.04573   0.751    0.460    
+---
+Signif. codes:  0 ‘***’ 0.001 ‘**’ 0.01 ‘*’ 0.05 ‘.’ 0.1 ‘ ’ 1
+
+Residual standard error: 0.1476 on 25 degrees of freedom
+Multiple R-squared:  0.02573,	Adjusted R-squared:  -0.05221 
+F-statistic: 0.3301 on 2 and 25 DF,  p-value: 0.7219
+
+"
+"0","# Check hows it"
+"0","chloride_primary_sqrt_lm_res_plot <- simulateResiduals(fittedModel = chloride_primary_sqrt_lm_add)"
+"0","plot(chloride_primary_sqrt_lm_res_plot) # KS still significant"

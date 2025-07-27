@@ -1,0 +1,23 @@
+"0",""
+"0","# For shapiro test"
+"0","pH_primary_lm_res1 <- residuals(pH_primary_lm1)"
+"0",""
+"0","pH_primary_lm_res2 <- residuals(pH_primary_lm2)"
+"0",""
+"0","# Normality test"
+"0","shapiro.test(pH_primary_lm_res1) # Normal"
+"1","
+	Shapiro-Wilk normality test
+
+data:  pH_primary_lm_res1
+W = 0.96109, p-value = 0.3699
+
+"
+"0","shapiro.test(pH_primary_lm_res2) # Normal"
+"1","
+	Shapiro-Wilk normality test
+
+data:  pH_primary_lm_res2
+W = 0.97843, p-value = 0.8112
+
+"

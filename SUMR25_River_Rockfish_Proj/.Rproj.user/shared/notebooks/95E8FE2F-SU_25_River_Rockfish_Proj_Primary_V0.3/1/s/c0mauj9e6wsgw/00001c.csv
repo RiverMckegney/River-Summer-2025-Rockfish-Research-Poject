@@ -1,0 +1,3 @@
+"0",""
+"0","sodium_primary_lm_res_plot2 <- simulateResiduals(fittedModel = sodium_primary_lm2)"
+"0","plot(sodium_primary_lm_res_plot2)"

@@ -1,0 +1,23 @@
+"0",""
+"0","# For shapiro test"
+"0","hct_primary_lm_res1 <- residuals(hct_primary_lm1)"
+"0",""
+"0","hct_primary_lm_res2 <- residuals(hct_primary_lm2)"
+"0",""
+"0","# Normality test"
+"0","shapiro.test(hct_primary_lm_res1) # Normal"
+"1","
+	Shapiro-Wilk normality test
+
+data:  hct_primary_lm_res1
+W = 0.95107, p-value = 0.2108
+
+"
+"0","shapiro.test(hct_primary_lm_res2) # Normal"
+"1","
+	Shapiro-Wilk normality test
+
+data:  hct_primary_lm_res2
+W = 0.97352, p-value = 0.6773
+
+"

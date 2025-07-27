@@ -1,0 +1,52 @@
+"0","# hct"
+"0","# Primary Samples"
+"0",""
+"0","# Interactive aov model"
+"0","hct_primary_aov_int <- aov(Hct.... ~ Pregnant.Or.Atresia * Ambient.Or.OAH, data = Primary_Samples)"
+"0","summary(hct_primary_aov_int) # interaction almost significant"
+"1","                                   Df Sum Sq Mean Sq F value Pr(>F)  
+Pregnant.Or.Atresia                 1  76.07   76.07   7.334 0.0123 *
+Ambient.Or.OAH                      1  14.13   14.13   1.362 0.2547  
+Pregnant.Or.Atresia:Ambient.Or.OAH  1   0.28    0.28   0.027 0.8715  
+Residuals                          24 248.94   10.37                 
+---
+Signif. codes:  0 ‘***’ 0.001 ‘**’ 0.01 ‘*’ 0.05 ‘.’ 0.1 ‘ ’ 1
+"
+"0","# Additive aov model"
+"0","# If interaction not significant (p-value > 0.05), use additive model"
+"0","hct_primary_aov_additive <- aov(Hct.... ~ Pregnant.Or.Atresia + Ambient.Or.OAH, data = Primary_Samples)"
+"0","summary(hct_primary_aov_additive)"
+"1","                    Df Sum Sq Mean Sq F value Pr(>F)  
+Pregnant.Or.Atresia  1  76.07   76.07   7.631 0.0106 *
+Ambient.Or.OAH       1  14.13   14.13   1.417 0.2451  
+Residuals           25 249.22    9.97                 
+---
+Signif. codes:  0 ‘***’ 0.001 ‘**’ 0.01 ‘*’ 0.05 ‘.’ 0.1 ‘ ’ 1
+"
+"0","# Parametric Post-Hoc: Tukey's HSD test"
+"0","TukeyHSD(hct_primary_aov_additive)"
+"1","  Tukey multiple comparisons of means
+    95% family-wise confidence level
+
+Fit: aov(formula = Hct.... ~ Pregnant.Or.Atresia + Ambient.Or.OAH, data = Primary_Samples)
+
+$Pregnant.Or.Atresia
+                         diff       lwr      upr     p adj
+Atresia-Post Parturition 3.44 0.8753289 6.004671 0.0106014
+
+$Ambient.Or.OAH
+                diff       lwr      upr     p adj
+OAH-Ambient 1.634286 -1.203694 4.472265 0.2467681
+
+"
+"0","# Normality plot"
+"0",""
+"0","# Qqplot: Residuals of aov or lm model (plot residuals of aov vs lm are identical)"
+"0","hct_primary_res_qqplot <- ggqqplot(residuals(aov(Hct.... ~ Pregnant.Or.Atresia * Ambient.Or.OAH, data = Primary_Samples))) +"
+"0","labs(title = ""Primary Hematocrit Interactive Residual QQplot"","
+"0","     subtitle = ""residuals(aov(Hct.... ~ Pregnant.Or.Atresia * Ambient.Or.OAH, data = Primary_Samples))"","
+"0","                               x = ""Hct Theoretical Quantiles (Predicted values)"","
+"0","                               y = ""Hct Sample Quantiles"") +"
+"0","  theme(plot.title = element_text(hjust = 0.5),"
+"0","        plot.subtitle = element_text(hjust = 0.5))"
+"0","print(hct_primary_res_qqplot)"

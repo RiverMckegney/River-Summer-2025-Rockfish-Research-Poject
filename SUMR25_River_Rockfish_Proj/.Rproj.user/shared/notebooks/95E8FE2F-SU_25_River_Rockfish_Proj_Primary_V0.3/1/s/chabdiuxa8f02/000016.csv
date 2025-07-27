@@ -1,0 +1,3 @@
+"0",""
+"0","chloride_primary_lm_res_plot2 <- simulateResiduals(fittedModel = chloride_primary_lm2)"
+"0","plot(chloride_primary_lm_res_plot2)"

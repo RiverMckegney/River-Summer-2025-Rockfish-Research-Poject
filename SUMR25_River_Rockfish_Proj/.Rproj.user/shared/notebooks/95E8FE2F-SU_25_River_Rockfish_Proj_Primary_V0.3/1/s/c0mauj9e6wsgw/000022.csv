@@ -1,0 +1,23 @@
+"0",""
+"0","# For shapiro test"
+"0","sodium_primary_lm_res1 <- residuals(sodium_primary_lm1)"
+"0",""
+"0","sodium_primary_lm_res2 <- residuals(sodium_primary_lm2)"
+"0",""
+"0","# Normality test"
+"0","shapiro.test(sodium_primary_lm_res1) # Non-parametric"
+"1","
+	Shapiro-Wilk normality test
+
+data:  sodium_primary_lm_res1
+W = 0.58314, p-value = 9.212e-08
+
+"
+"0","shapiro.test(sodium_primary_lm_res2) # Non-parametric"
+"1","
+	Shapiro-Wilk normality test
+
+data:  sodium_primary_lm_res2
+W = 0.55298, p-value = 4.198e-08
+
+"

@@ -1,0 +1,55 @@
+"0","# glucose"
+"0","# Primary Samples"
+"0",""
+"0","# Regression Model pt 2"
+"0",""
+"0","# Individually assess parameter to parturition groups & treatment groups"
+"0","glucose_primary_lm1 <- lm(Glu..mmol.L. ~ Pregnant.Or.Atresia, data = Primary_Samples)"
+"0",""
+"0","glucose_primary_lm2 <- lm(Glu..mmol.L. ~ Ambient.Or.OAH, data = Primary_Samples)"
+"0",""
+"0","# p-value significant if (a < 0.1 or a < 0.05)"
+"0","summary(glucose_primary_lm1) # Significant"
+"1","
+Call:
+lm(formula = Glu..mmol.L. ~ Pregnant.Or.Atresia, data = Primary_Samples)
+
+Residuals:
+    Min      1Q  Median      3Q     Max 
+-0.9400 -0.3850 -0.1033  0.1333  2.1333 
+
+Coefficients:
+                      Estimate Std. Error t value Pr(>|t|)    
+(Intercept)             1.9533     0.1424  13.714 2.06e-13 ***
+Pregnant.Or.Atresia.L   0.1603     0.2014   0.796    0.433    
+---
+Signif. codes:  0 ‘***’ 0.001 ‘**’ 0.01 ‘*’ 0.05 ‘.’ 0.1 ‘ ’ 1
+
+Residual standard error: 0.7223 on 26 degrees of freedom
+Multiple R-squared:  0.02377,	Adjusted R-squared:  -0.01378 
+F-statistic: 0.6331 on 1 and 26 DF,  p-value: 0.4334
+
+"
+"0","summary(glucose_primary_lm2) # not significant"
+"1","
+Call:
+lm(formula = Glu..mmol.L. ~ Ambient.Or.OAH, data = Primary_Samples)
+
+Residuals:
+    Min      1Q  Median      3Q     Max 
+-1.0143 -0.4393 -0.1143  0.1857  2.2857 
+
+Coefficients:
+                 Estimate Std. Error t value Pr(>|t|)    
+(Intercept)        2.0571     0.1570   13.10 5.87e-13 ***
+Ambient.Or.OAH.L   0.2020     0.2221    0.91    0.371    
+---
+Signif. codes:  0 ‘***’ 0.001 ‘**’ 0.01 ‘*’ 0.05 ‘.’ 0.1 ‘ ’ 1
+
+Residual standard error: 0.7197 on 26 degrees of freedom
+Multiple R-squared:  0.03085,	Adjusted R-squared:  -0.00643 
+F-statistic: 0.8275 on 1 and 26 DF,  p-value: 0.3714
+
+"
+"0","glucose_primary_lm_res_plot1 <- simulateResiduals(fittedModel = glucose_primary_lm1)"
+"0","plot(glucose_primary_lm_res_plot1) # Warning appears"

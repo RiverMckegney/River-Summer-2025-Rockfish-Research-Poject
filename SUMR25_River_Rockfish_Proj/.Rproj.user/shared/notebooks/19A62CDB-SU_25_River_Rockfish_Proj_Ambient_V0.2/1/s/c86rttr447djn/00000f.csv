@@ -1,0 +1,9 @@
+"0","bartlett.test(Na...mmol.L. ~ Fecundity_Class, data = Ambient_Samples)
+"
+"1","
+	Bartlett test of homogeneity of variances
+
+data:  Na...mmol.L. by Fecundity_Class
+Bartlett's K-squared = 7.4634, df = 2, p-value = 0.02395
+
+"

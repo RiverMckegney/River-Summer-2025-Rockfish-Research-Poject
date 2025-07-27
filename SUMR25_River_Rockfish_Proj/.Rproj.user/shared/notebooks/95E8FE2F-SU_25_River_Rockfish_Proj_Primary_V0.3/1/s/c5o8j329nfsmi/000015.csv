@@ -1,0 +1,5 @@
+"1","No Studentized residuals with Bonferroni p < 0.05
+Largest |rstudent|:
+"
+"0","#  Used Ranked model to adjust for outlier"
+"0","boxplot(rank(Cl...mmol.L.) ~ Pregnant.Or.Atresia, data = Primary_Samples, horizontal = TRUE)"

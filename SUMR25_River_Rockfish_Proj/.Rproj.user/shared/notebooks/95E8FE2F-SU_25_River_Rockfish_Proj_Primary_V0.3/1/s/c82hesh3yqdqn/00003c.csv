@@ -1,0 +1,26 @@
+"0",""
+"0","# Nonparametric Wilcoxon test"
+"0","wilcox.test(rank(Na...mmol.L.) ~ Pregnant.Or.Atresia, data = Primary_Samples)"
+"2","G2;H2;Warningh in wilcox.test.default(x = DATA[[1L]], y = DATA[[2L]], ...) :
+  cannot compute exact p-value with tiesg
+"
+"1","
+	Wilcoxon rank sum test with continuity correction
+
+data:  rank(Na...mmol.L.) by Pregnant.Or.Atresia
+W = 84, p-value = 0.7901
+alternative hypothesis: true location shift is not equal to 0
+
+"
+"0","wilcox.test(rank(Na...mmol.L.) ~ Ambient.Or.OAH, data = Primary_Samples)"
+"2","G2;H2;Warningh in wilcox.test.default(x = DATA[[1L]], y = DATA[[2L]], ...) :
+  cannot compute exact p-value with tiesg
+"
+"1","
+	Wilcoxon rank sum test with continuity correction
+
+data:  rank(Na...mmol.L.) by Ambient.Or.OAH
+W = 105, p-value = 0.09682
+alternative hypothesis: true location shift is not equal to 0
+
+"

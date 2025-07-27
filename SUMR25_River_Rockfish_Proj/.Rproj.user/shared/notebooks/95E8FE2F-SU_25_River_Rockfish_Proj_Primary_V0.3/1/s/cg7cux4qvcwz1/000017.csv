@@ -1,0 +1,61 @@
+"0",""
+"0","# Residuals of model for shapiro test"
+"0","glucose_primary_lm_int_res <- residuals(glucose_primary_lm_int) "
+"0","glucose_primary_lm_add_res <- residuals(glucose_primary_lm_add)"
+"0",""
+"0","# Normality test"
+"0","shapiro.test(glucose_primary_lm_int_res) # works"
+"1","
+	Shapiro-Wilk normality test
+
+data:  glucose_primary_lm_int_res
+W = 0.88835, p-value = 0.00617
+
+"
+"0","shapiro.test(glucose_primary_lm_add_res) # works"
+"1","
+	Shapiro-Wilk normality test
+
+data:  glucose_primary_lm_add_res
+W = 0.81579, p-value = 0.0002053
+
+"
+"0","# Scedasticity test: "
+"0","# bartlett's test parametric"
+"0","bartlett.test(Glu..mmol.L. ~ Pregnant.Or.Atresia, data = Primary_Samples) "
+"1","
+	Bartlett test of homogeneity of variances
+
+data:  Glu..mmol.L. by Pregnant.Or.Atresia
+Bartlett's K-squared = 1.6702, df = 1, p-value = 0.1962
+
+"
+"0","bartlett.test(Glu..mmol.L. ~ Ambient.Or.OAH, data = Primary_Samples)"
+"1","
+	Bartlett test of homogeneity of variances
+
+data:  Glu..mmol.L. by Ambient.Or.OAH
+Bartlett's K-squared = 0.27111, df = 1, p-value = 0.6026
+
+"
+"0","# Levene's test if nonparametric"
+"0","leveneTest(Glu..mmol.L. ~ Pregnant.Or.Atresia * Ambient.Or.OAH, data = Primary_Samples)"
+"1","Levene's Test for Homogeneity of Variance (center = median)
+      Df F value Pr(>F)
+group  3  1.9355 0.1508
+      24               
+"
+"0","leveneTest(Glu..mmol.L. ~ Pregnant.Or.Atresia, data = Primary_Samples)"
+"1","Levene's Test for Homogeneity of Variance (center = median)
+      Df F value Pr(>F)
+group  1  0.9338 0.3428
+      26               
+"
+"0","leveneTest(Glu..mmol.L. ~ Ambient.Or.OAH, data = Primary_Samples)"
+"1","Levene's Test for Homogeneity of Variance (center = median)
+      Df F value Pr(>F)
+group  1  0.0651 0.8005
+      26               
+"
+"0","# Non-parametric regression test???:"
+"0",""

@@ -1,0 +1,8 @@
+"0",""
+"0","ggplot(data = Primary_Samples) +"
+"0","  geom_boxplot(aes(x = Pregnant.Or.Atresia, y = pH, fill = Pregnant.Or.Atresia)) +"
+"0","  geom_point(aes(x = Pregnant.Or.Atresia, y = pH), position = position_dodge(width = 0.75), alpha = 0.3, color = ""black"") +"
+"0","  geom_boxplot(aes(x = Ambient.Or.OAH, y = pH, fill = Ambient.Or.OAH)) +"
+"0","  geom_point(aes(x = Ambient.Or.OAH, y = pH), position = position_dodge(width = 0.75), alpha = 0.3, color = ""black"") +"
+"0","  geom_smooth(aes(x = Pregnant.Or.Atresia, y = pH, fill = Pregnant.Or.Atresia, group = 1), method = ""lm"") +"
+"0","  geom_smooth(aes(x = Ambient.Or.OAH, y = pH, fill = Ambient.Or.OAH, group = 1), method = ""lm"")"

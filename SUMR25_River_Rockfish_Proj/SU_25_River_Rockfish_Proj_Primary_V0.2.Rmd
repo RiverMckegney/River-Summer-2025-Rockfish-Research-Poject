@@ -509,8 +509,8 @@ pH_primary_lmer <- lmer(pH ~ Ambient.Or.OAH * Pregnant.Or.Atresia + (1|Pregnant.
 # Second best guess method:
 pH_primary_lmer2 <- lmer(pH ~ Pregnant.Or.Atresia * Ambient.Or.OAH + (1|Pregnant.Or.Atresia) + (1|Ambient.Or.OAH), data = Primary_Samples)
 
-visualize(pH_primary_lmer, plot = "model", sample = 50)
-visualize(pH_primary_lmer2, plot = "model", sample = 50)
+visualize(pH_primary_lmer, plot = "model")
+visualize(pH_primary_lmer2, plot = "model")
 
 ```
 

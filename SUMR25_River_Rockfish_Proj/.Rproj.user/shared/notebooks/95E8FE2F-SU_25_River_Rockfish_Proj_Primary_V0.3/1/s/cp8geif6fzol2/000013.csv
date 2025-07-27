@@ -1,0 +1,66 @@
+"0","# hct"
+"0","# Primary Samples"
+"0",""
+"0","# Regression Model "
+"0",""
+"0","# If interaction not significant, use additive model"
+"0","# p-value significant if (a < 0.1 or a < 0.05)"
+"0","hct_primary_lm_int <- lm(Hct.... ~ Pregnant.Or.Atresia * Ambient.Or.OAH, data = Primary_Samples)"
+"0","summary(hct_primary_lm_int)"
+"1","
+Call:
+lm(formula = Hct.... ~ Pregnant.Or.Atresia * Ambient.Or.OAH, 
+    data = Primary_Samples)
+
+Residuals:
+   Min     1Q Median     3Q    Max 
+-5.100 -1.950 -0.900  2.025  6.700 
+
+Coefficients:
+                                       Estimate Std. Error t value
+(Intercept)                             17.3750     0.7647  22.723
+Pregnant.Or.Atresia.L                    2.4395     1.0814   2.256
+Ambient.Or.OAH.L                         1.0960     1.0814   1.014
+Pregnant.Or.Atresia.L:Ambient.Or.OAH.L   0.2500     1.5293   0.163
+                                       Pr(>|t|)    
+(Intercept)                              <2e-16 ***
+Pregnant.Or.Atresia.L                    0.0335 *  
+Ambient.Or.OAH.L                         0.3209    
+Pregnant.Or.Atresia.L:Ambient.Or.OAH.L   0.8715    
+---
+Signif. codes:  0 ‘***’ 0.001 ‘**’ 0.01 ‘*’ 0.05 ‘.’ 0.1 ‘ ’ 1
+
+Residual standard error: 3.221 on 24 degrees of freedom
+Multiple R-squared:  0.2666,	Adjusted R-squared:  0.1749 
+F-statistic: 2.908 on 3 and 24 DF,  p-value: 0.05532
+
+"
+"0","hct_primary_lm_add <- lm(Hct.... ~ Pregnant.Or.Atresia + Ambient.Or.OAH, data = Primary_Samples)"
+"0","summary(hct_primary_lm_add)"
+"1","
+Call:
+lm(formula = Hct.... ~ Pregnant.Or.Atresia + Ambient.Or.OAH, 
+    data = Primary_Samples)
+
+Residuals:
+    Min      1Q  Median      3Q     Max 
+-5.0307 -2.0587 -0.9367  1.8064  6.7693 
+
+Coefficients:
+                      Estimate Std. Error t value Pr(>|t|)    
+(Intercept)            17.4099     0.7198   24.19   <2e-16 ***
+Pregnant.Or.Atresia.L   2.3419     0.8838    2.65   0.0138 *  
+Ambient.Or.OAH.L        1.1642     0.9780    1.19   0.2451    
+---
+Signif. codes:  0 ‘***’ 0.001 ‘**’ 0.01 ‘*’ 0.05 ‘.’ 0.1 ‘ ’ 1
+
+Residual standard error: 3.157 on 25 degrees of freedom
+Multiple R-squared:  0.2657,	Adjusted R-squared:  0.207 
+F-statistic: 4.524 on 2 and 25 DF,  p-value: 0.02104
+
+"
+"0","# hct_primary_lm_res_plot <- simulateResiduals(fittedModel = hct_primary_lm_int)"
+"0","# plot(hct_primary_lm_res_plot)"
+"0",""
+"0","hct_primary_lm_res_plot <- simulateResiduals(fittedModel = hct_primary_lm_add)"
+"0","plot(hct_primary_lm_res_plot)"

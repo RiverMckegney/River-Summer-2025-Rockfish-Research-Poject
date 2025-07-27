@@ -1,0 +1,3 @@
+"0",""
+"0","hct_primary_lm_res_plot2 <- simulateResiduals(fittedModel = hct_primary_lm2)"
+"0","plot(hct_primary_lm_res_plot2)"

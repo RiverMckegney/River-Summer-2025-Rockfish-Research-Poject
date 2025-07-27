@@ -1,0 +1,61 @@
+"0","# Residuals of model for shapiro test"
+"0","sodium_primary_lm_int_res <- residuals(sodium_primary_lm_int) "
+"0","sodium_primary_lm_add_res <- residuals(sodium_primary_lm_add)"
+"0",""
+"0",""
+"0","# Normality test"
+"0","shapiro.test(sodium_primary_lm_int_res) # significant"
+"1","
+	Shapiro-Wilk normality test
+
+data:  sodium_primary_lm_int_res
+W = 0.56167, p-value = 5.246e-08
+
+"
+"0","shapiro.test(sodium_primary_lm_add_res) # significant"
+"1","
+	Shapiro-Wilk normality test
+
+data:  sodium_primary_lm_add_res
+W = 0.56739, p-value = 6.085e-08
+
+"
+"0","# Scedasticity test: "
+"0","# bartlett's test parametric"
+"0","bartlett.test(Na...mmol.L. ~ Pregnant.Or.Atresia, data = Primary_Samples) "
+"1","
+	Bartlett test of homogeneity of variances
+
+data:  Na...mmol.L. by Pregnant.Or.Atresia
+Bartlett's K-squared = 10.874, df = 1, p-value = 0.0009751
+
+"
+"0","bartlett.test(Na...mmol.L. ~ Ambient.Or.OAH, data = Primary_Samples)"
+"1","
+	Bartlett test of homogeneity of variances
+
+data:  Na...mmol.L. by Ambient.Or.OAH
+Bartlett's K-squared = 8.4559, df = 1, p-value = 0.003639
+
+"
+"0","# Levene's test if nonparametric"
+"0","leveneTest(Na...mmol.L. ~ Pregnant.Or.Atresia * Ambient.Or.OAH, data = Primary_Samples)"
+"1","Levene's Test for Homogeneity of Variance (center = median)
+      Df F value Pr(>F)
+group  3  0.3841 0.7654
+      24               
+"
+"0","leveneTest(Na...mmol.L. ~ Pregnant.Or.Atresia, data = Primary_Samples)"
+"1","Levene's Test for Homogeneity of Variance (center = median)
+      Df F value Pr(>F)
+group  1  0.4826 0.4934
+      26               
+"
+"0","leveneTest(Na...mmol.L. ~ Ambient.Or.OAH, data = Primary_Samples)"
+"1","Levene's Test for Homogeneity of Variance (center = median)
+      Df F value Pr(>F)
+group  1  0.2851 0.5979
+      26               
+"
+"0","# Non-parametric regression test???:"
+"0",""

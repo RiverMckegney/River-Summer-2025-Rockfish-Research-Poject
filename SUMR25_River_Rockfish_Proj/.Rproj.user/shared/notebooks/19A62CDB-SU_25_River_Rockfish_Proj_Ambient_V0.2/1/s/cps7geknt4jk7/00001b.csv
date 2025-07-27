@@ -1,0 +1,51 @@
+"0","caclium_amb_fec_no_atresia_boxplot <- ggplot(data = Amb_Fec_No_Atresia_Samples) + "
+"0","  geom_boxplot(aes(x = Fecundity_Class, y = Ca....mmol.L.)) +"
+"0","  geom_point(aes(x = Fecundity_Class, y = Ca....mmol.L.), alpha = 0.5, colour = ""black"") +"
+"0","  labs(title = ""Calcium"", x = ""Fecundity Class"", y = ""Calcium (mmol/L)"") +"
+"0","  facet_wrap(~ Ambient.Or.OAH) +"
+"0","  theme_classic() +"
+"0","  theme(panel.background = element_rect(fill = ""white""),"
+"0","        plot.background = element_rect(fill = ""white""),"
+"0","        legend.background = element_rect(fill = ""white"", color = ""black""),"
+"0","        title = element_text(size = 12),"
+"0","        plot.title = element_text(size = 30, hjust = 0.5),"
+"0","        axis.text.x = element_text(size = 18),"
+"0","        axis.text.y = element_text(size = 20),"
+"0","        axis.title.x = element_text(size = 20),"
+"0","        axis.title.y = element_text(size = 20))"
+"0",""
+"0","print(calcium_amb_fec_no_atresia_boxplot)"
+"2","G1;H1;Errorh in h(simpleError(msg, call)) : 
+  error in evaluating the argument 'x' in selecting a method for function 'print': object 'calcium_amb_fec_no_atresia_boxplot' not found
+g"
+"0","ggsave(filename = ""data-images/calcium_amb_fec_no_atresia_boxplot.pdf"", plot = calcium_amb_fec_no_atresia_boxplot, device = ""pdf"")"
+"1","[38;5;255mSaving 7.3 x 4.51 in image[39m
+"
+"2","G1;H1;Errorh: object 'calcium_amb_fec_no_atresia_boxplot' not found
+Error during wrapup: not that many frames on the stack
+Error: no more error handlers available (recursive errors?); invoking 'abort' restart
+g"
+"0","ggsave(filename = ""data-images/calcium_amb_fec_no_atresia_boxplot.png"", plot = calcium_amb_fec_no_atresia_boxplot, device = ""png"")"
+"1","[38;5;255mSaving 7.3 x 4.51 in image[39m
+"
+"2","G1;H1;Errorh: object 'calcium_amb_fec_no_atresia_boxplot' not found
+Error during wrapup: not that many frames on the stack
+Error: no more error handlers available (recursive errors?); invoking 'abort' restart
+g"
+"0","calcium_amb_fec_no_atresia_scatterplot <- Amb_Fec_No_Atresia_Samples %>%"
+"0","  ggplot() + "
+"0","  geom_point(aes(x = Weight_Adjusted_Fecundity_Fecundity.Mean_Weight, y = Ca....mmol.L.), colour = ""black"") +"
+"0","  labs(title = ""Calcium"", x = ""Weight Adjusted Fecundity"", y = ""Calcium (mmol/L)"") +"
+"0","  facet_wrap(~ Ambient.Or.OAH) +"
+"0","  theme_classic() +"
+"0","  theme(panel.background = element_rect(fill = ""white""),"
+"0","        plot.background = element_rect(fill = ""white""),"
+"0","        legend.background = element_rect(fill = ""white"", color = ""black""),"
+"0","        title = element_text(size = 12),"
+"0","        plot.title = element_text(size = 30, hjust = 0.5),"
+"0","        axis.text.x = element_text(size = 20),"
+"0","        axis.text.y = element_text(size = 20),"
+"0","        axis.title.x = element_text(size = 20),"
+"0","        axis.title.y = element_text(size = 20))"
+"0",""
+"0","print(calcium_amb_fec_no_atresia_scatterplot)"

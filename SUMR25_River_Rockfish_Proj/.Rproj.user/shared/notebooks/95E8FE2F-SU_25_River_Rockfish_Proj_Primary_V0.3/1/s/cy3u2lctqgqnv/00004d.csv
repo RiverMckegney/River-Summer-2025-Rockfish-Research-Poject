@@ -1,0 +1,65 @@
+"0","# sodium"
+"0","# Primary Samples"
+"0",""
+"0","# Regression Model "
+"0","# p-value significant if (a < 0.1 or a < 0.05)"
+"0",""
+"0","sodium_primary_lm_int <- lm(Na...mmol.L. ~ Pregnant.Or.Atresia * Ambient.Or.OAH, data = Primary_Samples) # not significant"
+"0","summary(sodium_primary_lm_int)"
+"1","
+Call:
+lm(formula = Na...mmol.L. ~ Pregnant.Or.Atresia * Ambient.Or.OAH, 
+    data = Primary_Samples)
+
+Residuals:
+   Min     1Q Median     3Q    Max 
+-7.231 -3.481 -1.115  1.063 36.769 
+
+Coefficients:
+                                       Estimate Std. Error t value
+(Intercept)                            177.2452     1.9745  89.769
+Pregnant.Or.Atresia.L                    0.5235     2.7923   0.187
+Ambient.Or.OAH.L                        -1.7610     2.7923  -0.631
+Pregnant.Or.Atresia.L:Ambient.Or.OAH.L  -4.7404     3.9489  -1.200
+                                       Pr(>|t|)    
+(Intercept)                              <2e-16 ***
+Pregnant.Or.Atresia.L                     0.853    
+Ambient.Or.OAH.L                          0.534    
+Pregnant.Or.Atresia.L:Ambient.Or.OAH.L    0.242    
+---
+Signif. codes:  0 ‘***’ 0.001 ‘**’ 0.01 ‘*’ 0.05 ‘.’ 0.1 ‘ ’ 1
+
+Residual standard error: 8.316 on 24 degrees of freedom
+Multiple R-squared:  0.1335,	Adjusted R-squared:  0.02514 
+F-statistic: 1.232 on 3 and 24 DF,  p-value: 0.3198
+
+"
+"0","sodium_primary_lm_add <- lm(Na...mmol.L. ~ Pregnant.Or.Atresia + Ambient.Or.OAH, data = Primary_Samples)"
+"0","summary(sodium_primary_lm_add)"
+"1","
+Call:
+lm(formula = Na...mmol.L. ~ Pregnant.Or.Atresia + Ambient.Or.OAH, 
+    data = Primary_Samples)
+
+Residuals:
+   Min     1Q Median     3Q    Max 
+-8.064 -3.422 -1.743  0.907 37.578 
+
+Coefficients:
+                      Estimate Std. Error t value Pr(>|t|)    
+(Intercept)            176.583      1.913  92.330   <2e-16 ***
+Pregnant.Or.Atresia.L    2.375      2.348   1.011    0.322    
+Ambient.Or.OAH.L        -3.055      2.599  -1.175    0.251    
+---
+Signif. codes:  0 ‘***’ 0.001 ‘**’ 0.01 ‘*’ 0.05 ‘.’ 0.1 ‘ ’ 1
+
+Residual standard error: 8.389 on 25 degrees of freedom
+Multiple R-squared:  0.08142,	Adjusted R-squared:  0.007938 
+F-statistic: 1.108 on 2 and 25 DF,  p-value: 0.3459
+
+"
+"0","# sodium_primary_lm_res_plot <- simulateResiduals(fittedModel = sodium_primary_lm_int)"
+"0","# plot(sodium_primary_lm_res_plot)"
+"0",""
+"0","sodium_primary_lm_res_plot <- simulateResiduals(fittedModel = sodium_primary_lm_add)"
+"0","plot(sodium_primary_lm_res_plot) # KS significant"

@@ -1,0 +1,53 @@
+"0","# potassium"
+"0","# Primary Samples"
+"0",""
+"0","# Regression Model pt 2: Not using sqrt model"
+"0",""
+"0","# Individually assess parameter to parturition groups & treatment groups"
+"0","# p-value significant if (a < 0.1 or a < 0.05)"
+"0","potassium_primary_lm1 <- lm(K...mmol.L. ~ Pregnant.Or.Atresia, data = Primary_Samples)"
+"0","summary(potassium_primary_lm1) "
+"1","
+Call:
+lm(formula = K...mmol.L. ~ Pregnant.Or.Atresia, data = Primary_Samples)
+
+Residuals:
+    Min      1Q  Median      3Q     Max 
+-0.4000 -0.2000 -0.0700  0.0725  1.3000 
+
+Coefficients:
+                      Estimate Std. Error t value Pr(>|t|)    
+(Intercept)            2.83500    0.07319  38.737   <2e-16 ***
+Pregnant.Or.Atresia.L  0.09192    0.10350   0.888    0.383    
+---
+Signif. codes:  0 ‘***’ 0.001 ‘**’ 0.01 ‘*’ 0.05 ‘.’ 0.1 ‘ ’ 1
+
+Residual standard error: 0.3711 on 26 degrees of freedom
+Multiple R-squared:  0.02945,	Adjusted R-squared:  -0.007884 
+F-statistic: 0.7888 on 1 and 26 DF,  p-value: 0.3826
+
+"
+"0","potassium_primary_lm2 <- lm(K...mmol.L. ~ Ambient.Or.OAH, data = Primary_Samples)"
+"0","summary(potassium_primary_lm2) "
+"1","
+Call:
+lm(formula = K...mmol.L. ~ Ambient.Or.OAH, data = Primary_Samples)
+
+Residuals:
+     Min       1Q   Median       3Q      Max 
+-0.50000 -0.20119 -0.10476  0.09643  1.20000 
+
+Coefficients:
+                 Estimate Std. Error t value Pr(>|t|)    
+(Intercept)       2.90238    0.07994  36.305   <2e-16 ***
+Ambient.Or.OAH.L  0.13805    0.11306   1.221    0.233    
+---
+Signif. codes:  0 ‘***’ 0.001 ‘**’ 0.01 ‘*’ 0.05 ‘.’ 0.1 ‘ ’ 1
+
+Residual standard error: 0.3664 on 26 degrees of freedom
+Multiple R-squared:  0.05424,	Adjusted R-squared:  0.01786 
+F-statistic: 1.491 on 1 and 26 DF,  p-value: 0.233
+
+"
+"0","potassium_primary_lm_res_plot1 <- simulateResiduals(fittedModel = potassium_primary_lm1)"
+"0","plot(potassium_primary_lm_res_plot1)"

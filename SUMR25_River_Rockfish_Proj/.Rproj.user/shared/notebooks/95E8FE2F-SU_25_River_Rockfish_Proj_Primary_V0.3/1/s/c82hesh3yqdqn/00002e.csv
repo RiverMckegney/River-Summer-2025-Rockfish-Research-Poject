@@ -1,0 +1,48 @@
+"0","# Na+"
+"0","# Primary Samples"
+"0",""
+"0","# Interactive aov model"
+"0","sodium_primary_aov_int <- aov(Na...mmol.L. ~ Pregnant.Or.Atresia * Ambient.Or.OAH, data = Primary_Samples)"
+"0","summary(sodium_primary_aov_int) # interaction not significant"
+"1","                                   Df Sum Sq Mean Sq F value Pr(>F)
+Pregnant.Or.Atresia                 1   58.7   58.72   0.849  0.366
+Ambient.Or.OAH                      1   97.2   97.24   1.406  0.247
+Pregnant.Or.Atresia:Ambient.Or.OAH  1   99.7   99.66   1.441  0.242
+Residuals                          24 1659.8   69.16               
+"
+"0","# Additive aov model"
+"0","# If interaction not significant (p-value > 0.05), use additive model"
+"0","sodium_primary_aov_add <- aov(Na...mmol.L. ~ Pregnant.Or.Atresia + Ambient.Or.OAH, data = Primary_Samples)"
+"0","summary(sodium_primary_aov_add)"
+"1","                    Df Sum Sq Mean Sq F value Pr(>F)
+Pregnant.Or.Atresia  1   58.7   58.72   0.834  0.370
+Ambient.Or.OAH       1   97.2   97.24   1.382  0.251
+Residuals           25 1759.5   70.38               
+"
+"0","# Parametric Post-Hoc: Tukey's HSD test"
+"0","TukeyHSD(sodium_primary_aov_add)"
+"1","  Tukey multiple comparisons of means
+    95% family-wise confidence level
+
+Fit: aov(formula = Na...mmol.L. ~ Pregnant.Or.Atresia + Ambient.Or.OAH, data = Primary_Samples)
+
+$Pregnant.Or.Atresia
+                             diff       lwr     upr     p adj
+Atresia-Post Parturition 3.022222 -3.792266 9.83671 0.3697553
+
+$Ambient.Or.OAH
+                 diff       lwr      upr     p adj
+OAH-Ambient -4.287831 -11.82852 3.252855 0.2525973
+
+"
+"0","# Normality plot"
+"0",""
+"0","# Qqplot: Residuals of aov or lm model (plot residuals of aov vs lm are identical)"
+"0","sodium_primary_res_qqplot <- ggqqplot(residuals(aov(Na...mmol.L. ~ Pregnant.Or.Atresia + Ambient.Or.OAH, data = Primary_Samples))) +"
+"0","labs(title = ""Sodium Interactive Residual QQplot"","
+"0","     subtitle = ""residuals(aov(Na...mmol.L. ~ Pregnant.Or.Atresia * Ambient.Or.OAH, data = Primary_Samples))"","
+"0","                               x = ""Sodium Theoretical Quantiles (Predicted values)"","
+"0","                               y = ""Sodium Sample Quantiles"") +"
+"0","  theme(plot.title = element_text(hjust = 0.5),"
+"0","        plot.subtitle = element_text(hjust = 0.5))"
+"0","print(sodium_primary_res_qqplot)"

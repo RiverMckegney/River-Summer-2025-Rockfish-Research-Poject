@@ -1,0 +1,11 @@
+"0","# Normality
+shapiro.test(Ambient_Samples$Na...mmol.L.)
+"
+"1","
+	Shapiro-Wilk normality test
+
+data:  Ambient_Samples$Na...mmol.L.
+"
+"1","W = 0.52676, p-value = 3.625e-07
+
+"

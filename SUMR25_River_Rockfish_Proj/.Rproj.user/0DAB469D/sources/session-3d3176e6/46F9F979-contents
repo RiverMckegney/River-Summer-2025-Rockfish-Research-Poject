@@ -1,0 +1,3583 @@
+---
+title: "SU_25_River_Rockfish_Proj_Primary_V0.3"
+author: "River Mckegney"
+date: "`r Sys.Date()`"
+output: html_document
+---
+
+
+
+## Setup, and Packages
+
+```{r setup, include=FALSE}
+# Setup
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+Code Packages:
+```{r packages}
+# Load packages
+library(gridExtra) # For using grid.table to save tables as images
+library(flextable) # Alternative method to save df as image
+library(tidyverse)
+library(zoo)
+library(lme4)
+library(lmerTest)
+library(rlang)
+library(nortest) # For ad.test
+library(car) # For homogeneity of variance with leveneTest
+library(rcompanion) # For scheirerRayHare test
+library(pastecs) # For stat.desc
+library(ggpubr) # For assumption plots
+library(conover.test) # For the conover.Iman() test function
+library(DescTools) # Contain alternative ConoverTest function
+library(rstatix) # tidyverse adapted stat tests and mshapiro_test() functions
+library(DHARMa) # For multi-level lm models and shapiro test
+library(patchwork) # For combining ggplots
+```
+
+
+
+## Data Entry: Read-in data
+
+```{r}
+# Read and call data into df
+
+# Primary samples df
+ABL90 <- read.csv("Raw_Data/ABL90_Raw.csv")
+
+# River's Parturition metadata
+partuition_subcat <- read.csv("Raw_Data/River's_Rockfish_Metadata_Parturition_V7.csv")
+
+```
+
+
+## Data Filtering
+
+```{r}
+# Data sifting: ABL90 dataset
+
+# Step 1: Remove missing info
+ABL_set1 <- ABL90 %>%
+  filter(Patient.ID_edited != "") 
+  
+
+# Step 2: Separate Patient.ID into columns of sample types: blood plasma and instant freeze plasma 
+ABL_set2 <- separate(ABL_set1, 'Patient.ID_edited', into = c("Patient.ID_edited", "Sample_Type"), sep = ",")  
+
+
+# Step 3:
+# Convert Patient.ID_edited column data to character type
+ABL_set2$Patient.ID_edited <- as.character(ABL_set2$Patient.ID_edited) 
+
+```
+
+
+```{r}
+# Step 4 & 5: Sussing out specific sample errors  
+
+# Remove insufficient samples
+ABL_set3 <- ABL_set2 %>%
+  filter(!is.na("Type")) %>%
+  filter(!str_detect(Errors.detected.during.measurement, "Insufficient sample"))
+
+# Remove inhomogeneous samples
+ABL_set3 <- ABL_set3 %>%
+  filter(!is.na("Type")) %>%
+  filter(!str_detect(Errors.detected.during.measurement, "Inhomogeneous sample"))
+
+# Step 6: Filter for only blood samples
+ABL_b_samp <- ABL_set3 %>%
+  filter(Sample_Type == "b")
+
+```
+
+
+## Merge Datasets:
+
+Join ABL90 df with parturition_subcat df: Making ABL_merged
+```{r}
+# Rename columns to match: Change 'ID' in parturition_subcat to 'Patient.ID_edited' so it is ready to join with ABL90 df
+
+# Please note the 'Treatment' col in parturition_subcat does not match with the finalized 'Ambient.Or.OAH' col in metadata_atresia_guide or ABL90_merged df
+
+# Rename 'ID' col to 'patient.ID_edited'
+partuition_subcat <- partuition_subcat %>%
+  rename(Patient.ID_edited = ID)
+
+```
+
+```{r}
+# Connect main ABL90 dataset with my (River's) sub categorized parturition metadata 
+# ABL_merged <- partuition_subcat %>%
+# left_join(ABL_b_samp, by = "Patient.ID_edited")
+
+ABL_merged <- ABL_b_samp %>%
+inner_join(partuition_subcat, by = "Patient.ID_edited")
+```
+
+Rename Columns Neatly:
+```{r}
+# Rename Treatment & Parturition Outcome
+ABL_merged <- ABL_merged %>%
+  rename(Ambient.Or.OAH = Consensus_General_Treatment,
+         Pregnant.Or.Atresia = Consensus_Atresia_Or_Pregnant)
+         
+```
+
+
+## Remove Samples: Mortalities, NA's, or Missing Info, and Replicates
+
+Remove Replicate ID's
+```{r}
+# Cross Check all Columns: Cross validation to suss correct replicate row
+check_params <- ABL_merged %>%
+  select(Patient.ID_edited, Time, Sample.., Measuring.Mode, Ambient.Or.OAH, Pregnant.Or.Atresia, pH, Glu..mmol.L., Hct...., Na...mmol.L., Cl...mmol.L., K...mmol.L., Ca....mmol.L., pCO2..mmHg.) %>%
+  filter(Patient.ID_edited == "9782D")
+print(check_params)
+
+check_params <- ABL_merged %>%
+  select(Patient.ID_edited, Time, Sample.., Measuring.Mode, Ambient.Or.OAH, Pregnant.Or.Atresia, pH, Glu..mmol.L., Hct...., Na...mmol.L., Cl...mmol.L., K...mmol.L., Ca....mmol.L., pCO2..mmHg.) %>%
+  filter(Patient.ID_edited == "9783D")
+print(check_params)
+
+# Removed replicates: 9782D (2x) and 9783D (2x)
+ABL_merged <- ABL_merged %>%
+  filter(Sample.. != "863",
+         Sample.. != "934")
+
+```
+
+Review Replicates: 
+
+| Row | ID | Time | Sample.. | Measuring.Mode | pH | Glu.mmol.L. | Hct.... | Na...mmol.L. | Cl...mmol.L. | K...mmol.L. | Ca.mmol.L. |
+|:------:| :-----: | :-----: | :-----:| :------:|:------:|:------:|:------:|:------:|:------:|:------:|:------:|
+| 32 | 9782D | 12/28/2023 10:04 | 1016 | C 65uL | 7.348 | 0.5 | 9.8 | 184 | 149 | 2.8 | 1.32 |
+| 39 | 9782D | 1/9/2024 17:21 | 863 | S 65uL | 7.446 | 0.7 | 13.3 | 181 | 161 | 2.9 | 1.31 |  
+| 36 | 9783D | 1/19/2024 10:37 | 934 | S 65uL | 7.484 | 1.7 | **0.2** | 175 | 193 | **34.5** | 1.29 |
+| 41 | 9783D | 1/7/2024 12:32 | 860 | S 65uL | 7.450 | 1.3 | **14.7** | 179 | 164 | **2.5** | 1.30 |
+
+Methods for replicate sample removal:
+Check processing date of IDs, and remove samples that do not match that date.
+
+Case ID_9782D:
+
+- Origianl ABL90 set contains:
+- 9782D,b (Sample.. 1016, Time = 12/28/2023  10:04:00 AM) 
+- 9782D,p (Sample.. 1020, Time = 12/28/2023  10:25:00 AM)
+- 9782D,p (Sample.. 865, Time = 1/9/2024  5:29:00 PM)
+- 9782D,b (Sample.. 863, Time = 1/9/2024  5:21:00 PM)
+
+- 2024_Fish_Metadata.csv says ID_9782D was processed 3/29/2024
+
+
+- Note Processing date in metadata will not match time date stamp in ABL90 data due to the machine being reset, and innacurrate dates being automatically recorded.
+
+Deciding info:
+- For ID-9782D, refer to metadata sheet and look for other samples with that same processing date, then view thoes samples ABL90 'Time'. Try to find a matching 'Time' with other IDs and 9782D that were processed together during the same time recorded by the machine. 
+
+- ID_97838,b (single obs, Sample.. 1024) Time = 12/28/2023  11:49:00 AM
+
+- Since 9782D,b Sample.. 1016 and 97838,b Sample.. 1024 both have a date timestamp occurrence on 12/28/2023, I have decided to keep 9782D,b Sample.. 1016 and drop 9783D,b Sample.. 863
+
+
+Case ID_9783D
+
+- Original ABL90 dataset contains:
+- 9783D,b (Sample.. 934, Time = 1/19/2024  10:37:00 AM)
+- 9783D,c (Sample.. 861, Time = 1/7/2024  12:38:00 PM)
+- 9783D,b (Sample.. 860, Time = 1/7/2024  12:32:00 PM)
+
+- 2024_Fish_Metadata.csv says ID_9783D was processed 3/20/2024
+
+- Informed that ID_9783D: Sample.. 934 is a plasma sample (on account of its low hct value), remove this and **keep Sample.. 860 (parameter values appear correct)**.
+
+
+# Samples: Data subsets
+
+Remove Motalities and No info IDs and assign analysis ready data-frames:
+```{r}
+
+# New df with Moralities removed: Note none of these samples made it into ABL90 df anyway, so looks like they are already filtered out.
+ Live_Samples <- ABL_merged %>%
+  filter(Patient.ID_edited != "9780C", # Mortality
+         Patient.ID_edited != "777AE", # Mortality
+         Patient.ID_edited != "777CA") # Mortality after parturition
+
+
+# New df with mortality and 'No info' Id's removed
+ Primary_Samples <- Live_Samples %>%
+   filter(Patient.ID_edited != "777A0", # No info
+           Patient.ID_edited != "9782F", # No info
+           Patient.ID_edited != "777B3", # No info
+           Patient.ID_edited != "777AA", # No info
+           Patient.ID_edited != "777DE", # No info
+           Patient.ID_edited != "777CE", # No info
+           Patient.ID_edited != "777A6") # No info
+ 
+ 
+# New df of Only Ambient Treatment: For testing parturition success
+ Ambient_Samples <- Primary_Samples %>%
+   filter(Ambient.Or.OAH == "Ambient")
+ 
+# New df of Fecundity Samples:
+ Fecundity_Samples <- Primary_Samples %>%
+   filter(Fecundity_Or_Brood_Count != "NA",
+     Fecundity_Class != "NA") # removes 97706
+
+# Fecundity samples without atresia Ids
+ Fecundity_No_Atresia_Samples <- Primary_Samples %>%
+   filter(All_Fecundity != "Na",
+          All_Fecundity != 0)  # removes atresia IDs
+
+# Fecundity Ambient Samples
+ Amb_Fec_Samples <- Primary_Samples %>%
+   filter(Ambient.Or.OAH == "Ambient",
+          All_Fecundity != "NA") # removes OAH treatment samples and ID 97706
+ 
+# Fecundity Ambient Samples without atresia Ids
+ Amb_Fec_No_Atresia_Samples <- Primary_Samples %>%
+   filter(Ambient.Or.OAH == "Ambient", # removes OAH treatment 
+          All_Fecundity != "NA", # removes all missing info IDs
+          All_Fecundity != 0) # removes atresia IDs
+ 
+```
+
+
+Change Data Types:
+```{r}
+# Change Continuous Data to type to numeric, double, or factor
+
+# Change data type of ions to factor or numeric
+#glimpse(General_Samples)
+#glimpse(Ambient_Samples)
+ 
+Primary_Samples <- Primary_Samples %>%
+  mutate(across(c(All_Fecundity, pH, Hct...., Glu..mmol.L., Na...mmol.L., Cl...mmol.L., K...mmol.L., Ca....mmol.L.), as.numeric))
+
+Ambient_Samples <- Ambient_Samples %>%
+  mutate(across(c(All_Fecundity, pH, Hct...., Glu..mmol.L., Na...mmol.L., Cl...mmol.L., K...mmol.L., Ca....mmol.L.), as.numeric))
+
+Fecundity_Samples <- Fecundity_Samples %>%
+  mutate(across(c(All_Fecundity, pH, Hct...., Glu..mmol.L., Na...mmol.L., Cl...mmol.L., K...mmol.L., Ca....mmol.L.), as.numeric))
+
+Fecundity_No_Atresia_Samples <- Fecundity_Samples %>%
+  mutate(across(c(All_Fecundity, pH, Hct...., Glu..mmol.L., Na...mmol.L., Cl...mmol.L., K...mmol.L., Ca....mmol.L.), as.numeric))
+
+Amb_Fec_Samples <- Amb_Fec_Samples %>%
+  mutate(across(c(All_Fecundity, pH, Hct...., Glu..mmol.L., Na...mmol.L., Cl...mmol.L., K...mmol.L., Ca....mmol.L.), as.numeric))
+  
+Amb_Fec_No_Atresia_Samples <- Amb_Fec_No_Atresia_Samples %>%
+  mutate(across(c(All_Fecundity, pH, Hct...., Glu..mmol.L., Na...mmol.L., Cl...mmol.L., K...mmol.L., Ca....mmol.L.), as.numeric))
+
+# glimpse(Primary_Samples)
+# glimpse(Ambient_Samples)
+# glimpse(Fecundity_Samples)
+# glimpse(Amb_Fec_Samples)
+
+```
+
+
+
+## Order Factor Levels
+```{r}
+# Fecundity data 
+
+#unique(Fecundity_Samples$Fecundity_Class)
+
+# Arrange the order of parturition categories for visualizations & tests
+
+# Primary Samples
+
+# Arrange Treatment
+Primary_Samples$Ambient.Or.OAH <- ordered(Primary_Samples$Ambient.Or.OAH, levels = c("Ambient", "OAH"))
+
+# Arrange Parturition outcome
+Primary_Samples$Pregnant.Or.Atresia <- ordered(Primary_Samples$Pregnant.Or.Atresia, levels = c("Post Parturition", "Atresia"))
+
+# Arrange Brood Condition
+Primary_Samples$Consensus_Brood_Condition <- ordered(Primary_Samples$Consensus_Brood_Condition, levels = c("Excellent", "Normal", "Low", "Very Low", "Atresia"))
+
+# Arrange Fecundity Class
+Primary_Samples$Fecundity_Class <- ordered(Primary_Samples$Fecundity_Class, levels = c("High (>50,000)", "Low (~1,000s)", "Atresia"))
+
+# Remove NAs from ordered character factors
+Primary_Samples <- Primary_Samples %>%
+  filter(Fecundity_Class != is.na(Fecundity_Class)) %>%
+  filter(Consensus_Brood_Condition != is.na(Consensus_Brood_Condition))
+  
+
+#class(Primary_Samples$Fecundity_Class)
+
+```
+
+
+
+# Save filtered dataset into data-worked folder
+```{r}
+# Save merged dataset in a worked folder
+
+write.csv(x = Primary_Samples, file = "Worked-Data/Primary_Samples")
+
+write.csv(x = Ambient_Samples, file = "Worked-Data/Ambient_Samples")
+
+write.csv(x = Fecundity_Samples, file = "Worked-Data/Fecundity_Samples")
+
+write.csv(x = Fecundity_No_Atresia_Samples, file = "Worked-Data/Fecundity_No_Atresia_Samples")
+
+write.csv(x = Amb_Fec_Samples, file = "Worked-Data/Amb-Fec_Samples")
+
+write.csv(x = Amb_Fec_No_Atresia_Samples, file = "Worked-Data/Amb_Fec_No_Atresia_Samples")
+```
+
+
+
+## Sample Size: n
+```{r}
+# Sample Size
+
+# Primary data: Treatment & Pregnancy outcome
+primary_sample_table <- Primary_Samples %>%
+  group_by(Ambient.Or.OAH, Pregnant.Or.Atresia) %>%
+  summarise(n_size = n_distinct(Patient.ID_edited), .groups = "drop")
+print(primary_sample_table)
+
+ pdf("data-images/primary_sample_table.pdf")
+ grid.table(primary_sample_table)
+ dev.off()
+ 
+ png("data-images/primary_sample_table.png")
+ grid.table(primary_sample_table)
+ dev.off()
+ 
+ 
+# Primary data: Brood Condition
+primary_sample_table_brood_codnition <- Primary_Samples %>%
+  group_by(Ambient.Or.OAH, Consensus_Brood_Condition) %>%
+  summarise(n_size = n_distinct(Patient.ID_edited), .groups = "drop")
+print(primary_sample_table_brood_codnition)
+
+
+# Primary data: Fecundity Class
+primary_sample_table_fecundity_class <- Primary_Samples %>%
+  group_by(Ambient.Or.OAH, Pregnant.Or.Atresia, Fecundity_Class) %>%
+  summarise(n_size = n_distinct(Patient.ID_edited), .groups = "drop")
+print(primary_sample_table_fecundity_class)
+
+
+```
+
+
+
+Sample Size Barplot:
+```{r}
+# View Sample Distributions
+
+# Sample Size barplot
+
+# Primary Samples: General sample size 
+primary_sample_barplot <- Primary_Samples %>%
+  group_by(Pregnant.Or.Atresia, Ambient.Or.OAH) %>% 
+  summarise(n_size = n_distinct(Patient.ID_edited), .groups = "drop") %>%
+  ggplot(aes(x = Pregnant.Or.Atresia, y = n_size)) +
+  geom_bar(stat = "identity" ) +
+  scale_y_continuous(expand = c(0, 0), limits = c(0, 15.5), breaks = c(0, 3, 6, 9, 12, 15)) +
+  facet_grid(~ Ambient.Or.OAH) +
+  labs(title = "Primary Sample Size",
+        x = "Parturition Status & Treatment Type",
+        y = "Sample Size (n)") +
+  guides(fill = guide_legend((title = "Reproductive State"))) +
+  theme_classic() +
+  theme(plot.title = element_text(size = 30, hjust = 0.5))
+
+print(primary_sample_barplot)
+
+ggsave(filename = "data-images/.png", plot = primary_sample_barplot, device = "png")
+ggsave(filename = "data-images/primary_sample_barplot.pdf", plot = primary_sample_barplot, device = "pdf")
+
+
+# Primary samples: Fecundity Class sample size
+primary_sample_fecundity_class_barplot <- Primary_Samples %>%
+  group_by(Fecundity_Class, Ambient.Or.OAH) %>% 
+  summarise(n_size = n_distinct(Patient.ID_edited), .groups = "drop") %>%
+  ggplot(aes(x = Fecundity_Class, y = n_size)) +
+  geom_bar(stat = "identity" ) +
+  scale_y_continuous(expand = c(0, 0), limits = c(0, 15.5), breaks = c(0, 3, 6, 9, 12, 15)) +
+  facet_grid(~ Ambient.Or.OAH) +
+  labs(title = "Sample Size",
+        x = "Parturition Status & Treatment Type",
+        y = "Sample Size (n)") +
+  guides(fill = guide_legend((title = "Reproductive State"))) +
+  theme_classic() +
+  theme(plot.title = element_text(size = 30, hjust = 0.5))
+
+print(primary_sample_fecundity_class_barplot)
+
+
+# Primary samples: Brood Condition sample size
+primary_sample_brood_condition_barplot <- Primary_Samples %>%
+  group_by(Consensus_Brood_Condition, Ambient.Or.OAH) %>% 
+  summarise(n_size = n_distinct(Patient.ID_edited), .groups = "drop") %>%
+  ggplot(aes(x = Consensus_Brood_Condition, y = n_size)) +
+  geom_bar(stat = "identity" ) +
+  scale_y_continuous(expand = c(0, 0), limits = c(0, 15.5), breaks = c(0, 3, 6, 9, 12, 15)) +
+  facet_grid(~ Ambient.Or.OAH) +
+  labs(title = "Sample Size",
+        x = "Parturition Status & Treatment Type",
+        y = "Sample Size (n)") +
+  guides(fill = guide_legend((title = "Reproductive State"))) +
+  theme_classic() +
+  theme(plot.title = element_text(size = 30, hjust = 0.5))
+
+print(primary_sample_brood_condition_barplot)
+
+
+```
+
+
+
+# pH
+
+
+pH Summary Stats
+```{r}
+# pH
+# Summary stats
+
+# Primary data
+Primary_Samples %>%
+  group_by(Pregnant.Or.Atresia, Ambient.Or.OAH) %>%
+  summarize(count = n(),
+            median = round(median(pH), 3),
+            mean = round(mean(pH), 3),
+            sd = round(sd(pH), 3),
+            cv = round(sd(pH)/mean(pH), 3)) %>%
+  ungroup()
+```
+
+pH Boxplot
+```{r}
+# pH boxplot
+
+# Primary samples
+pH_primary_boxplot <- ggplot(data = Primary_Samples, aes(x = Pregnant.Or.Atresia, y = pH, fill = Ambient.Or.OAH)) +
+  geom_boxplot(aes(x = Pregnant.Or.Atresia, y = pH, fill = Ambient.Or.OAH)) +
+  geom_point(aes(color = Ambient.Or.OAH), position = position_dodge(width = 0.75), alpha = 0.3, color = "black") +
+  labs(title = "Primary pH", x = "Parturition Type", y = "pH") +
+  guides(fill = guide_legend((title = "Treatment Type"))) + 
+  scale_fill_manual(values = c("Ambient" = "#189bff", "OAH" = "#598c78")) +
+  theme_classic() +
+  theme(panel.background = element_rect(fill = "white"),
+        plot.background = element_rect(fill = "white"),
+        legend.background = element_rect(fill = "white", color = "black"),
+        title = element_text(size = 12),
+        plot.title = element_text(size = 30, hjust = 0.5),
+        axis.text.x = element_text(size = 10),
+        axis.text.y = element_text(size = 20),
+        axis.title.x = element_text(size = 20),
+        axis.title.y = element_text(size = 20))
+
+print(pH_primary_boxplot)
+
+ggsave(filename = "data-images/pH_primary_boxplot.pdf", plot = pH_primary_boxplot, device = "pdf")
+ggsave(filename = "data-images/pH_primary_boxplot.png", plot = pH_primary_boxplot, device = "png")
+
+```
+
+
+pH Scatterplot: No Atresia IDs
+```{r}
+# pH
+# Primary Samples
+
+# Weight adjusted scatterplot 
+
+# Primary scatterplot: No atresia ids 
+pH_primary_weight_adj_scatterplot <- ggplot(data = Primary_Samples) + 
+  geom_point(aes(x = pH, y = Weight_Adjusted_Fecundity_Fecundity.Mean_Weight), colour = "black") +
+  labs(title = "pH", x = "pH", y = "Weight Adjusted Fecundity") +
+  scale_y_continuous() + 
+  theme_classic() +
+  theme(panel.background = element_rect(fill = "white"),
+        plot.background = element_rect(fill = "white"),
+        legend.background = element_rect(fill = "white", color = "black"),
+        plot.title = element_text(size = 25, hjust = 0.5),
+        axis.text.x = element_text(size = 20),
+        axis.text.y = element_text(size = 20),
+        axis.title.x = element_text(size = 20),
+        axis.title.y = element_text(size = 20))
+
+print(pH_primary_weight_adj_scatterplot)
+
+ggsave(filename = "data-images/pH_primary_weight_adj_scatterplot.pdf", plot = pH_primary_weight_adj_scatterplot, device = "pdf")
+
+ggsave(filename = "data-images/pH_primary_weight_adj_scatterplot.png", plot = pH_primary_weight_adj_scatterplot, device = "png")
+
+# Facet by Treatment
+pH_primary_weight_adj_scatterplot <- ggplot(data = Primary_Samples) + 
+  geom_point(aes(x = pH, y = Weight_Adjusted_Fecundity_Fecundity.Mean_Weight), colour = "black") +
+  labs(title = "pH", x = "pH", y = "Weight Adjusted Fecundity") +
+  scale_y_continuous() + 
+  theme_classic() +
+  facet_wrap(~ Ambient.Or.OAH) +
+  theme(panel.background = element_rect(fill = "white"),
+        plot.background = element_rect(fill = "white"),
+        legend.background = element_rect(fill = "white", color = "black"),
+        plot.title = element_text(size = 25, hjust = 0.5),
+        axis.text.x = element_text(size = 20),
+        axis.text.y = element_text(size = 20),
+        axis.title.x = element_text(size = 20),
+        axis.title.y = element_text(size = 20))
+
+print(pH_primary_weight_adj_scatterplot)
+
+```
+
+Data Distribution
+```{r}
+# pH
+# Parametric Assumptions
+
+# Data Distribution
+hist(Primary_Samples$pH)
+
+plotNormalHistogram(Primary_Samples$pH) 
+
+plotNormalDensity(Primary_Samples$pH)
+
+```
+
+# pH Stat Tests
+
+```{r}
+# pH
+# Primary Samples
+
+# Interactive aov model
+pH_primary_aov_int <- aov(pH ~ Pregnant.Or.Atresia * Ambient.Or.OAH, data = Primary_Samples)
+summary(pH_primary_aov_int) # interaction almost significant
+
+# Additive aov model
+# If interaction not significant (p-value > 0.05), use additive model
+# pH_primary_aov_additive <- aov(pH ~ Pregnant.Or.Atresia + Ambient.Or.OAH, data = Primary_Samples)
+# summary(pH_primary_aov_additive)
+
+# Parametric Post-Hoc: Tukey's HSD test
+TukeyHSD(pH_primary_aov_int)
+
+# Normality plot
+
+# Qqplot: Residuals of aov or lm model (plot residuals of aov vs lm are identical)
+pH_primary_res_qqplot <- ggqqplot(residuals(aov(pH ~ Pregnant.Or.Atresia * Ambient.Or.OAH, data = Primary_Samples))) +
+labs(title = "Primary pH Interactive Residual QQplot",
+     subtitle = "residuals(aov(pH ~ Pregnant.Or.Atresia * Ambient.Or.OAH, data = Primary_Samples))",
+                               x = "pH Theoretical Quantiles (Predicted values)",
+                               y = "pH Sample Quantiles") +
+  theme(plot.title = element_text(hjust = 0.5),
+        plot.subtitle = element_text(hjust = 0.5))
+print(pH_primary_res_qqplot)
+
+# Normality Test
+shapiro.test(Primary_Samples$pH)
+
+shapiro.test(residuals(lm(pH ~ Pregnant.Or.Atresia * Ambient.Or.OAH, data = Primary_Samples)))
+
+
+# Parametric variance test:
+bartlett.test(pH ~ Pregnant.Or.Atresia, data = Primary_Samples) # nonparametric
+bartlett.test(pH ~ Ambient.Or.OAH, data = Primary_Samples)
+
+# Nonparametric variance test:
+LeveneTest(pH ~ Pregnant.Or.Atresia, data = Primary_Samples) 
+leveneTest(pH ~ Ambient.Or.OAH, data = Primary_Samples)
+
+# Nonparametric Stat test & Post-Hoc:
+
+kruskal.test(pH ~ Pregnant.Or.Atresia, data = Primary_Samples) # Significant
+kruskal.test(pH ~ Ambient.Or.OAH, data = Primary_Samples) # Significant
+
+DunnTest(pH ~ Pregnant.Or.Atresia, data = Primary_Samples)
+DunnTest(pH ~ Ambient.Or.OAH, data = Primary_Samples)
+
+
+```
+
+Parametric Results: Ambient Fecundity No Atresia Sample
+
+- A significant difference detected in pH between pregnancy groups and treatment groups
+- Interaction almost significant (), interactive model used
+
+- Parametric post Hoc: Tukey HSD with interactive model
+- Ask how to interpret interactive results...
+
+
+Parametric Assumptions: Across Sample comparisons...
+
+- Sample size (n > 30): **Not Met**
+
+- Normality: **Met**
+
+- Homoscedasticity: **Not Met, nonparametric**
+- Evidence: data:  pH by Pregnant.Or.Atresia
+Bartlett's K-squared = 3.4356, df = 1, p-value = 0.0638
+
+- Nonparametric variance test (Levene's test): **Met**
+
+Non-Parametric Results:
+- A significant increase detected in pH for post parturition group compared to atresia group.
+- Evidence: Dunn's test pval = 0.0084 **
+
+- A significant increase detected in pH for ambient group compared to OAH group.
+- Evidence: Dunn's test pval = 0.0528
+
+
+```{r}
+# ph
+# Primary Samples
+
+# Regression Model 
+
+# Install flexplot
+# devtools::install_github("dustinfife/flexplot", ref="development")
+require(flexplot)
+
+# If interaction not significant, use additive model
+# p-value significant if (a < 0.1 or a < 0.05)
+pH_primary_lm <- lm(pH ~ Pregnant.Or.Atresia * Ambient.Or.OAH, data = Primary_Samples)
+summary(pH_primary_lm)
+
+pH_primary_lm_res_plot <- simulateResiduals(fittedModel = pH_primary_lm)
+plot(pH_primary_lm_res_plot)
+
+visualize(pH_primary_lm, plot = "model")
+
+
+# Residuals of model for shapiro test
+pH_primary_lm_res <- residuals(pH_primary_lm)
+
+# Normality test
+shapiro.test(pH_primary_lm_res)
+
+# Scedasticity test: 
+# bartlett's test parametric
+bartlett.test(pH ~ Pregnant.Or.Atresia, data = Primary_Samples) # nonparametric
+bartlett.test(pH ~ Ambient.Or.OAH, data = Primary_Samples)
+
+# Levene's test if nonparametric
+leveneTest(pH ~ Pregnant.Or.Atresia * Ambient.Or.OAH, data = Primary_Samples)
+leveneTest(pH ~ Pregnant.Or.Atresia, data = Primary_Samples) # Close to significant
+leveneTest(pH ~ Ambient.Or.OAH, data = Primary_Samples)
+
+# Non-parametric regression test???:
+
+```
+
+Results: Primary Sample (With both treatments and parturition groups)
+
+Linear model interaction significant (Pr(>|t|) = 0.09495 .), interactive model used.
+
+Linear Model: Interactive lm param ~ parturition * treatment
+- A **significant** relationship detected between pH, parturition groups, and treatment
+- Evidence: summary lm
+Call:
+lm(formula = pH ~ Pregnant.Or.Atresia * Ambient.Or.OAH, data = Primary_Samples)
+Residual standard error: 0.08293 on 24 degrees of freedom
+Multiple R-squared:  0.4326,	Adjusted R-squared:  0.3617 
+F-statistic: 6.099 on 3 and 24 DF,  p-value: 0.003094
+
+- How to know which groups are correlated, and how strongly? 
+- (test lm individually)
+
+
+Parametric Assumptions: Across Sample comparisons...
+
+- Sample size (n > 30): **Not Met**
+
+- Normality (of residuals) : **Met**
+
+- Homoscedasticity: **Met**
+
+
+```{r}
+# ph
+# Primary Samples
+
+# Regression Model pt 2
+
+# Individually assess parameter to parturition groups & treatment groups
+pH_primary_lm1 <- lm(pH ~ Pregnant.Or.Atresia, data = Primary_Samples)
+
+pH_primary_lm2 <- lm(pH ~ Ambient.Or.OAH, data = Primary_Samples)
+
+# p-value significant if (a < 0.1 or a < 0.05)
+summary(pH_primary_lm1) # Significant
+
+summary(pH_primary_lm2) # Significant
+
+pH_primary_lm_res_plot1 <- simulateResiduals(fittedModel = pH_primary_lm1)
+plot(pH_primary_lm_res_plot1)
+
+pH_primary_lm_res_plot2 <- simulateResiduals(fittedModel = pH_primary_lm2)
+plot(pH_primary_lm_res_plot2)
+
+# For shapiro test
+pH_primary_lm_res1 <- residuals(pH_primary_lm1)
+
+pH_primary_lm_res2 <- residuals(pH_primary_lm2)
+
+# Normality test
+shapiro.test(pH_primary_lm_res1) # Normal
+
+shapiro.test(pH_primary_lm_res2) # Normal
+
+```
+
+Results: Primary Sample (With both treatments and parturition groups)
+
+Linear Model: Individual test correlation between param and treatment, and param and parturition outcome
+
+Correlation: pH and Post-parturition vs atresia
+- A **significant** relationship detected with pH and parturition groups
+- Evidence: Residual standard error: 0.09295 on 26 degrees of freedom
+Multiple R-squared:  0.2279,	Adjusted R-squared:  0.1982 
+F-statistic: 7.673 on 1 and 26 DF,  p-value: 0.01021
+
+- Meaning: Post parturition groups display a significant correlative increase in pH, compared to the atresia group (p-value: 0.01021).
+
+Warning: DHARMA states no significant (n.s.) within group deviation from uniformity, and the Levene Test for homogeneity of variance n.s.
+
+Parametric Assumptions: Across Sample comparisons...
+
+- Sample size (n > 30): **Not Met**
+
+- Normality: **Met**
+
+- Homoscedasticity: **Met**
+
+
+
+
+Residuals Plot (if significant)
+```{r}
+# pH
+# Primary samples
+
+# ggplot with geom_smooth(aes(x=,y=)), method = "lm")
+
+
+# lm for pH & parturition scatterplot: 
+pH_primary_lm_scatterplot1 <- ggplot(data = Primary_Samples, aes(x = Pregnant.Or.Atresia, y = pH)) + 
+  geom_point() +
+  geom_smooth(aes(group = 1), method = "lm") +
+  labs(title = "pH", x = "Parturition Group", y = "pH", color = "Category") +
+  scale_y_continuous() + 
+  theme_classic() +
+  theme(panel.background = element_rect(fill = "white"),
+        plot.background = element_rect(fill = "white"),
+        legend.background = element_rect(fill = "white", color = "black"),
+        plot.title = element_text(size = 25, hjust = 0.5),
+        axis.text.x = element_text(size = 15),
+        axis.text.y = element_text(size = 20),
+        axis.title.x = element_text(size = 20),
+        axis.title.y = element_text(size = 20))
+
+print(pH_primary_lm_scatterplot1)
+
+ggsave(filename = "data-images/pH_primary_lm_scatterplot1.pdf", plot = pH_primary_lm_scatterplot1, device = "pdf")
+
+ggsave(filename = "data-images/pH_primary_lm_scatterplot1.png", plot = pH_primary_lm_scatterplot1, device = "png")
+
+
+# lm for pH & parturition scatterplot: faceted by treatment
+pH_primary_lm_scatterplot1.1 <- ggplot(data = Primary_Samples, aes(x = Pregnant.Or.Atresia, y = pH)) + 
+  geom_point() +
+  geom_smooth(aes(group = 1), method = "lm") +
+  labs(title = "pH", x = "Parturition Group", y = "pH", color = "Category") +
+  scale_y_continuous() + 
+  theme_classic() +
+  facet_wrap(~ Ambient.Or.OAH) +
+  theme(panel.background = element_rect(fill = "white"),
+        plot.background = element_rect(fill = "white"),
+        legend.background = element_rect(fill = "white", color = "black"),
+        plot.title = element_text(size = 25, hjust = 0.5),
+        axis.text.x = element_text(size = 15),
+        axis.text.y = element_text(size = 20),
+        axis.title.x = element_text(size = 20),
+        axis.title.y = element_text(size = 20))
+
+print(pH_primary_lm_scatterplot1.1)
+
+
+# lm for pH & treatment scatterplot:
+pH_primary_lm_scatterplot2 <- ggplot(data = Primary_Samples, aes(x = Ambient.Or.OAH, y = pH)) + 
+  geom_point() +
+  geom_smooth(aes(group = 1), method = "lm") +
+  labs(title = "pH", x = "Treatment Group", y = "pH", color = "Category") +
+  scale_y_continuous() + 
+  theme_classic() +
+  theme(panel.background = element_rect(fill = "white"),
+        plot.background = element_rect(fill = "white"),
+        legend.background = element_rect(fill = "white", color = "black"),
+        plot.title = element_text(size = 25, hjust = 0.5),
+        axis.text.x = element_text(size = 15),
+        axis.text.y = element_text(size = 20),
+        axis.title.x = element_text(size = 20),
+        axis.title.y = element_text(size = 20))
+
+print(pH_primary_lm_scatterplot2)
+
+ggsave(filename = "data-images/pH_primary_lm_scatterplot2.pdf", plot = pH_primary_lm_scatterplot2, device = "pdf")
+
+ggsave(filename = "data-images/pH_primary_lm_scatterplot2.png", plot = pH_primary_lm_scatterplot2, device = "png")
+
+
+# lm for pH & treatment scatterplot: faceted by parturition
+pH_primary_lm_scatterplot2.1 <- ggplot(data = Primary_Samples, aes(x = Ambient.Or.OAH, y = pH)) + 
+  geom_point() +
+  geom_smooth(aes(group = 1), method = "lm") +
+  labs(title = "pH", x = "Treatment Group", y = "pH", color = "Category") +
+  scale_y_continuous() + 
+  theme_classic() +
+  facet_wrap(~ Pregnant.Or.Atresia) +
+  theme(panel.background = element_rect(fill = "white"),
+        plot.background = element_rect(fill = "white"),
+        legend.background = element_rect(fill = "white", color = "black"),
+        plot.title = element_text(size = 25, hjust = 0.5),
+        axis.text.x = element_text(size = 15),
+        axis.text.y = element_text(size = 20),
+        axis.title.x = element_text(size = 20),
+        axis.title.y = element_text(size = 20))
+
+print(pH_primary_lm_scatterplot2.1)
+
+```
+
+
+```{r}
+# pH
+# lm Boxplot
+
+pH_primary_lm_boxplot1 <- ggplot(data = Primary_Samples, aes(x = Pregnant.Or.Atresia, y = pH)) + 
+  geom_boxplot() +
+  geom_point() +
+  geom_smooth(aes(group = 1), method = "lm") +
+  labs(title = "pH", x = "Parturition Group", y = "pH", color = "Category") +
+  scale_y_continuous() + 
+  theme_classic() +
+  theme(panel.background = element_rect(fill = "white"),
+        plot.background = element_rect(fill = "white"),
+        legend.background = element_rect(fill = "white", color = "black"),
+        plot.title = element_text(size = 25, hjust = 0.5),
+        axis.text.x = element_text(size = 15),
+        axis.text.y = element_text(size = 20),
+        axis.title.x = element_text(size = 20),
+        axis.title.y = element_text(size = 20))
+print(pH_primary_lm_boxplot1)
+
+pH_primary_lm_boxplot2 <- ggplot(data = Primary_Samples, aes(x = Ambient.Or.OAH, y = pH)) + 
+  geom_boxplot() +
+  geom_point() +
+  geom_smooth(aes(group = 1), method = "lm") +
+  labs(title = "pH", x = "Treatment Group", y = "pH", color = "Category") +
+  scale_y_continuous() + 
+  theme_classic() +
+  theme(panel.background = element_rect(fill = "white"),
+        plot.background = element_rect(fill = "white"),
+        legend.background = element_rect(fill = "white", color = "black"),
+        plot.title = element_text(size = 25, hjust = 0.5),
+        axis.text.x = element_text(size = 15),
+        axis.text.y = element_text(size = 20),
+        axis.title.x = element_text(size = 20),
+        axis.title.y = element_text(size = 20))
+print(pH_primary_lm_boxplot2)
+
+
+pH_primary_lm_boxplot_combo <- ggplot(data = Primary_Samples, aes(x = Pregnant.Or.Atresia, y = pH, fill = Ambient.Or.OAH)) +
+  geom_boxplot(aes(x = Pregnant.Or.Atresia, y = pH, fill = Ambient.Or.OAH)) +
+  geom_point(aes(color = Ambient.Or.OAH), position = position_dodge(width = 0.75), alpha = 0.3, color = "black") +
+  geom_smooth(aes(group = 1), method = "lm") +
+  labs(title = "Primary pH", x = "Parturition Type", y = "pH") +
+  guides(fill = guide_legend((title = "Treatment Type"))) + 
+  scale_fill_manual(values = c("Ambient" = "#189bff", "OAH" = "#598c78")) +
+  theme_classic() +
+  theme(panel.background = element_rect(fill = "white"),
+        plot.background = element_rect(fill = "white"),
+        legend.background = element_rect(fill = "white", color = "black"),
+        title = element_text(size = 12),
+        plot.title = element_text(size = 30, hjust = 0.5),
+        axis.text.x = element_text(size = 10),
+        axis.text.y = element_text(size = 20),
+        axis.title.x = element_text(size = 20),
+        axis.title.y = element_text(size = 20))
+  
+print(pH_primary_lm_boxplot_combo)
+
+```
+
+```{r}
+# pH
+# lm Boxplot
+
+# Include both regression lines between parturition & treatment groups
+
+ggplot(data = Primary_Samples) +
+  geom_boxplot(aes(x = Pregnant.Or.Atresia, y = pH, fill = Pregnant.Or.Atresia)) +
+  geom_point(aes(x = Pregnant.Or.Atresia, y = pH), position = position_dodge(width = 0.75), alpha = 0.3, color = "black") +
+  geom_boxplot(aes(x = Ambient.Or.OAH, y = pH, fill = Ambient.Or.OAH)) +
+  geom_point(aes(x = Ambient.Or.OAH, y = pH), position = position_dodge(width = 0.75), alpha = 0.3, color = "black")
+
+ggplot(data = Primary_Samples) +
+  geom_boxplot(aes(x = Pregnant.Or.Atresia, y = pH, fill = Pregnant.Or.Atresia)) +
+  geom_point(aes(x = Pregnant.Or.Atresia, y = pH), position = position_dodge(width = 0.75), alpha = 0.3, color = "black") +
+  geom_boxplot(aes(x = Ambient.Or.OAH, y = pH, fill = Ambient.Or.OAH)) +
+  geom_point(aes(x = Ambient.Or.OAH, y = pH), position = position_dodge(width = 0.75), alpha = 0.3, color = "black") +
+  geom_smooth(aes(x = Pregnant.Or.Atresia, y = pH, fill = Pregnant.Or.Atresia, group = 1), method = "lm") +
+  geom_smooth(aes(x = Ambient.Or.OAH, y = pH, fill = Ambient.Or.OAH, group = 1), method = "lm")
+
+
+ggplot(data = Primary_Samples) +
+  geom_boxplot(aes(x = Pregnant.Or.Atresia, y = pH, fill = Pregnant.Or.Atresia)) +
+  geom_point(aes(x = Pregnant.Or.Atresia, y = pH), position = position_dodge(width = 0.75), alpha = 0.3, color = "black") +
+  geom_boxplot(aes(x = Ambient.Or.OAH, y = pH, fill = Ambient.Or.OAH)) +
+  geom_point(aes(x = Ambient.Or.OAH, y = pH), position = position_dodge(width = 0.75), alpha = 0.3, color = "black") +
+  geom_smooth(aes(x = Pregnant.Or.Atresia, y = pH, fill = Pregnant.Or.Atresia, group = 1), method = "lm") +
+  geom_smooth(aes(x = Ambient.Or.OAH, y = pH, fill = Ambient.Or.OAH, group = 1), method = "lm") +
+  labs(title = "Primary pH", x = "Parturition Type", y = "pH") +
+  guides(fill = guide_legend((title = "Treatment Type"))) +
+  scale_fill_manual(values = c("Ambient" = "#189bff", "OAH" = "#598c78")) +
+  theme_classic() +
+  theme(panel.background = element_rect(fill = "white"),
+        plot.background = element_rect(fill = "white"),
+        legend.background = element_rect(fill = "white", color = "black"),
+        title = element_text(size = 12),
+        plot.title = element_text(size = 30, hjust = 0.5),
+        axis.text.x = element_text(size = 10),
+        axis.text.y = element_text(size = 20),
+        axis.title.x = element_text(size = 20),
+        axis.title.y = element_text(size = 20))
+
+ggplot(data = Primary_Samples) +
+  geom_boxplot(aes(x = Pregnant.Or.Atresia, y = pH, fill = Ambient.Or.OAH)) +
+  geom_point(aes(x = Pregnant.Or.Atresia, y = pH, fill = Ambient.Or.OAH), position = position_dodge(width = 0.75), alpha = 0.3, color = "black") +
+  geom_boxplot(aes(x = Ambient.Or.OAH, y = pH, fill = Pregnant.Or.Atresia)) +
+  geom_point(aes(x = Ambient.Or.OAH, y = pH, fill = Pregnant.Or.Atresia), position = position_dodge(width = 0.75), alpha = 0.3, color = "black") +
+  geom_smooth(aes(x = Pregnant.Or.Atresia, y = pH, group = 1), method = "lm") +
+  geom_smooth(aes(x = Ambient.Or.OAH, y = pH, group = 1), method = "lm") +
+  labs(title = "Primary pH", x = "Parturition Type", y = "pH") +
+  guides(fill = guide_legend((title = "Treatment Type"))) +
+  scale_fill_manual(values = c("Ambient" = "#189bff", "OAH" = "#598c78")) +
+  theme_classic() +
+  theme(panel.background = element_rect(fill = "white"),
+        plot.background = element_rect(fill = "white"),
+        legend.background = element_rect(fill = "white", color = "black"),
+        title = element_text(size = 12),
+        plot.title = element_text(size = 30, hjust = 0.5),
+        axis.text.x = element_text(size = 10),
+        axis.text.y = element_text(size = 20),
+        axis.title.x = element_text(size = 20),
+        axis.title.y = element_text(size = 20))
+
+```
+
+
+
+# Hct : Hematocrit 
+
+
+Hct Summary Stats
+```{r}
+# hct
+# Summary stats
+
+# Primary data
+Primary_Samples %>%
+  group_by(Pregnant.Or.Atresia, Ambient.Or.OAH) %>%
+  summarize(count = n(),
+            median = round(median(Hct....), 3),
+            mean = round(mean(Hct....), 3),
+            sd = round(sd(Hct....), 3),
+            cv = round(sd(Hct....)/mean(Hct....), 3)) %>%
+  ungroup()
+```
+
+Hct Boxplot
+```{r}
+# hct boxplot
+
+# Primary samples
+hct_primary_boxplot <- ggplot(data = Primary_Samples, aes(x = Pregnant.Or.Atresia, y = Hct...., fill = Ambient.Or.OAH)) +
+  geom_boxplot(aes(x = Pregnant.Or.Atresia, y = Hct...., fill = Ambient.Or.OAH)) +
+  geom_point(aes(color = Ambient.Or.OAH), position = position_dodge(width = 0.75), alpha = 0.3, color = "black") +
+  labs(title = "Hematocrit", x = "Parturition Type", y = "Hematocrit (%)") +
+  guides(fill = guide_legend((title = "Treatment Type"))) + 
+  scale_fill_manual(values = c("Ambient" = "#189bff", "OAH" = "#598c78")) +
+  theme_classic() +
+  theme(panel.background = element_rect(fill = "white"),
+        plot.background = element_rect(fill = "white"),
+        legend.background = element_rect(fill = "white", color = "black"),
+        title = element_text(size = 12),
+        plot.title = element_text(size = 30, hjust = 0.5),
+        axis.text.x = element_text(size = 10),
+        axis.text.y = element_text(size = 20),
+        axis.title.x = element_text(size = 20),
+        axis.title.y = element_text(size = 20))
+
+print(hct_primary_boxplot)
+
+ggsave(filename = "data-images/hct_primary_boxplot.pdf", plot = hct_primary_boxplot, device = "pdf")
+ggsave(filename = "data-images/hct_primary_boxplot.png", plot = hct_primary_boxplot, device = "png")
+
+```
+
+
+Data Distribution
+```{r}
+# hct
+# Parametric Assumptions
+
+# Data Distribution
+hist(Primary_Samples$Hct....)
+
+plotNormalHistogram(Primary_Samples$Hct....) 
+
+plotNormalDensity(Primary_Samples$Hct....)
+
+```
+
+
+
+
+# Hct Stat Tests
+
+Differences:
+```{r}
+# hct
+# Primary Samples
+
+# Interactive aov model
+hct_primary_aov_int <- aov(Hct.... ~ Pregnant.Or.Atresia * Ambient.Or.OAH, data = Primary_Samples)
+summary(hct_primary_aov_int) # interaction almost significant
+
+# Additive aov model
+# If interaction not significant (p-value > 0.05), use additive model
+hct_primary_aov_additive <- aov(Hct.... ~ Pregnant.Or.Atresia + Ambient.Or.OAH, data = Primary_Samples)
+summary(hct_primary_aov_additive)
+
+# Parametric Post-Hoc: Tukey's HSD test
+TukeyHSD(hct_primary_aov_additive)
+
+# Normality plot
+
+# Qqplot: Residuals of aov or lm model (plot residuals of aov vs lm are identical)
+hct_primary_res_qqplot <- ggqqplot(residuals(aov(Hct.... ~ Pregnant.Or.Atresia * Ambient.Or.OAH, data = Primary_Samples))) +
+labs(title = "Primary Hematocrit Interactive Residual QQplot",
+     subtitle = "residuals(aov(Hct.... ~ Pregnant.Or.Atresia * Ambient.Or.OAH, data = Primary_Samples))",
+                               x = "Hct Theoretical Quantiles (Predicted values)",
+                               y = "Hct Sample Quantiles") +
+  theme(plot.title = element_text(hjust = 0.5),
+        plot.subtitle = element_text(hjust = 0.5))
+print(hct_primary_res_qqplot)
+
+# Normality Test
+shapiro.test(Primary_Samples$Hct....)
+
+shapiro.test(residuals(lm(Hct.... ~ Pregnant.Or.Atresia * Ambient.Or.OAH, data = Primary_Samples)))
+
+
+# Parametric variance test:
+bartlett.test(Hct.... ~ Pregnant.Or.Atresia, data = Primary_Samples) 
+bartlett.test(Hct.... ~ Ambient.Or.OAH, data = Primary_Samples)
+
+# Nonparametric variance test:
+# LeveneTest(Hct.... ~ Pregnant.Or.Atresia, data = Primary_Samples) 
+# leveneTest(Hct.... ~ Ambient.Or.OAH, data = Primary_Samples)
+
+# Nonparametric Stat test & Post-Hoc:
+
+# kruskal.test(Hct.... ~ Pregnant.Or.Atresia, data = Primary_Samples) 
+# kruskal.test(Hct.... ~ Ambient.Or.OAH, data = Primary_Samples) 
+# 
+# DunnTest(Hct.... ~ Pregnant.Or.Atresia, data = Primary_Samples)
+# DunnTest(Hct.... ~ Ambient.Or.OAH, data = Primary_Samples)
+
+
+```
+
+Parametric Results: Ambient Fecundity No Atresia Sample
+
+- Interaction not significant (Pr(>F) = 0.8715), additive model used.
+
+- Additive summary results:
+- A significant difference detected in pH between pregnancy groups (Pr(>F) = 0.0106 *), but not treatment groups (Pr(>F) = 0.2451)
+
+
+- Parametric post Hoc: Tukey HSD with additive model
+- Meaning: **Atresia group displayed a significant increase in hematocrit compared to post parturition group.**
+- Evidence: Tukey HSD, Atresia-Post Parturition, p adj = 0.0106014
+
+
+Parametric Assumptions: Across Sample comparisons...
+
+- Sample size (n > 30): **Not Met**
+
+- Normality: **Met**
+
+- Homoscedasticity: **Met**
+
+
+Non-Parametric Results: NA
+
+
+
+Similarities:
+```{r}
+# hct
+# Primary Samples
+
+# Regression Model 
+
+# If interaction not significant, use additive model
+# p-value significant if (a < 0.1 or a < 0.05)
+hct_primary_lm_int <- lm(Hct.... ~ Pregnant.Or.Atresia * Ambient.Or.OAH, data = Primary_Samples)
+summary(hct_primary_lm_int)
+
+hct_primary_lm_add <- lm(Hct.... ~ Pregnant.Or.Atresia + Ambient.Or.OAH, data = Primary_Samples)
+summary(hct_primary_lm_add)
+
+
+# hct_primary_lm_res_plot <- simulateResiduals(fittedModel = hct_primary_lm_int)
+# plot(hct_primary_lm_res_plot)
+
+hct_primary_lm_res_plot <- simulateResiduals(fittedModel = hct_primary_lm_add)
+plot(hct_primary_lm_res_plot)
+
+visualize(hct_primary_lm_add, plot = "model")
+
+# Residuals of model for shapiro test
+# hct_primary_lm_int_res <- residuals(hct_primary_lm_int) # does not work
+hct_primary_lm_add_res <- residuals(hct_primary_lm_add)
+
+# Normality test
+#shapiro.test(hct_primary_lm_int_res) # does not work
+shapiro.test(hct_primary_lm_add_res)
+
+
+# Scedasticity test: 
+# bartlett's test parametric
+bartlett.test(Hct.... ~ Pregnant.Or.Atresia, data = Primary_Samples) 
+bartlett.test(Hct.... ~ Ambient.Or.OAH, data = Primary_Samples)
+
+# Levene's test if nonparametric
+# leveneTest(Hct.... ~ Pregnant.Or.Atresia * Ambient.Or.OAH, data = Primary_Samples)
+# leveneTest(Hct.... ~ Pregnant.Or.Atresia, data = Primary_Samples) 
+# leveneTest(Hct.... ~ Ambient.Or.OAH, data = Primary_Samples)
+
+# Non-parametric regression test???:
+
+```
+
+Results: Primary Sample (With both treatments and parturition groups)
+
+- lm interactive model not significant (Pr(>|t|) = 0.8715), additive model used 
+
+Linear Model: Additive lm param ~ parturition + treatment
+- A **significant** relationship detected 
+- Evidence: Multiple R-squared:  0.2657,	Adjusted R-squared:  0.207 
+F-statistic: 4.524 on 2 and 25 DF,  p-value: 0.02104
+
+- How to know which groups are correlated, and how strongly? 
+- (test lm individually, next code block) 
+
+
+Parametric Assumptions: Across Sample comparisons...
+
+- Sample size (n > 30): **Not Met**
+
+- Normality (of residuals) : **Met**
+
+- Homoscedasticity: **Met**
+
+
+```{r}
+# hct
+# Primary Samples
+
+# Regression Model pt 2
+
+# Individually assess parameter to parturition groups & treatment groups
+hct_primary_lm1 <- lm(Hct.... ~ Pregnant.Or.Atresia, data = Primary_Samples)
+
+hct_primary_lm2 <- lm(Hct.... ~ Ambient.Or.OAH, data = Primary_Samples)
+
+# p-value significant if (a < 0.1 or a < 0.05)
+summary(hct_primary_lm1) # Significant
+
+summary(hct_primary_lm2) # not significant
+
+hct_primary_lm_res_plot1 <- simulateResiduals(fittedModel = hct_primary_lm1)
+plot(hct_primary_lm_res_plot1)
+
+hct_primary_lm_res_plot2 <- simulateResiduals(fittedModel = hct_primary_lm2)
+plot(hct_primary_lm_res_plot2)
+
+visualize(hct_primary_lm1, plot = "model") 
+visualize(hct_primary_lm2, plot = "model")
+
+# For shapiro test
+hct_primary_lm_res1 <- residuals(hct_primary_lm1)
+
+hct_primary_lm_res2 <- residuals(hct_primary_lm2)
+
+# Normality test
+shapiro.test(hct_primary_lm_res1) # Normal
+
+shapiro.test(hct_primary_lm_res2) # Normal
+
+
+```
+
+Results: Primary Sample Regression Analysis pt2
+
+Linear Model: Individual test correlation between param and treatment, and param and parturition outcome
+
+Correlation: Hct and Post-parturition vs atresia
+- A **significant** relationship detected with hematocrit and parturition groups
+- Evidence: Residual standard error: 3.183 on 26 degrees of freedom
+Multiple R-squared:  0.2241,	Adjusted R-squared:  0.1943 
+F-statistic: 7.511 on 1 and 26 DF,  p-value: 0.01094
+
+- Meaning: Atresia group displays a significant correlative increase in hematocrit (p-value: 0.01094).
+
+Warning: DHARMA states no significant (n.s.) within group deviation from uniformity, and the Levene Test for homogeneity of variance n.s.
+
+Parametric Assumptions: Across Sample comparisons...
+
+- Sample size (n > 30): **Not Met**
+
+- Normality: **Met**
+
+- Homoscedasticity: **Met** (check previous code chunk)
+
+
+Residuals Plot (if significant)
+```{r}
+# pH
+# Primary samples
+
+# ggplot with geom_smooth(aes(x=,y=)), method = "lm")
+
+
+# lm for hct & parturition scatterplot: 
+hct_primary_lm_scatterplot1 <- ggplot(data = Primary_Samples, aes(x = Pregnant.Or.Atresia, y = Hct....)) + 
+  geom_point() +
+  geom_smooth(aes(group = 1), method = "lm") +
+  labs(title = "Hematocrit", x = "Parturition Group", y = "Hematocrit (%)", color = "Category") +
+  scale_y_continuous() + 
+  theme_classic() +
+  theme(panel.background = element_rect(fill = "white"),
+        plot.background = element_rect(fill = "white"),
+        legend.background = element_rect(fill = "white", color = "black"),
+        plot.title = element_text(size = 25, hjust = 0.5),
+        axis.text.x = element_text(size = 15),
+        axis.text.y = element_text(size = 20),
+        axis.title.x = element_text(size = 20),
+        axis.title.y = element_text(size = 20))
+
+print(hct_primary_lm_scatterplot1)
+
+ggsave(filename = "data-images/hct_primary_lm_scatterplot1.pdf", plot = hct_primary_lm_scatterplot1, device = "pdf")
+
+ggsave(filename = "data-images/hct_primary_lm_scatterplot1.png", plot = hct_primary_lm_scatterplot1, device = "png")
+
+
+hct_primary_lm_scatterplot2 <- ggplot(data = Primary_Samples, aes(x = Ambient.Or.OAH, y = Hct....)) + 
+  geom_point() +
+  geom_smooth(aes(group = 1), method = "lm") +
+  labs(title = "Hematocrit", x = "Parturition Group", y = "Hematocrit (%)", color = "Category") +
+  scale_y_continuous() + 
+  theme_classic() +
+  theme(panel.background = element_rect(fill = "white"),
+        plot.background = element_rect(fill = "white"),
+        legend.background = element_rect(fill = "white", color = "black"),
+        plot.title = element_text(size = 25, hjust = 0.5),
+        axis.text.x = element_text(size = 15),
+        axis.text.y = element_text(size = 20),
+        axis.title.x = element_text(size = 20),
+        axis.title.y = element_text(size = 20))
+
+print(hct_primary_lm_scatterplot2)
+
+```
+
+
+```{r}
+# pH
+# lm Boxplot
+
+hct_primary_lm_boxplot1 <- ggplot(data = Primary_Samples, aes(x = Pregnant.Or.Atresia, y = Hct....)) + 
+  geom_boxplot() +
+  geom_point() +
+  geom_smooth(aes(group = 1), method = "lm") +
+  labs(title = "Hematocrit", x = "Parturition Group", y = "Hematocrit (%)", color = "Category") +
+  scale_y_continuous() + 
+  theme_classic() +
+  theme(panel.background = element_rect(fill = "white"),
+        plot.background = element_rect(fill = "white"),
+        legend.background = element_rect(fill = "white", color = "black"),
+        plot.title = element_text(size = 25, hjust = 0.5),
+        axis.text.x = element_text(size = 15),
+        axis.text.y = element_text(size = 20),
+        axis.title.x = element_text(size = 20),
+        axis.title.y = element_text(size = 20))
+print(hct_primary_lm_boxplot1)
+
+hct_primary_lm_boxplot2 <- ggplot(data = Primary_Samples, aes(x = Ambient.Or.OAH, y = Hct....)) + 
+  geom_boxplot() +
+  geom_point() +
+  geom_smooth(aes(group = 1), method = "lm") +
+  labs(title = "Hematocrit", x = "Parturition Group", y = "Hematocrit (%)", color = "Category") +
+  scale_y_continuous() + 
+  theme_classic() +
+  theme(panel.background = element_rect(fill = "white"),
+        plot.background = element_rect(fill = "white"),
+        legend.background = element_rect(fill = "white", color = "black"),
+        plot.title = element_text(size = 25, hjust = 0.5),
+        axis.text.x = element_text(size = 15),
+        axis.text.y = element_text(size = 20),
+        axis.title.x = element_text(size = 20),
+        axis.title.y = element_text(size = 20))
+print(hct_primary_lm_boxplot2)
+
+```
+
+
+# Glucose
+
+
+Glucose Summary Stats
+```{r}
+# glucose
+# Summary stats
+
+# Primary data
+Primary_Samples %>%
+  group_by(Pregnant.Or.Atresia, Ambient.Or.OAH) %>%
+  summarize(count = n(),
+            median = round(median(Glu..mmol.L.), 3),
+            mean = round(mean(Glu..mmol.L.), 3),
+            sd = round(sd(Glu..mmol.L.), 3),
+            cv = round(sd(Glu..mmol.L.)/mean(Glu..mmol.L.), 3)) %>%
+  ungroup()
+```
+
+Glucose Boxplot
+```{r}
+# glucose boxplot
+
+# Primary samples
+glucose_primary_boxplot <- ggplot(data = Primary_Samples, aes(x = Pregnant.Or.Atresia, y = Glu..mmol.L., fill = Ambient.Or.OAH)) +
+  geom_boxplot(aes(x = Pregnant.Or.Atresia, y = Glu..mmol.L., fill = Ambient.Or.OAH)) +
+  geom_point(aes(color = Ambient.Or.OAH), position = position_dodge(width = 0.75), alpha = 0.3, color = "black") +
+  labs(title = "Glucose", x = "Parturition Type", y = "Glucose (mmol/L)") +
+  guides(fill = guide_legend((title = "Treatment Type"))) + 
+  scale_fill_manual(values = c("Ambient" = "#189bff", "OAH" = "#598c78")) +
+  theme_classic() +
+  theme(panel.background = element_rect(fill = "white"),
+        plot.background = element_rect(fill = "white"),
+        legend.background = element_rect(fill = "white", color = "black"),
+        title = element_text(size = 12),
+        plot.title = element_text(size = 30, hjust = 0.5),
+        axis.text.x = element_text(size = 10),
+        axis.text.y = element_text(size = 20),
+        axis.title.x = element_text(size = 20),
+        axis.title.y = element_text(size = 20))
+
+print(glucose_primary_boxplot)
+
+ggsave(filename = "data-images/glucose_primary_boxplot.pdf", plot = glucose_primary_boxplot, device = "pdf")
+ggsave(filename = "data-images/glucose_primary_boxplot.png", plot = glucose_primary_boxplot, device = "png")
+
+```
+
+Data Distribution
+```{r}
+# glucose
+# Parametric Assumptions
+
+# Data Distribution
+hist(Primary_Samples$Glu..mmol.L.)
+
+plotNormalHistogram(Primary_Samples$Glu..mmol.L.) 
+
+plotNormalDensity(Primary_Samples$Glu..mmol.L.)
+
+```
+
+
+# Glucose Stat Tests
+
+
+Differences:
+```{r}
+# glucose
+# Primary Samples
+
+# Interactive aov model
+glucose_primary_aov_int <- aov(Glu..mmol.L. ~ Pregnant.Or.Atresia * Ambient.Or.OAH, data = Primary_Samples)
+summary(glucose_primary_aov_int) # interaction significant
+
+# Additive aov model
+# If interaction not significant (p-value > 0.05), use additive model
+# glucose_primary_aov_additive <- aov(Glu..mmol.L. ~ Pregnant.Or.Atresia + Ambient.Or.OAH, data = Primary_Samples)
+# summary(glucose_primary_aov_additive)
+
+# Parametric Post-Hoc: Tukey's HSD test
+TukeyHSD(glucose_primary_aov_int)
+
+# Normality plot
+
+# Qqplot: Residuals of aov or lm model (plot residuals of aov vs lm are identical)
+glucose_primary_res_qqplot <- ggqqplot(residuals(aov(Glu..mmol.L. ~ Pregnant.Or.Atresia * Ambient.Or.OAH, data = Primary_Samples))) +
+labs(title = "Glucose Interactive Residual QQplot",
+     subtitle = "residuals(aov(Glu..mmol.L. ~ Pregnant.Or.Atresia * Ambient.Or.OAH, data = Primary_Samples))",
+                               x = "Glucose Theoretical Quantiles (Predicted values)",
+                               y = "Glucose Sample Quantiles") +
+  theme(plot.title = element_text(hjust = 0.5),
+        plot.subtitle = element_text(hjust = 0.5))
+print(glucose_primary_res_qqplot)
+
+# Normality Test
+shapiro.test(Primary_Samples$Glu..mmol.L.)
+
+shapiro.test(residuals(lm(Glu..mmol.L. ~ Pregnant.Or.Atresia * Ambient.Or.OAH, data = Primary_Samples)))
+
+
+# Parametric variance test:
+bartlett.test(Glu..mmol.L. ~ Pregnant.Or.Atresia, data = Primary_Samples) 
+bartlett.test(Glu..mmol.L. ~ Ambient.Or.OAH, data = Primary_Samples)
+
+# Nonparametric variance test:
+LeveneTest(Glu..mmol.L. ~ Pregnant.Or.Atresia, data = Primary_Samples)
+leveneTest(Glu..mmol.L. ~ Ambient.Or.OAH, data = Primary_Samples)
+
+# Nonparametric Stat test & Post-Hoc:
+
+kruskal.test(Glu..mmol.L. ~ Pregnant.Or.Atresia, data = Primary_Samples)
+kruskal.test(Glu..mmol.L. ~ Ambient.Or.OAH, data = Primary_Samples)
+
+DunnTest(Glu..mmol.L. ~ Pregnant.Or.Atresia, data = Primary_Samples)
+DunnTest(Glu..mmol.L. ~ Ambient.Or.OAH, data = Primary_Samples)
+
+
+```
+
+Parametric Results: Ambient Fecundity No Atresia Sample
+
+- Interaction significant (Pr(>F) = 0.0671), interactive model used.
+
+- Interactive summary results:
+- ask?
+
+
+- Parametric post Hoc: Tukey HSD with interactive model
+- Meaning: No groups appear significantly different from eachother...
+- Evidence: 
+
+
+Parametric Assumptions: Across Sample comparisons...
+
+- Sample size (n > 30): **Not Met**
+
+- Normality: **Not met, W = 0.84841, p-value = 0.0008683**
+
+- Homoscedasticity: **Met**
+
+
+Non-Parametric Results: 
+
+- nonparametric scedasticity test (Levene's test): **Met**
+
+Kruskal-Wallis rank sum test:
+- A significant difference in glucose detected between pregnant and atresia groups
+- Evidence: Kruskal-Wallis chi-squared = 2.9147, df = 1, p-value = 0.08778
+
+Nonparametric Post-Hoc: Dunn's test
+- **A significant increase in glucose detected in Atresia group compared to post parturition group (mean.rank.diff = 5.522222, pval = 0.0878).**
+
+
+
+Similarities:
+```{r}
+# glucose
+# Primary Samples
+
+# Regression Model 
+
+# If interaction not significant, use additive model
+# p-value significant if (a < 0.1 or a < 0.05)
+glucose_primary_lm_int <- lm(Glu..mmol.L. ~ Pregnant.Or.Atresia * Ambient.Or.OAH, data = Primary_Samples) 
+summary(glucose_primary_lm_int) # interaction significant
+
+glucose_primary_lm_add <- lm(Glu..mmol.L. ~ Pregnant.Or.Atresia + Ambient.Or.OAH, data = Primary_Samples)
+summary(glucose_primary_lm_add)
+
+# Simulate residuals plot
+
+# glucose_primary_lm_res_plot <- simulateResiduals(fittedModel = glucose_primary_lm_int)
+# plot(glucose_primary_lm_res_plot)
+
+glucose_primary_lm_res_plot <- simulateResiduals(fittedModel = glucose_primary_lm_int)
+plot(glucose_primary_lm_res_plot)
+
+visualize(glucose_primary_lm_int, plot = "model")
+
+# Residuals of model for shapiro test
+glucose_primary_lm_int_res <- residuals(glucose_primary_lm_int) 
+glucose_primary_lm_add_res <- residuals(glucose_primary_lm_add)
+
+# Normality test
+shapiro.test(glucose_primary_lm_int_res) # works
+shapiro.test(glucose_primary_lm_add_res) # works
+
+
+# Scedasticity test: 
+# bartlett's test parametric
+bartlett.test(Glu..mmol.L. ~ Pregnant.Or.Atresia, data = Primary_Samples) 
+bartlett.test(Glu..mmol.L. ~ Ambient.Or.OAH, data = Primary_Samples)
+
+# Levene's test if nonparametric
+leveneTest(Glu..mmol.L. ~ Pregnant.Or.Atresia * Ambient.Or.OAH, data = Primary_Samples)
+leveneTest(Glu..mmol.L. ~ Pregnant.Or.Atresia, data = Primary_Samples)
+leveneTest(Glu..mmol.L. ~ Ambient.Or.OAH, data = Primary_Samples)
+
+# Non-parametric regression test???:
+
+```
+
+Results: Primary Sample (With both treatments and parturition groups)
+
+- lm interactive model significant (Pr(>|t|) = 0.0671 .), interactive model used 
+
+Linear Model: Interactive lm param ~ parturition * treatment
+- No significant relationship detected across groups
+- Evidence: Multiple R-squared:  0.1765,	Adjusted R-squared:  0.07358 
+F-statistic: 1.715 on 3 and 24 DF,  p-value: 0.1907
+
+- How to know which groups are correlated, and how strongly? 
+- (test lm individually, next code block) 
+
+
+Parametric Assumptions: Across Sample comparisons...
+
+- Sample size (n > 30): **Not Met**
+
+- Normality (of residuals) : **Not met**
+
+- Homoscedasticity: **Met**
+
+Non-parametric Tests:
+
+- nonparametric normality test (Levene's test): **Met**
+
+- Nonparametric regression stat test???
+
+
+```{r}
+# glucose
+# Primary Samples
+
+# Regression Model pt 2
+
+# Individually assess parameter to parturition groups & treatment groups
+glucose_primary_lm1 <- lm(Glu..mmol.L. ~ Pregnant.Or.Atresia, data = Primary_Samples)
+
+glucose_primary_lm2 <- lm(Glu..mmol.L. ~ Ambient.Or.OAH, data = Primary_Samples)
+
+# p-value significant if (a < 0.1 or a < 0.05)
+summary(glucose_primary_lm1) # Significant
+
+summary(glucose_primary_lm2) # not significant
+
+glucose_primary_lm_res_plot1 <- simulateResiduals(fittedModel = glucose_primary_lm1)
+plot(glucose_primary_lm_res_plot1) # Warning appears
+
+glucose_primary_lm_res_plot2 <- simulateResiduals(fittedModel = glucose_primary_lm2)
+plot(glucose_primary_lm_res_plot2)
+
+visualize(glucose_primary_lm1, plot = "model") 
+visualize(glucose_primary_lm2, plot = "model")
+
+# For shapiro test
+glucose_primary_lm_res1 <- residuals(glucose_primary_lm1)
+
+glucose_primary_lm_res2 <- residuals(glucose_primary_lm2)
+
+# Normality test
+shapiro.test(glucose_primary_lm_res1) # Non-parametric
+
+shapiro.test(glucose_primary_lm_res2) # Non-parametric
+
+```
+
+Results: Primary Sample Regression Analysis pt2
+
+Linear Model: Individual test correlation between param and treatment, and param and parturition outcome
+
+Correlation: 
+- **No significant** relationship detected with glucose and parturition groups or treatment groups.
+- Evidence: 
+- Meaning:
+
+**Warning**: DHARMA states for Glu..mmol.L. ~ Pregnant.Or.Atresia QQ plot residuals, KS Test: P = 0.0271 Deviation Significant
+
+Parametric Assumptions: Across Sample comparisons...
+
+- Sample size (n > 30): **Not Met**
+
+- Normality: **Non-parametric** See previous code block
+
+- Homoscedasticity: **Met** see previous code block
+
+
+Residuals Plot (if significant)
+```{r}
+# glucose
+# Primary samples
+
+# ggplot with geom_smooth(aes(x=,y=)), method = "lm")
+
+
+# lm for glucose & parturition scatterplot:
+glucose_primary_lm_scatterplot1 <- ggplot(data = Primary_Samples, aes(x = Pregnant.Or.Atresia, y = Glu..mmol.L.)) +
+  geom_point() +
+  geom_smooth(aes(group = 1), method = "lm") +
+  labs(title = "Glucose", x = "Parturition Group", y = "Glucose (mmol/L)", color = "Category") +
+  scale_y_continuous() +
+  theme_classic() +
+  theme(panel.background = element_rect(fill = "white"),
+        plot.background = element_rect(fill = "white"),
+        legend.background = element_rect(fill = "white", color = "black"),
+        plot.title = element_text(size = 25, hjust = 0.5),
+        axis.text.x = element_text(size = 15),
+        axis.text.y = element_text(size = 20),
+        axis.title.x = element_text(size = 20),
+        axis.title.y = element_text(size = 20))
+
+print(glucose_primary_lm_scatterplot1)
+
+ggsave(filename = "data-images/glucose_primary_lm_scatterplot1.pdf", plot = glucose_primary_lm_scatterplot1, device = "pdf")
+ggsave(filename = "data-images/glucose_primary_lm_scatterplot1.png", plot = glucose_primary_lm_scatterplot1, device = "png")
+
+# lm for glucose & treatment scatterplot:
+glucose_primary_lm_scatterplot2 <- ggplot(data = Primary_Samples, aes(x = Ambient.Or.OAH, y = Glu..mmol.L.)) +
+  geom_point() +
+  geom_smooth(aes(group = 1), method = "lm") +
+  labs(title = "Glucose", x = "Treatment Group", y = "Glucose (mmol/L)", color = "Category") +
+  scale_y_continuous() +
+  theme_classic() +
+  theme(panel.background = element_rect(fill = "white"),
+        plot.background = element_rect(fill = "white"),
+        legend.background = element_rect(fill = "white", color = "black"),
+        plot.title = element_text(size = 25, hjust = 0.5),
+        axis.text.x = element_text(size = 15),
+        axis.text.y = element_text(size = 20),
+        axis.title.x = element_text(size = 20),
+        axis.title.y = element_text(size = 20))
+
+print(glucose_primary_lm_scatterplot2)
+
+ggsave(filename = "data-images/glucose_primary_lm_scatterplot2.pdf", plot = glucose_primary_lm_scatterplot2, device = "pdf")
+ggsave(filename = "data-images/glucose_primary_lm_scatterplot2.png", plot = glucose_primary_lm_scatterplot2, device = "png")
+
+```
+
+
+```{r}
+# glucose
+# lm Boxplot
+
+glucose_primary_lm_boxplot1 <- ggplot(data = Primary_Samples, aes(x = Pregnant.Or.Atresia, y = Glu..mmol.L.)) +
+  geom_boxplot() +
+  geom_point() +
+  geom_smooth(aes(group = 1), method = "lm") +
+  labs(title = "Glucose", x = "Parturition Group", y = "Glucose (mmol/L)", color = "Category") +
+  scale_y_continuous() +
+  theme_classic() +
+  theme(panel.background = element_rect(fill = "white"),
+        plot.background = element_rect(fill = "white"),
+        legend.background = element_rect(fill = "white", color = "black"),
+        plot.title = element_text(size = 25, hjust = 0.5),
+        axis.text.x = element_text(size = 15),
+        axis.text.y = element_text(size = 20),
+        axis.title.x = element_text(size = 20),
+        axis.title.y = element_text(size = 20))
+print(glucose_primary_lm_boxplot1)
+
+
+glucose_primary_lm_boxplot2 <- ggplot(data = Primary_Samples, aes(x = Ambient.Or.OAH, y = Glu..mmol.L.)) +
+  geom_boxplot() +
+  geom_point() +
+  geom_smooth(aes(group = 1), method = "lm") +
+  labs(title = "Glucose", x = "Parturition Group", y = "Glucose (mmol/L)", color = "Category") +
+  scale_y_continuous() +
+  theme_classic() +
+  theme(panel.background = element_rect(fill = "white"),
+        plot.background = element_rect(fill = "white"),
+        legend.background = element_rect(fill = "white", color = "black"),
+        plot.title = element_text(size = 25, hjust = 0.5),
+        axis.text.x = element_text(size = 15),
+        axis.text.y = element_text(size = 20),
+        axis.title.x = element_text(size = 20),
+        axis.title.y = element_text(size = 20))
+print(glucose_primary_lm_boxplot2)
+
+```
+
+# Na+ : Sodium
+
+Sodium Summary Stats
+```{r}
+# Na+
+# Summary stats
+
+# Primary data
+Primary_Samples %>%
+  group_by(Pregnant.Or.Atresia, Ambient.Or.OAH) %>%
+  summarize(count = n(),
+            median = round(median(Na...mmol.L.), 3),
+            mean = round(mean(Na...mmol.L.), 3),
+            sd = round(sd(Na...mmol.L.), 3),
+            cv = round(sd(Na...mmol.L.)/mean(Na...mmol.L.), 3)) %>%
+  ungroup()
+```
+
+Sodium Boxplot
+```{r}
+# Na+ boxplot
+
+# Primary samples
+sodium_primary_boxplot <- ggplot(data = Primary_Samples, aes(x = Pregnant.Or.Atresia, y = Na...mmol.L., fill = Ambient.Or.OAH)) +
+  geom_boxplot(aes(x = Pregnant.Or.Atresia, y = Na...mmol.L., fill = Ambient.Or.OAH)) +
+  geom_point(aes(color = Ambient.Or.OAH), position = position_dodge(width = 0.75), alpha = 0.3, color = "black") +
+  labs(title = "Sodium", x = "Parturition Type", y = "Sodium (mmol/L)") +
+  guides(fill = guide_legend((title = "Treatment Type"))) + 
+  scale_fill_manual(values = c("Ambient" = "#189bff", "OAH" = "#598c78")) +
+  theme_classic() +
+  theme(panel.background = element_rect(fill = "white"),
+        plot.background = element_rect(fill = "white"),
+        legend.background = element_rect(fill = "white", color = "black"),
+        title = element_text(size = 12),
+        plot.title = element_text(size = 30, hjust = 0.5),
+        axis.text.x = element_text(size = 10),
+        axis.text.y = element_text(size = 20),
+        axis.title.x = element_text(size = 20),
+        axis.title.y = element_text(size = 20))
+
+print(sodium_primary_boxplot)
+
+ggsave(filename = "data-images/sodium_primary_boxplot.pdf", plot = sodium_primary_boxplot, device = "pdf")
+ggsave(filename = "data-images/sodium_primary_boxplot.png", plot = sodium_primary_boxplot, device = "png")
+
+```
+
+Data Distribution
+```{r}
+# Na+
+# Parametric Assumptions
+
+# Data Distribution
+hist(Primary_Samples$Na...mmol.L.)
+
+plotNormalHistogram(Primary_Samples$Na...mmol.L.) 
+
+plotNormalDensity(Primary_Samples$Na...mmol.L.)
+
+```
+
+
+# Na+ Stat Tests
+
+Differences:
+```{r}
+# Na+
+# Primary Samples
+
+# Interactive aov model
+sodium_primary_aov_int <- aov(Na...mmol.L. ~ Pregnant.Or.Atresia * Ambient.Or.OAH, data = Primary_Samples)
+summary(sodium_primary_aov_int) # interaction not significant
+
+# Additive aov model
+# If interaction not significant (p-value > 0.05), use additive model
+sodium_primary_aov_add <- aov(Na...mmol.L. ~ Pregnant.Or.Atresia + Ambient.Or.OAH, data = Primary_Samples)
+summary(sodium_primary_aov_add)
+
+# Parametric Post-Hoc: Tukey's HSD test
+TukeyHSD(sodium_primary_aov_add)
+
+# Normality plot
+
+# Qqplot: Residuals of aov or lm model (plot residuals of aov vs lm are identical)
+sodium_primary_res_qqplot <- ggqqplot(residuals(aov(Na...mmol.L. ~ Pregnant.Or.Atresia + Ambient.Or.OAH, data = Primary_Samples))) +
+labs(title = "Sodium Interactive Residual QQplot",
+     subtitle = "residuals(aov(Na...mmol.L. ~ Pregnant.Or.Atresia * Ambient.Or.OAH, data = Primary_Samples))",
+                               x = "Sodium Theoretical Quantiles (Predicted values)",
+                               y = "Sodium Sample Quantiles") +
+  theme(plot.title = element_text(hjust = 0.5),
+        plot.subtitle = element_text(hjust = 0.5))
+print(sodium_primary_res_qqplot)
+
+# Normality Test
+shapiro.test(Primary_Samples$Na...mmol.L.)
+
+shapiro.test(residuals(lm(Na...mmol.L. ~ Pregnant.Or.Atresia * Ambient.Or.OAH, data = Primary_Samples)))
+
+
+# Parametric variance test:
+bartlett.test(Na...mmol.L. ~ Pregnant.Or.Atresia, data = Primary_Samples) 
+bartlett.test(Na...mmol.L. ~ Ambient.Or.OAH, data = Primary_Samples)
+
+# Nonparametric variance test:
+LeveneTest(Na...mmol.L. ~ Pregnant.Or.Atresia, data = Primary_Samples)
+leveneTest(Na...mmol.L. ~ Ambient.Or.OAH, data = Primary_Samples)
+
+# Nonparametric Stat test & Post-Hoc:
+
+kruskal.test(Na...mmol.L. ~ Pregnant.Or.Atresia, data = Primary_Samples)
+kruskal.test(Na...mmol.L. ~ Ambient.Or.OAH, data = Primary_Samples)
+
+DunnTest(Na...mmol.L. ~ Pregnant.Or.Atresia, data = Primary_Samples)
+DunnTest(Na...mmol.L. ~ Ambient.Or.OAH, data = Primary_Samples)
+
+sodium_primary_aov_res_plot <- simulateResiduals(fittedModel = sodium_primary_aov_add)
+plot(sodium_primary_aov_res_plot) # KS significant
+
+visualize(sodium_primary_aov_add)
+
+boxplot(data = Primary_Samples, Na...mmol.L. ~ Ambient.Or.OAH)
+
+# Test outliers
+outlierTest(sodium_primary_aov_add) 
+
+#  Used Ranked model to adjust for outlier
+boxplot(rank(Na...mmol.L.) ~ Pregnant.Or.Atresia, data = Primary_Samples, horizontal = TRUE)
+boxplot(rank(Na...mmol.L.) ~ Ambient.Or.OAH, data = Primary_Samples, horizontal = TRUE)
+
+# Nonparametric Wilcoxon test
+wilcox.test(rank(Na...mmol.L.) ~ Pregnant.Or.Atresia, data = Primary_Samples)
+wilcox.test(rank(Na...mmol.L.) ~ Ambient.Or.OAH, data = Primary_Samples)
+
+```
+
+Parametric Results: Ambient Fecundity No Atresia Sample
+
+**Warning**: Severe outlier may be interfering with results
+
+- Interaction not significant (Pr(>F) = 0.242), additive model used.
+
+- Additive summary results:
+- No significant differences between parturition and treatment groups.
+
+
+- Parametric post Hoc: Tukey HSD with interactive model
+- Meaning: No groups appear significantly different from eachother...
+- Evidence: 
+
+
+Parametric Assumptions: Across Sample comparisons...
+
+- Sample size (n > 30): **Not Met**
+
+- Normality: **Really not met, W = 0.52152, p-value = 1.916e-08**
+
+- Homoscedasticity: **Not met (for both factor groups)**
+
+
+Non-Parametric Results: 
+
+- nonparametric scedasticity test (Levene's test): **Met** (for both groups)
+
+Kruskal-Wallis rank sum test:
+- A significant difference in sodium detected between Treatments: Ambient and OAH groups
+- Evidence: Kruskal-Wallis chi-squared = 2.8469, df = 1, p-value = 0.09155
+
+
+Nonparametric Post-Hoc: Dunn's test
+- **A significant difference in sodium detected in treatment groups (mean.rank.diff = -6 pval = 0.0916).**
+- How to know which group is greater? 
+- Generate boxplot for sodium just with treatment groups?
+
+
+Similarities:
+```{r}
+# sodium
+# Primary Samples
+
+# Regression Model 
+# p-value significant if (a < 0.1 or a < 0.05)
+
+sodium_primary_lm_int <- lm(Na...mmol.L. ~ Pregnant.Or.Atresia * Ambient.Or.OAH, data = Primary_Samples) # not significant
+summary(sodium_primary_lm_int)
+
+sodium_primary_lm_add <- lm(Na...mmol.L. ~ Pregnant.Or.Atresia + Ambient.Or.OAH, data = Primary_Samples)
+summary(sodium_primary_lm_add)
+
+# sodium_primary_lm_res_plot <- simulateResiduals(fittedModel = sodium_primary_lm_int)
+# plot(sodium_primary_lm_res_plot)
+
+sodium_primary_lm_res_plot <- simulateResiduals(fittedModel = sodium_primary_lm_add)
+plot(sodium_primary_lm_res_plot) # KS significant
+
+visualize(sodium_primary_lm_add, plot = "model")
+
+# Check Dispersion or Outliers
+plotResiduals(sodium_primary_lm_add)
+
+testDispersion(sodium_primary_lm_add)
+
+# Transform data: square root
+sodium_primary_sqrt <- Primary_Samples %>%
+  mutate(Na...mmol.L. = sqrt(Na...mmol.L.))
+
+# Rerun lm model with square root transformed data
+sodium_primary_sqrt_lm_int <- lm(Na...mmol.L. ~ Pregnant.Or.Atresia * Ambient.Or.OAH, data = sodium_primary_sqrt) 
+summary(sodium_primary_sqrt_lm_int) # still not significant
+
+sodium_primary_sqrt_lm_add <- lm(Na...mmol.L. ~ Pregnant.Or.Atresia + Ambient.Or.OAH, data = sodium_primary_sqrt)
+summary(sodium_primary_sqrt_lm_add)
+
+
+# Check hows it
+sodium_primary_sqrt_lm_res_plot <- simulateResiduals(fittedModel = sodium_primary_sqrt_lm_add)
+plot(sodium_primary_sqrt_lm_res_plot) # KS still significant
+
+plotResiduals(sodium_primary_sqrt_lm_add)
+
+testDispersion(sodium_primary_sqrt_lm_add)
+
+
+# Residuals of model for shapiro test
+sodium_primary_lm_int_res <- residuals(sodium_primary_lm_int) 
+sodium_primary_lm_add_res <- residuals(sodium_primary_lm_add)
+
+
+# Normality test
+shapiro.test(sodium_primary_lm_int_res) # significant
+shapiro.test(sodium_primary_lm_add_res) # significant
+
+
+# Scedasticity test: 
+# bartlett's test parametric
+bartlett.test(Na...mmol.L. ~ Pregnant.Or.Atresia, data = Primary_Samples) 
+bartlett.test(Na...mmol.L. ~ Ambient.Or.OAH, data = Primary_Samples)
+
+# Levene's test if nonparametric
+leveneTest(Na...mmol.L. ~ Pregnant.Or.Atresia * Ambient.Or.OAH, data = Primary_Samples)
+leveneTest(Na...mmol.L. ~ Pregnant.Or.Atresia, data = Primary_Samples)
+leveneTest(Na...mmol.L. ~ Ambient.Or.OAH, data = Primary_Samples)
+
+# Non-parametric regression test???:
+
+```
+
+Results: Primary Sample (With both treatments and parturition groups)
+
+- lm interactive model not significant (Pr(>|t|) = 0.242), additive model used 
+
+Linear Model: Additive lm param ~ parturition + treatment (no sqrt adjust)
+- No significant relationship detected across groups
+- Evidence: Multiple R-squared:  0.08142,	Adjusted R-squared:  0.007938 
+F-statistic: 1.108 on 2 and 25 DF,  p-value: 0.3459
+
+- How to know which groups are correlated, and how strongly? 
+- (test lm individually, next code block) 
+
+
+**Warning**: DHARMA states for Na...mmol.L ~ Pregnant.Or.Atresia QQ plot residuals, KS Test: P = 0.0271 Deviation Significant
+
+
+Correlation: Using sqrt transformed sodium values (additive model)
+- **No significant** relationship detected with glucose and parturition groups or treatment groups.
+- Evidence: Multiple R-squared:  0.08361,	Adjusted R-squared:  0.01029 
+F-statistic:  1.14 on 2 and 25 DF,  p-value: 0.3358
+
+
+Parametric Assumptions: Across Sample comparisons...
+
+- Sample size (n > 30): **Not Met**
+
+- Normality (of residuals) : **Not met**
+
+- Homoscedasticity: **Not Met**
+
+Non-parametric Tests:
+
+- nonparametric normality test (Levene's test): **Met**
+
+- Nonparametric regression stat test???
+
+
+```{r}
+# glucose
+# Primary Samples
+
+# Regression Model pt 2
+
+# Individually assess parameter to parturition groups & treatment groups
+sodium_primary_lm1 <- lm(Na...mmol.L. ~ Pregnant.Or.Atresia, data = sodium_primary_sqrt)
+
+sodium_primary_lm2 <- lm(Na...mmol.L. ~ Ambient.Or.OAH, data = sodium_primary_sqrt)
+
+# p-value significant if (a < 0.1 or a < 0.05)
+summary(sodium_primary_lm1) 
+
+summary(sodium_primary_lm2) 
+
+sodium_primary_lm_res_plot1 <- simulateResiduals(fittedModel = sodium_primary_lm1)
+plot(sodium_primary_lm_res_plot1) # Warning appears
+
+sodium_primary_lm_res_plot2 <- simulateResiduals(fittedModel = sodium_primary_lm2)
+plot(sodium_primary_lm_res_plot2)
+
+visualize(sodium_primary_lm1, plot = "model") 
+visualize(sodium_primary_lm2, plot = "model")
+
+# For shapiro test
+sodium_primary_lm_res1 <- residuals(sodium_primary_lm1)
+
+sodium_primary_lm_res2 <- residuals(sodium_primary_lm2)
+
+# Normality test
+shapiro.test(sodium_primary_lm_res1) # Non-parametric
+
+shapiro.test(sodium_primary_lm_res2) # Non-parametric
+
+```
+
+Results: Primary Sample Regression Analysis pt2
+
+Linear Model: Individual test correlation between param and treatment, and param and parturition outcome
+
+Correlation: Using sqrt transformed sodium values 
+- **No significant** relationship detected with glucose and parturition groups or treatment groups.
+- Evidence: 
+- Meaning:
+
+**Warning**: DHARMA states for Na...mmol.L. ~ Pregnant.Or.Atresia QQ plot residuals, KS Test: P < 0.05. Deviation Significant
+
+Parametric Assumptions: Across Sample comparisons...
+
+- Sample size (n > 30): **Not Met**
+
+- Normality: **Non-parametric** See previous code block
+
+- Homoscedasticity: **Not Met** see previous code block
+
+
+Residuals Plot (if significant)
+```{r}
+# sodium
+# Primary samples
+
+# ggplot with geom_smooth(aes(x=,y=)), method = "lm")
+
+
+# lm for sodium & parturition scatterplot:
+sodium_primary_lm_scatterplot1 <- ggplot(data = sodium_primary_sqrt, aes(x = Pregnant.Or.Atresia, y = Na...mmol.L.)) +
+  geom_point() +
+  geom_smooth(aes(group = 1), method = "lm") +
+  labs(title = "Sodium", x = "Parturition Group", y = "Sqrt Sodium", color = "Category") +
+  scale_y_continuous() +
+  theme_classic() +
+  theme(panel.background = element_rect(fill = "white"),
+        plot.background = element_rect(fill = "white"),
+        legend.background = element_rect(fill = "white", color = "black"),
+        plot.title = element_text(size = 25, hjust = 0.5),
+        axis.text.x = element_text(size = 15),
+        axis.text.y = element_text(size = 20),
+        axis.title.x = element_text(size = 20),
+        axis.title.y = element_text(size = 20))
+
+print(sodium_primary_lm_scatterplot1)
+
+ggsave(filename = "data-images/sodium_primary_lm_scatterplot1.pdf", plot = sodium_primary_lm_scatterplot1, device = "pdf")
+ggsave(filename = "data-images/sodium_primary_lm_scatterplot1.png", plot = sodium_primary_lm_scatterplot1, device = "png")
+
+# lm for sodium & treatment scatterplot:
+sodium_primary_lm_scatterplot2 <- ggplot(data = sodium_primary_sqrt, aes(x = Ambient.Or.OAH, y = Na...mmol.L.)) +
+  geom_point() +
+  geom_smooth(aes(group = 1), method = "lm") +
+  labs(title = "Sodium", x = "Treatment Group", y = "Sqrt Sodium", color = "Category") +
+  scale_y_continuous() +
+  theme_classic() +
+  theme(panel.background = element_rect(fill = "white"),
+        plot.background = element_rect(fill = "white"),
+        legend.background = element_rect(fill = "white", color = "black"),
+        plot.title = element_text(size = 25, hjust = 0.5),
+        axis.text.x = element_text(size = 15),
+        axis.text.y = element_text(size = 20),
+        axis.title.x = element_text(size = 20),
+        axis.title.y = element_text(size = 20))
+
+print(sodium_primary_lm_scatterplot2)
+
+ggsave(filename = "data-images/sodium_primary_lm_scatterplot2.pdf", plot = sodium_primary_lm_scatterplot2, device = "pdf")
+ggsave(filename = "data-images/sodium_primary_lm_scatterplot2.png", plot = sodium_primary_lm_scatterplot2, device = "png")
+
+```
+
+
+```{r}
+# sodium
+# lm Boxplot
+
+sodium_primary_lm_boxplot1 <- ggplot(data = sodium_primary_sqrt, aes(x = Pregnant.Or.Atresia, y = Na...mmol.L.)) +
+  geom_boxplot() +
+  geom_point() +
+  geom_smooth(aes(group = 1), method = "lm") +
+  labs(title = "Sodium", x = "Parturition Group", y = "Sqrt Sodium", color = "Category") +
+  scale_y_continuous() +
+  theme_classic() +
+  theme(panel.background = element_rect(fill = "white"),
+        plot.background = element_rect(fill = "white"),
+        legend.background = element_rect(fill = "white", color = "black"),
+        plot.title = element_text(size = 25, hjust = 0.5),
+        axis.text.x = element_text(size = 15),
+        axis.text.y = element_text(size = 20),
+        axis.title.x = element_text(size = 20),
+        axis.title.y = element_text(size = 20))
+print(sodium_primary_lm_boxplot1)
+
+sodium_primary_lm_boxplot2 <- ggplot(data = sodium_primary_sqrt, aes(x = Ambient.Or.OAH, y = Na...mmol.L.)) +
+  geom_boxplot() +
+  geom_point() +
+  geom_smooth(aes(group = 1), method = "lm") +
+  labs(title = "Sodium", x = "Parturition Group", y = "Sqrt Sodium", color = "Category") +
+  scale_y_continuous() +
+  theme_classic() +
+  theme(panel.background = element_rect(fill = "white"),
+        plot.background = element_rect(fill = "white"),
+        legend.background = element_rect(fill = "white", color = "black"),
+        plot.title = element_text(size = 25, hjust = 0.5),
+        axis.text.x = element_text(size = 15),
+        axis.text.y = element_text(size = 20),
+        axis.title.x = element_text(size = 20),
+        axis.title.y = element_text(size = 20))
+print(sodium_primary_lm_boxplot2)
+
+```
+
+
+# Cl- : Chloride
+
+
+Chloride Summary Stats
+```{r}
+# Cl-
+# Summary stats
+
+# Primary data
+Primary_Samples %>%
+  group_by(Pregnant.Or.Atresia, Ambient.Or.OAH) %>%
+  summarize(count = n(),
+            median = round(median(Cl...mmol.L.), 3),
+            mean = round(mean(Cl...mmol.L.), 3),
+            sd = round(sd(Cl...mmol.L.), 3),
+            cv = round(sd(Cl...mmol.L.)/mean(Cl...mmol.L.), 3)) %>%
+  ungroup()
+```
+
+
+Chloride Boxplot
+```{r}
+# Cl- boxplot
+
+# Primary samples
+chloride_primary_boxplot <- ggplot(data = Primary_Samples, aes(x = Pregnant.Or.Atresia, y = Cl...mmol.L., fill = Ambient.Or.OAH)) +
+  geom_boxplot(aes(x = Pregnant.Or.Atresia, y = Cl...mmol.L., fill = Ambient.Or.OAH)) +
+  geom_point(aes(color = Ambient.Or.OAH), position = position_dodge(width = 0.75), alpha = 0.3, color = "black") +
+  labs(title = "Chloride", x = "Parturition Type", y = "Chloride (mmol/L)") +
+  guides(fill = guide_legend((title = "Treatment Type"))) + 
+  scale_fill_manual(values = c("Ambient" = "#189bff", "OAH" = "#598c78")) +
+  theme_classic() +
+  theme(panel.background = element_rect(fill = "white"),
+        plot.background = element_rect(fill = "white"),
+        legend.background = element_rect(fill = "white", color = "black"),
+        title = element_text(size = 12),
+        plot.title = element_text(size = 30, hjust = 0.5),
+        axis.text.x = element_text(size = 10),
+        axis.text.y = element_text(size = 20),
+        axis.title.x = element_text(size = 20),
+        axis.title.y = element_text(size = 20))
+
+print(chloride_primary_boxplot)
+
+ggsave(filename = "data-images/chloride_primary_boxplot.pdf", plot = chloride_primary_boxplot, device = "pdf")
+ggsave(filename = "data-images/chloride_primary_boxplot.png", plot = chloride_primary_boxplot, device = "png")
+
+```
+
+Data Distribution
+```{r}
+# Cl-
+# Parametric Assumptions
+
+# Data Distribution
+hist(Primary_Samples$Cl...mmol.L.)
+
+plotNormalHistogram(Primary_Samples$Cl...mmol.L.) 
+
+plotNormalDensity(Primary_Samples$Cl...mmol.L.)
+
+```
+
+
+
+# Cl- Stat Tests
+
+Differences:
+```{r}
+# Cl-
+# Primary Samples
+
+# Interactive aov model
+chloride_primary_aov_int <- aov(Cl...mmol.L. ~ Pregnant.Or.Atresia * Ambient.Or.OAH, data = Primary_Samples)
+summary(chloride_primary_aov_int) # interaction not significant
+
+# Additive aov model
+# If interaction not significant (p-value > 0.05), use additive model
+chloride_primary_aov_add <- aov(Cl...mmol.L. ~ Pregnant.Or.Atresia + Ambient.Or.OAH, data = Primary_Samples)
+summary(chloride_primary_aov_add)
+
+# Parametric Post-Hoc: Tukey's HSD test
+TukeyHSD(chloride_primary_aov_add)
+
+# Normality plot
+
+# Qqplot: Residuals of aov or lm model (plot residuals of aov vs lm are identical)
+chloride_primary_res_qqplot <- ggqqplot(residuals(aov(Cl...mmol.L. ~ Pregnant.Or.Atresia + Ambient.Or.OAH, data = Primary_Samples))) +
+labs(title = "Chloride Interactive Residual QQplot",
+     subtitle = "residuals(aov(Cl...mmol.L. ~ Pregnant.Or.Atresia * Ambient.Or.OAH, data = Primary_Samples))",
+                               x = "Chloride Theoretical Quantiles (Predicted values)",
+                               y = "Chloride Sample Quantiles") +
+  theme(plot.title = element_text(hjust = 0.5),
+        plot.subtitle = element_text(size = 10, hjust = 0.5))
+print(chloride_primary_res_qqplot)
+
+# Normality Test
+shapiro.test(Primary_Samples$Cl...mmol.L.)
+
+shapiro.test(residuals(lm(Cl...mmol.L. ~ Pregnant.Or.Atresia * Ambient.Or.OAH, data = Primary_Samples)))
+
+
+# Parametric variance test:
+bartlett.test(Cl...mmol.L. ~ Pregnant.Or.Atresia, data = Primary_Samples) 
+bartlett.test(Cl...mmol.L. ~ Ambient.Or.OAH, data = Primary_Samples)
+
+# Nonparametric variance test:
+LeveneTest(Cl...mmol.L. ~ Pregnant.Or.Atresia, data = Primary_Samples)
+leveneTest(Cl...mmol.L. ~ Ambient.Or.OAH, data = Primary_Samples)
+
+# Nonparametric Stat test & Post-Hoc:
+
+kruskal.test(Cl...mmol.L. ~ Pregnant.Or.Atresia, data = Primary_Samples)
+kruskal.test(Cl...mmol.L. ~ Ambient.Or.OAH, data = Primary_Samples)
+
+DunnTest(Cl...mmol.L. ~ Pregnant.Or.Atresia, data = Primary_Samples)
+DunnTest(Cl...mmol.L. ~ Ambient.Or.OAH, data = Primary_Samples)
+
+
+visualize(chloride_primary_aov_add)
+
+# Test outliers
+outlierTest(chloride_primary_aov_add) 
+
+#  Used Ranked model to adjust for outlier
+boxplot(rank(Cl...mmol.L.) ~ Pregnant.Or.Atresia, data = Primary_Samples, horizontal = TRUE)
+boxplot(rank(Cl...mmol.L.) ~ Ambient.Or.OAH, data = Primary_Samples, horizontal = TRUE)
+
+# Nonparametric Wilcoxon test
+wilcox.test(rank(Cl...mmol.L.) ~ Pregnant.Or.Atresia, data = Primary_Samples)
+wilcox.test(rank(Cl...mmol.L.) ~ Ambient.Or.OAH, data = Primary_Samples)
+
+```
+
+Parametric Results: Ambient Fecundity No Atresia Sample
+
+- Interaction not significant (Pr(>F) = 0.678), additive model used.
+
+- Additive summary results:
+- No significant differences between parturition and treatment groups.
+
+
+- Parametric post Hoc: Tukey HSD with additive model
+- No groups appear significantly different from eachother...
+- Evidence: 
+
+
+Parametric Assumptions: Across Sample comparisons...
+
+- Sample size (n > 30): **Not Met**
+
+- Normality: **Met, W = 0.97188, p-value = 0.6318**
+
+- Homoscedasticity: **Not met (for treatment group only)**
+- Evidence: 
+ - Parturition group: Bartlett's K-squared = 0.76057, df = 1, p-value = 0.3832
+ - Treatment group: Bartlett's K-squared = 3.6573, df = 1, p-value = 0.05582
+
+
+Non-Parametric Results: 
+
+- nonparametric scedasticity test (Levene's test): **Met ish** 
+- Evidence:
+ - Parturition group: F value = 0.1495, Pr(>F) = 0.7021
+ - Treatment group: F value = 2.9761 , Pr(>F) = 0.09637
+
+Kruskal-Wallis rank sum test:
+- No significant difference in chloride detected between factor groups.
+- Evidence: 
+
+
+Nonparametric Post-Hoc: Dunn's test
+- **No significant difference detected across factor groups.**
+- Evidence:
+ - Parturition group: pval = 0.6291 
+ - Treatment group: pval = 0.2850 
+
+
+
+Similarities:
+```{r}
+# chloride
+# Primary Samples
+
+# Regression Model 
+# p-value significant if (a < 0.1 or a < 0.05)
+
+chloride_primary_lm_int <- lm(Cl...mmol.L. ~ Pregnant.Or.Atresia * Ambient.Or.OAH, data = Primary_Samples) # not significant
+summary(chloride_primary_lm_int)
+
+chloride_primary_lm_add <- lm(Cl...mmol.L. ~ Pregnant.Or.Atresia + Ambient.Or.OAH, data = Primary_Samples)
+summary(chloride_primary_lm_add)
+
+# chloride_primary_lm_res_plot <- simulateResiduals(fittedModel = chloride_primary_lm_int)
+# plot(chloride_primary_lm_res_plot)
+
+chloride_primary_lm_res_plot <- simulateResiduals(fittedModel = chloride_primary_lm_add)
+plot(chloride_primary_lm_res_plot) # quantile deviations detected
+
+visualize(chloride_primary_lm_add, plot = "model")
+
+# Check Dispersion or Outliers
+plotResiduals(chloride_primary_lm_add)
+
+testDispersion(chloride_primary_lm_add)
+
+# Transform data: square root
+chloride_primary_sqrt <- Primary_Samples %>%
+  mutate(Cl...mmol.L. = sqrt(Cl...mmol.L.))
+
+# Rerun lm model with square root transformed data
+chloride_primary_sqrt_lm_int <- lm(Cl...mmol.L. ~ Pregnant.Or.Atresia * Ambient.Or.OAH, data = chloride_primary_sqrt) 
+summary(chloride_primary_sqrt_lm_int) # still not significant
+
+chloride_primary_sqrt_lm_add <- lm(Cl...mmol.L. ~ Pregnant.Or.Atresia + Ambient.Or.OAH, data = chloride_primary_sqrt)
+summary(chloride_primary_sqrt_lm_add)
+
+
+# Check hows it
+chloride_primary_sqrt_lm_res_plot <- simulateResiduals(fittedModel = chloride_primary_sqrt_lm_add)
+plot(chloride_primary_sqrt_lm_res_plot) # KS still significant
+
+plotResiduals(chloride_primary_sqrt_lm_add)
+
+testDispersion(chloride_primary_sqrt_lm_add)
+
+
+# Residuals of model for shapiro test
+chloride_primary_lm_int_res <- residuals(chloride_primary_lm_int) 
+chloride_primary_lm_add_res <- residuals(chloride_primary_lm_add)
+
+
+# Normality test
+shapiro.test(chloride_primary_lm_int_res) # normal
+shapiro.test(chloride_primary_lm_add_res) # normal
+
+
+# Scedasticity test: 
+# bartlett's test parametric
+bartlett.test(Cl...mmol.L. ~ Pregnant.Or.Atresia, data = Primary_Samples) 
+bartlett.test(Cl...mmol.L. ~ Ambient.Or.OAH, data = Primary_Samples)
+
+# Levene's test if nonparametric
+leveneTest(Cl...mmol.L. ~ Pregnant.Or.Atresia * Ambient.Or.OAH, data = Primary_Samples)
+leveneTest(Cl...mmol.L. ~ Pregnant.Or.Atresia, data = Primary_Samples)
+leveneTest(Cl...mmol.L. ~ Ambient.Or.OAH, data = Primary_Samples)
+
+# Non-parametric regression test???:
+
+```
+
+Results: Primary Sample (With both treatments and parturition groups)
+
+- lm interactive model not significant (Pr(>|t|) = 0.678), additive model used 
+
+Linear Model: Additive lm param ~ parturition + treatment 
+- No significant relationship detected across groups
+- Evidence: Multiple R-squared:  0.02517,	Adjusted R-squared:  -0.05281 
+F-statistic: 0.3228 on 2 and 25 DF,  p-value: 0.7271
+
+- How to know which groups are correlated, and how strongly? 
+- (test lm individually, next code block) 
+
+
+**Warning**: DHARMA throws error about quantile deviations (dispersion?).
+
+
+Correlation: Using sqrt transformed chloride values (additive model)
+- **No significant** relationship detected with glucose and parturition groups or treatment groups.
+- Evidence: Multiple R-squared:  0.02573,	Adjusted R-squared:  -0.05221 
+F-statistic: 0.3301 on 2 and 25 DF,  p-value: 0.7219
+
+
+Parametric Assumptions: Across Sample comparisons...
+
+- Sample size (n > 30): **Not Met**
+
+- Normality (of residuals) : **met**
+
+- Homoscedasticity: **Not Met (for treatment group)**
+- Evidence:
+ - Parturition group: Bartlett's K-squared = 0.76057, df = 1, p-value = 0.3832
+ - Treatment group: Bartlett's K-squared = 3.6573, df = 1, p-value = 0.05582
+
+
+Non-parametric Tests:
+
+- nonparametric normality test (Levene's test): **Met, sorta for treatment group**
+
+- Nonparametric regression stat test???
+
+
+```{r}
+# chloride
+# Primary Samples
+
+# Regression Model pt 2
+
+# Individually assess parameter to parturition groups & treatment groups
+# p-value significant if (a < 0.1 or a < 0.05)
+chloride_primary_lm1 <- lm(Cl...mmol.L. ~ Pregnant.Or.Atresia, data = chloride_primary_sqrt)
+summary(chloride_primary_lm1) 
+
+chloride_primary_lm2 <- lm(Cl...mmol.L. ~ Ambient.Or.OAH, data = chloride_primary_sqrt)
+summary(chloride_primary_lm2) 
+
+
+chloride_primary_lm_res_plot1 <- simulateResiduals(fittedModel = chloride_primary_lm1)
+plot(chloride_primary_lm_res_plot1)
+
+chloride_primary_lm_res_plot2 <- simulateResiduals(fittedModel = chloride_primary_lm2)
+plot(chloride_primary_lm_res_plot2)
+
+visualize(chloride_primary_lm1, plot = "model") 
+visualize(chloride_primary_lm2, plot = "model")
+
+# For shapiro test
+chloride_primary_lm_res1 <- residuals(chloride_primary_lm1)
+
+chloride_primary_lm_res2 <- residuals(chloride_primary_lm2)
+
+# Normality test
+shapiro.test(chloride_primary_lm_res1) # Normal
+
+shapiro.test(chloride_primary_lm_res2) # Normal
+
+
+# Scedasticity test: On sqrt transformed data
+bartlett.test(Cl...mmol.L. ~ Pregnant.Or.Atresia, data = chloride_primary_sqrt) 
+bartlett.test(Cl...mmol.L. ~ Ambient.Or.OAH, data = chloride_primary_sqrt)
+
+# Nonparametric variance test:
+leveneTest(Cl...mmol.L. ~ Pregnant.Or.Atresia, data = chloride_primary_sqrt)
+leveneTest(Cl...mmol.L. ~ Ambient.Or.OAH, data = chloride_primary_sqrt)
+
+```
+
+Results: Primary Sample Regression Analysis pt2
+
+Linear Model: Individual test correlation between param and treatment, and param and parturition outcome
+
+Correlation: Using sqrt transformed sodium values 
+- **No significant** relationship detected with glucose and parturition groups or treatment groups.
+- Evidence: 
+- Meaning:
+
+Warning: DHARMA says all good for square root transformed lm model
+
+Parametric Assumptions: Across Sample comparisons...
+
+- Sample size (n > 30): **Not Met**
+
+- Normality: **Normal** 
+
+- Homoscedasticity: **Not Met, for sqrt transformed data, treatment group** 
+- Evidence: On sqrt transformed data
+ - Parturition group: Bartlett's K-squared = 0.75694, df = 1, p-value = 0.3843
+ - Treatment group: Bartlett's K-squared = 3.6841, df = 1, p-value = 0.05494
+ 
+- Nonparametric variance test (levene's test): 
+- Not met for treatment group: Pr(>F) = 0.09436 .
+
+
+Residuals Plot (if significant)
+```{r}
+# chloride
+# Primary samples
+
+# ggplot with geom_smooth(aes(x=,y=)), method = "lm")
+
+
+# lm for chloride & parturition scatterplot:
+chloride_primary_lm_scatterplot1 <- ggplot(data = chloride_primary_sqrt, aes(x = Pregnant.Or.Atresia, y = Cl...mmol.L.)) +
+  geom_point() +
+  geom_smooth(aes(group = 1), method = "lm") +
+  labs(title = "Chloride", x = "Parturition Group", y = "Sqrt Chloride", color = "Category") +
+  scale_y_continuous() +
+  theme_classic() +
+  theme(panel.background = element_rect(fill = "white"),
+        plot.background = element_rect(fill = "white"),
+        legend.background = element_rect(fill = "white", color = "black"),
+        plot.title = element_text(size = 25, hjust = 0.5),
+        axis.text.x = element_text(size = 15),
+        axis.text.y = element_text(size = 20),
+        axis.title.x = element_text(size = 20),
+        axis.title.y = element_text(size = 20))
+
+print(chloride_primary_lm_scatterplot1)
+
+ggsave(filename = "data-images/chloride_primary_lm_scatterplot1.pdf", plot = chloride_primary_lm_scatterplot1, device = "pdf")
+ggsave(filename = "data-images/chloride_primary_lm_scatterplot1.png", plot = chloride_primary_lm_scatterplot1, device = "png")
+
+# lm for glucose & treatment scatterplot:
+chloride_primary_lm_scatterplot2 <- ggplot(data = chloride_primary_sqrt, aes(x = Ambient.Or.OAH, y = Cl...mmol.L.)) +
+  geom_point() +
+  geom_smooth(aes(group = 1), method = "lm") +
+  labs(title = "Chloride", x = "Treatment Group", y = "Sqrt Chloride", color = "Category") +
+  scale_y_continuous() +
+  theme_classic() +
+  theme(panel.background = element_rect(fill = "white"),
+        plot.background = element_rect(fill = "white"),
+        legend.background = element_rect(fill = "white", color = "black"),
+        plot.title = element_text(size = 25, hjust = 0.5),
+        axis.text.x = element_text(size = 15),
+        axis.text.y = element_text(size = 20),
+        axis.title.x = element_text(size = 20),
+        axis.title.y = element_text(size = 20))
+
+print(chloride_primary_lm_scatterplot2)
+
+ggsave(filename = "data-images/chloride_primary_lm_scatterplot2.pdf", plot = chloride_primary_lm_scatterplot2, device = "pdf")
+ggsave(filename = "data-images/chloride_primary_lm_scatterplot2.png", plot = chloride_primary_lm_scatterplot2, device = "png")
+
+```
+
+```{r}
+# chloride
+# lm Boxplot
+
+chloride_primary_lm_boxplot1 <- ggplot(data = chloride_primary_sqrt, aes(x = Pregnant.Or.Atresia, y = Cl...mmol.L.)) +
+  geom_boxplot() +
+  geom_point() +
+  geom_smooth(aes(group = 1), method = "lm") +
+  labs(title = "Chloride", x = "Parturition Group", y = "Sqrt Chloride", color = "Category") +
+  scale_y_continuous() +
+  theme_classic() +
+  theme(panel.background = element_rect(fill = "white"),
+        plot.background = element_rect(fill = "white"),
+        legend.background = element_rect(fill = "white", color = "black"),
+        plot.title = element_text(size = 25, hjust = 0.5),
+        axis.text.x = element_text(size = 15),
+        axis.text.y = element_text(size = 20),
+        axis.title.x = element_text(size = 20),
+        axis.title.y = element_text(size = 20))
+print(chloride_primary_lm_boxplot1)
+
+chloride_primary_lm_boxplot2 <- ggplot(data = chloride_primary_sqrt, aes(x = Ambient.Or.OAH, y = Cl...mmol.L.)) +
+  geom_boxplot() +
+  geom_point() +
+  geom_smooth(aes(group = 1), method = "lm") +
+  labs(title = "Chloride", x = "Parturition Group", y = "Sqrt Chloride", color = "Category") +
+  scale_y_continuous() +
+  theme_classic() +
+  theme(panel.background = element_rect(fill = "white"),
+        plot.background = element_rect(fill = "white"),
+        legend.background = element_rect(fill = "white", color = "black"),
+        plot.title = element_text(size = 25, hjust = 0.5),
+        axis.text.x = element_text(size = 15),
+        axis.text.y = element_text(size = 20),
+        axis.title.x = element_text(size = 20),
+        axis.title.y = element_text(size = 20))
+print(chloride_primary_lm_boxplot2)
+
+```
+
+
+# K+ : Potassium
+
+Potassium Summary Stats
+```{r}
+# K+
+# Summary stats
+
+# Primary data
+Primary_Samples %>%
+  group_by(Pregnant.Or.Atresia, Ambient.Or.OAH) %>%
+  summarize(count = n(),
+            median = round(median(K...mmol.L.), 3),
+            mean = round(mean(K...mmol.L.), 3),
+            sd = round(sd(K...mmol.L.), 3),
+            cv = round(sd(K...mmol.L.)/mean(K...mmol.L.), 3)) %>%
+  ungroup()
+```
+
+Potassium Boxplot
+```{r}
+# K+ boxplot
+
+# Primary samples
+potassium_primary_boxplot <- ggplot(data = Primary_Samples, aes(x = Pregnant.Or.Atresia, y = K...mmol.L., fill = Ambient.Or.OAH)) +
+  geom_boxplot(aes(x = Pregnant.Or.Atresia, y = K...mmol.L., fill = Ambient.Or.OAH)) +
+  geom_point(aes(color = Ambient.Or.OAH), position = position_dodge(width = 0.75), alpha = 0.3, color = "black") +
+  labs(title = "Potassium", x = "Parturition Type", y = "Potassium (mmol/L)") +
+  guides(fill = guide_legend((title = "Treatment Type"))) + 
+  scale_fill_manual(values = c("Ambient" = "#189bff", "OAH" = "#598c78")) +
+  theme_classic() +
+  theme(panel.background = element_rect(fill = "white"),
+        plot.background = element_rect(fill = "white"),
+        legend.background = element_rect(fill = "white", color = "black"),
+        title = element_text(size = 12),
+        plot.title = element_text(size = 30, hjust = 0.5),
+        axis.text.x = element_text(size = 10),
+        axis.text.y = element_text(size = 20),
+        axis.title.x = element_text(size = 20),
+        axis.title.y = element_text(size = 20))
+
+print(potassium_primary_boxplot)
+
+ggsave(filename = "data-images/potassium_primary_boxplot.pdf", plot = potassium_primary_boxplot, device = "pdf")
+ggsave(filename = "data-images/potassium_primary_boxplot.png", plot = potassium_primary_boxplot, device = "png")
+
+```
+
+
+Data Distribution
+```{r}
+# K+
+# Parametric Assumptions
+
+# Data Distribution
+hist(Primary_Samples$K...mmol.L.)
+
+plotNormalHistogram(Primary_Samples$K...mmol.L.) 
+
+plotNormalDensity(Primary_Samples$K...mmol.L.)
+
+```
+
+
+# K+ Stat Tests
+
+Differences:
+```{r}
+# K+
+# Primary Samples
+
+# Interactive aov model
+potassium_primary_aov_int <- aov(K...mmol.L. ~ Pregnant.Or.Atresia * Ambient.Or.OAH, data = Primary_Samples)
+summary(potassium_primary_aov_int) # interaction not significant
+
+# Additive aov model
+# If interaction not significant (p-value > 0.05), use additive model
+potassium_primary_aov_add <- aov(K...mmol.L. ~ Pregnant.Or.Atresia + Ambient.Or.OAH, data = Primary_Samples)
+summary(potassium_primary_aov_add)
+
+# Parametric Post-Hoc: Tukey's HSD test
+TukeyHSD(potassium_primary_aov_add)
+
+# Normality plot
+
+# Qqplot: Residuals of aov or lm model (plot residuals of aov vs lm are identical)
+potassium_primary_res_qqplot <- ggqqplot(residuals(aov(K...mmol.L. ~ Pregnant.Or.Atresia + Ambient.Or.OAH, data = Primary_Samples))) +
+labs(title = "Potassium Interactive Residual QQplot",
+     subtitle = "residuals(aov(K...mmol.L. ~ Pregnant.Or.Atresia * Ambient.Or.OAH, data = Primary_Samples))",
+                               x = "Potassium Theoretical Quantiles (Predicted values)",
+                               y = "Potassium Sample Quantiles") +
+  theme(plot.title = element_text(hjust = 0.5),
+        plot.subtitle = element_text(size = 10, hjust = 0.5))
+print(potassium_primary_res_qqplot)
+
+# Normality Test
+shapiro.test(Primary_Samples$K...mmol.L.)
+
+shapiro.test(residuals(lm(K...mmol.L. ~ Pregnant.Or.Atresia * Ambient.Or.OAH, data = Primary_Samples)))
+
+
+# Parametric variance test:
+bartlett.test(K...mmol.L. ~ Pregnant.Or.Atresia, data = Primary_Samples) 
+bartlett.test(K...mmol.L. ~ Ambient.Or.OAH, data = Primary_Samples)
+
+# Nonparametric variance test:
+LeveneTest(K...mmol.L. ~ Pregnant.Or.Atresia, data = Primary_Samples)
+leveneTest(K...mmol.L. ~ Ambient.Or.OAH, data = Primary_Samples)
+
+# Nonparametric Stat test & Post-Hoc:
+
+kruskal.test(K...mmol.L. ~ Pregnant.Or.Atresia, data = Primary_Samples)
+kruskal.test(K...mmol.L. ~ Ambient.Or.OAH, data = Primary_Samples)
+
+DunnTest(K...mmol.L. ~ Pregnant.Or.Atresia, data = Primary_Samples)
+DunnTest(K...mmol.L. ~ Ambient.Or.OAH, data = Primary_Samples)
+
+
+visualize(potassium_primary_aov_add)
+
+# Test outliers
+outlierTest(potassium_primary_aov_add) 
+
+#  Used Ranked model to adjust for outlier
+boxplot(rank(K...mmol.L.) ~ Pregnant.Or.Atresia, data = Primary_Samples, horizontal = TRUE)
+boxplot(rank(K...mmol.L.) ~ Ambient.Or.OAH, data = Primary_Samples, horizontal = TRUE)
+
+# Nonparametric Wilcoxon test
+wilcox.test(rank(K...mmol.L.) ~ Pregnant.Or.Atresia, data = Primary_Samples)
+wilcox.test(rank(K...mmol.L.) ~ Ambient.Or.OAH, data = Primary_Samples)
+
+```
+
+Parametric Results: Ambient Fecundity No Atresia Sample
+
+- Interaction not significant (Pr(>F) = 0.680), additive model used.
+
+- Additive summary results:
+- No significant differences between parturition and treatment groups.
+
+
+- Parametric post Hoc: Tukey HSD with additive model
+- No groups appear significantly different from eachother...
+- Evidence: 
+
+
+Parametric Assumptions: Across Sample comparisons...
+
+- Sample size (n > 30): **Not Met**
+
+- Normality: **Not Met**
+
+- Homoscedasticity: **Not met (for both factors)**
+- Evidence: 
+ - Parturition group: 
+ - Treatment group: 
+
+
+Non-Parametric Results: 
+
+- nonparametric scedasticity test (Levene's test): **Met ish** 
+- Evidence:
+ - Parturition group: F value = 1.3073, Pr(>F) = 0.2633
+ - Treatment group: F value = 3.3217, Pr(>F) = 0.07989
+
+Kruskal-Wallis rank sum test:
+- No significant difference in chloride detected between parturition and treatment factors
+- Evidence: 
+
+
+Nonparametric Post-Hoc: Dunn's test
+- **No significant difference detected across factor groups.**
+- Evidence:
+ - Parturition group:
+ - Treatment group: 
+
+Outlier test: Appears significant
+
+
+Similarities:
+```{r}
+# potassium
+# Primary Samples
+
+# Regression Model 
+# p-value significant if (a < 0.1 or a < 0.05)
+
+potassium_primary_lm_int <- lm(K...mmol.L. ~ Pregnant.Or.Atresia * Ambient.Or.OAH, data = Primary_Samples) # not significant
+summary(potassium_primary_lm_int)
+
+potassium_primary_lm_add <- lm(K...mmol.L. ~ Pregnant.Or.Atresia + Ambient.Or.OAH, data = Primary_Samples)
+summary(potassium_primary_lm_add)
+
+# potassium_primary_lm_res_plot <- simulateResiduals(fittedModel = potassium_primary_lm_int)
+# plot(potassium_primary_lm_res_plot)
+
+potassium_primary_lm_res_plot <- simulateResiduals(fittedModel = potassium_primary_lm_add)
+plot(potassium_primary_lm_res_plot) # quantile deviations detected
+
+visualize(potassium_primary_lm_add, plot = "model")
+
+# Check Dispersion or Outliers
+plotResiduals(potassium_primary_lm_add)
+
+testDispersion(potassium_primary_lm_add)
+
+# For shapiro.test
+potassium_primary_lm_add_res <- residuals(potassium_primary_lm_add)
+
+# Normality test
+shapiro.test(potassium_primary_lm_add_res) # nonparametric
+
+
+# Scedasticity test: 
+# bartlett's test parametric
+bartlett.test(K...mmol.L. ~ Pregnant.Or.Atresia, data = Primary_Samples) 
+bartlett.test(K...mmol.L. ~ Ambient.Or.OAH, data = Primary_Samples)
+
+
+# Nonparametric variance test (Levene's test):
+leveneTest(K...mmol.L. ~ Pregnant.Or.Atresia, data = Primary_Samples)
+leveneTest(K...mmol.L. ~ Ambient.Or.OAH, data = Primary_Samples)
+
+```
+
+Results: Primary Sample (With both treatments and parturition groups)
+
+- lm interactive model not significant (Pr(>|t|) = 0.680), additive model used 
+
+Linear Model: Additive lm param ~ parturition + treatment 
+- No significant relationship detected across groups
+- Evidence: Multiple R-squared:  0.07738,	Adjusted R-squared:  0.003568 
+F-statistic: 1.048 on 2 and 25 DF,  p-value: 0.3654
+
+- How to know which groups are correlated, and how strongly? 
+- (test lm individually, next code block) 
+
+**Warning**: No DHARMA errors (except a star).
+
+
+Parametric Assumptions: Across Sample comparisons...
+
+- Sample size (n > 30): **Not Met**
+
+- Normality (of residuals) : **Not met**
+
+- Homoscedasticity: **Not Met**
+- Evidence:
+ - Parturition group: 
+ - Treatment group:
+ 
+Non-parametric results:
+
+nonparametric variance test (Levene's test):
+- Homoscedasticity: **Not met for treatment group**
+
+
+transform data (if necessary)
+```{r}
+# potassium
+# Primary Samples
+
+# Transform data: square root
+potassium_primary_sqrt <- Primary_Samples %>%
+  mutate(K...mmol.L. = sqrt(K...mmol.L.))
+
+# Rerun lm model with square root transformed data
+potassium_primary_sqrt_lm_int <- lm(K...mmol.L. ~ Pregnant.Or.Atresia * Ambient.Or.OAH, data = potassium_primary_sqrt) 
+summary(potassium_primary_sqrt_lm_int) # still not significant
+
+potassium_primary_sqrt_lm_add <- lm(K...mmol.L. ~ Pregnant.Or.Atresia + Ambient.Or.OAH, data = potassium_primary_sqrt)
+summary(potassium_primary_sqrt_lm_add)
+
+
+# Check hows it
+potassium_primary_sqrt_lm_res_plot <- simulateResiduals(fittedModel = potassium_primary_sqrt_lm_add)
+plot(potassium_primary_sqrt_lm_res_plot) # KS still significant
+
+plotResiduals(potassium_primary_sqrt_lm_add)
+
+testDispersion(potassium_primary_sqrt_lm_add)
+
+
+# Residuals of model for shapiro test
+potassium_primary_lm_add_sqrt_res <- residuals(potassium_primary_sqrt_lm_add)
+
+# Normality test
+shapiro.test(potassium_primary_lm_add_sqrt_res) # nonparametric
+
+
+# Scedasticity test: 
+# bartlett's test parametric
+bartlett.test(K...mmol.L. ~ Pregnant.Or.Atresia, data = potassium_primary_sqrt) 
+bartlett.test(K...mmol.L. ~ Ambient.Or.OAH, data = potassium_primary_sqrt)
+
+# Levene's test if nonparametric
+leveneTest(K...mmol.L. ~ Pregnant.Or.Atresia * Ambient.Or.OAH, data = potassium_primary_sqrt)
+leveneTest(K...mmol.L. ~ Pregnant.Or.Atresia, data = potassium_primary_sqrt)
+leveneTest(K...mmol.L. ~ Ambient.Or.OAH, data = potassium_primary_sqrt)
+
+# Non-parametric regression test???:
+
+```
+
+
+Correlation: Using sqrt transformed chloride values (additive model)
+- **No significant** relationship detected with glucose and parturition groups or treatment groups.
+- Evidence: 
+
+
+Parametric Assumptions: Across Sample comparisons...
+
+- Sample size (n > 30): **Not Met**
+
+- Normality (of residuals) : **Not met**
+
+- Homoscedasticity: **Not Met (for both groups)**
+- Evidence:
+ - Parturition group:
+ - Treatment group: 
+
+
+Non-parametric Tests:
+
+- nonparametric normality test (Levene's test): **Not really met for treatment group**
+
+- Nonparametric regression stat test???
+
+
+```{r}
+# chloride
+# Primary Samples
+
+# Regression Model pt 2
+
+# Individually assess parameter to parturition groups & treatment groups
+# p-value significant if (a < 0.1 or a < 0.05)
+chloride_primary_lm1 <- lm(Cl...mmol.L. ~ Pregnant.Or.Atresia, data = chloride_primary_sqrt)
+summary(chloride_primary_lm1) 
+
+chloride_primary_lm2 <- lm(Cl...mmol.L. ~ Ambient.Or.OAH, data = chloride_primary_sqrt)
+summary(chloride_primary_lm2) 
+
+
+chloride_primary_lm_res_plot1 <- simulateResiduals(fittedModel = chloride_primary_lm1)
+plot(chloride_primary_lm_res_plot1)
+
+chloride_primary_lm_res_plot2 <- simulateResiduals(fittedModel = chloride_primary_lm2)
+plot(chloride_primary_lm_res_plot2)
+
+visualize(chloride_primary_lm1, plot = "model") 
+visualize(chloride_primary_lm2, plot = "model")
+
+# For shapiro test
+chloride_primary_lm_res1 <- residuals(chloride_primary_lm1)
+
+chloride_primary_lm_res2 <- residuals(chloride_primary_lm2)
+
+# Normality test
+shapiro.test(chloride_primary_lm_res1) # Normal
+
+shapiro.test(chloride_primary_lm_res2) # Normal
+
+
+# Scedasticity test: On sqrt transformed data
+bartlett.test(Cl...mmol.L. ~ Pregnant.Or.Atresia, data = chloride_primary_sqrt) 
+bartlett.test(Cl...mmol.L. ~ Ambient.Or.OAH, data = chloride_primary_sqrt)
+
+# Nonparametric variance test:
+leveneTest(Cl...mmol.L. ~ Pregnant.Or.Atresia, data = chloride_primary_sqrt)
+leveneTest(Cl...mmol.L. ~ Ambient.Or.OAH, data = chloride_primary_sqrt)
+
+```
+
+
+```{r}
+# potassium
+# Primary Samples
+
+# Regression Model pt 2: Not using sqrt model
+
+# Individually assess parameter to parturition groups & treatment groups
+# p-value significant if (a < 0.1 or a < 0.05)
+potassium_primary_lm1 <- lm(K...mmol.L. ~ Pregnant.Or.Atresia, data = Primary_Samples)
+summary(potassium_primary_lm1) 
+
+potassium_primary_lm2 <- lm(K...mmol.L. ~ Ambient.Or.OAH, data = Primary_Samples)
+summary(potassium_primary_lm2) 
+
+
+potassium_primary_lm_res_plot1 <- simulateResiduals(fittedModel = potassium_primary_lm1)
+plot(potassium_primary_lm_res_plot1)
+
+potassium_primary_lm_res_plot2 <- simulateResiduals(fittedModel = potassium_primary_lm2)
+plot(potassium_primary_lm_res_plot2)
+
+visualize(potassium_primary_lm1, plot = "model") 
+visualize(potassium_primary_lm2, plot = "model")
+
+# For shapiro test
+potassium_primary_lm_res1 <- residuals(potassium_primary_lm1)
+
+potassium_primary_lm_res2 <- residuals(potassium_primary_lm2)
+
+# Normality test
+shapiro.test(potassium_primary_lm_res1) # Normal
+
+shapiro.test(potassium_primary_lm_res2) # Normal
+
+
+# Scedasticity test: On sqrt transformed data
+bartlett.test(K...mmol.L. ~ Pregnant.Or.Atresia, data = Primary_Samples) 
+bartlett.test(K...mmol.L. ~ Ambient.Or.OAH, data = Primary_Samples)
+
+# Nonparametric variance test:
+leveneTest(K...mmol.L. ~ Pregnant.Or.Atresia, data = Primary_Samples)
+leveneTest(K...mmol.L. ~ Ambient.Or.OAH, data = Primary_Samples)
+
+```
+
+
+Residuals Plot (if significant)
+```{r}
+# potassium
+# Primary samples
+
+# ggplot with geom_smooth(aes(x=,y=)), method = "lm")
+
+
+# lm for chloride & parturition scatterplot:
+potassium_primary_lm_scatterplot1 <- ggplot(data = Primary_Samples, aes(x = Pregnant.Or.Atresia, y = K...mmol.L.)) +
+  geom_point() +
+  geom_smooth(aes(group = 1), method = "lm") +
+  labs(title = "Potassium", x = "Parturition Group", y = "Potassium (mmol/L)", color = "Category") +
+  scale_y_continuous() +
+  theme_classic() +
+  theme(panel.background = element_rect(fill = "white"),
+        plot.background = element_rect(fill = "white"),
+        legend.background = element_rect(fill = "white", color = "black"),
+        plot.title = element_text(size = 25, hjust = 0.5),
+        axis.text.x = element_text(size = 15),
+        axis.text.y = element_text(size = 20),
+        axis.title.x = element_text(size = 20),
+        axis.title.y = element_text(size = 20))
+
+print(potassium_primary_lm_scatterplot1)
+
+ggsave(filename = "data-images/potassium_primary_lm_scatterplot1.pdf", plot = potassium_primary_lm_scatterplot1, device = "pdf")
+ggsave(filename = "data-images/potassium_primary_lm_scatterplot1.png", plot = potassium_primary_lm_scatterplot1, device = "png")
+
+# lm for glucose & treatment scatterplot:
+potassium_primary_lm_scatterplot2 <- ggplot(data = Primary_Samples, aes(x = Ambient.Or.OAH, y = K...mmol.L.)) +
+  geom_point() +
+  geom_smooth(aes(group = 1), method = "lm") +
+  labs(title = "Potassium", x = "Treatment Group", y = "Potassium (mmol/L)", color = "Category") +
+  scale_y_continuous() +
+  theme_classic() +
+  theme(panel.background = element_rect(fill = "white"),
+        plot.background = element_rect(fill = "white"),
+        legend.background = element_rect(fill = "white", color = "black"),
+        plot.title = element_text(size = 25, hjust = 0.5),
+        axis.text.x = element_text(size = 15),
+        axis.text.y = element_text(size = 20),
+        axis.title.x = element_text(size = 20),
+        axis.title.y = element_text(size = 20))
+
+print(potassium_primary_lm_scatterplot2)
+
+ggsave(filename = "data-images/potassium_primary_lm_scatterplot2.pdf", plot = potassium_primary_lm_scatterplot2, device = "pdf")
+ggsave(filename = "data-images/potassium_primary_lm_scatterplot2.png", plot = potassium_primary_lm_scatterplot2, device = "png")
+
+```
+
+
+```{r}
+# K+
+# lm Boxplot
+
+potassium_primary_lm_boxplot1 <- ggplot(data = Primary_Samples, aes(x = Pregnant.Or.Atresia, y = K...mmol.L.)) +
+  geom_boxplot() +
+  geom_point() +
+  geom_smooth(aes(group = 1), method = "lm") +
+  labs(title = "Potassium", x = "Parturition Group", y = "Potassium (mmol/L)", color = "Category") +
+  scale_y_continuous() +
+  theme_classic() +
+  theme(panel.background = element_rect(fill = "white"),
+        plot.background = element_rect(fill = "white"),
+        legend.background = element_rect(fill = "white", color = "black"),
+        plot.title = element_text(size = 25, hjust = 0.5),
+        axis.text.x = element_text(size = 15),
+        axis.text.y = element_text(size = 20),
+        axis.title.x = element_text(size = 20),
+        axis.title.y = element_text(size = 20))
+print(potassium_primary_lm_boxplot1)
+
+potassium_primary_lm_boxplot2 <- ggplot(data = Primary_Samples, aes(x = Ambient.Or.OAH, y = K...mmol.L.)) +
+  geom_boxplot() +
+  geom_point() +
+  geom_smooth(aes(group = 1), method = "lm") +
+  labs(title = "Potassium", x = "Parturition Group", y = "Potassium (mmol/L)", color = "Category") +
+  scale_y_continuous() +
+  theme_classic() +
+  theme(panel.background = element_rect(fill = "white"),
+        plot.background = element_rect(fill = "white"),
+        legend.background = element_rect(fill = "white", color = "black"),
+        plot.title = element_text(size = 25, hjust = 0.5),
+        axis.text.x = element_text(size = 15),
+        axis.text.y = element_text(size = 20),
+        axis.title.x = element_text(size = 20),
+        axis.title.y = element_text(size = 20))
+print(potassium_primary_lm_boxplot2)
+
+```
+
+
+# Ca+2 : Calcium
+
+Calcium Summary Stats
+```{r}
+# Ca+2
+# Summary stats
+
+# Primary data
+Primary_Samples %>%
+  group_by(Pregnant.Or.Atresia, Ambient.Or.OAH) %>%
+  summarize(count = n(),
+            median = round(median(Ca....mmol.L.), 3),
+            mean = round(mean(Ca....mmol.L.), 3),
+            sd = round(sd(Ca....mmol.L.), 3),
+            cv = round(sd(Ca....mmol.L.)/mean(Ca....mmol.L.), 3)) %>%
+  ungroup()
+```
+
+Calcium Boxplot
+```{r}
+# Ca+2 boxplot
+
+# Primary samples
+calcium_primary_boxplot <- ggplot(data = Primary_Samples, aes(x = Pregnant.Or.Atresia, y = Ca....mmol.L., fill = Ambient.Or.OAH)) +
+  geom_boxplot(aes(x = Pregnant.Or.Atresia, y = Ca....mmol.L., fill = Ambient.Or.OAH)) +
+  geom_point(aes(color = Ambient.Or.OAH), position = position_dodge(width = 0.75), alpha = 0.3, color = "black") +
+  labs(title = "Calcium", x = "Parturition Type", y = "Calcium (mmol/L)") +
+  guides(fill = guide_legend((title = "Treatment Type"))) + 
+  scale_fill_manual(values = c("Ambient" = "#189bff", "OAH" = "#598c78")) +
+  theme_classic() +
+  theme(panel.background = element_rect(fill = "white"),
+        plot.background = element_rect(fill = "white"),
+        legend.background = element_rect(fill = "white", color = "black"),
+        title = element_text(size = 12),
+        plot.title = element_text(size = 30, hjust = 0.5),
+        axis.text.x = element_text(size = 10),
+        axis.text.y = element_text(size = 20),
+        axis.title.x = element_text(size = 20),
+        axis.title.y = element_text(size = 20))
+
+print(calcium_primary_boxplot)
+
+ggsave(filename = "data-images/calcium_primary_boxplot.pdf", plot = calcium_primary_boxplot, device = "pdf")
+ggsave(filename = "data-images/calcium_primary_boxplot.png", plot = calcium_primary_boxplot, device = "png")
+
+```
+
+Data Distribution
+```{r}
+# Ca+2
+# Parametric Assumptions
+
+# Data Distribution
+hist(Primary_Samples$Ca....mmol.L.)
+
+plotNormalHistogram(Primary_Samples$Ca....mmol.L.) 
+
+plotNormalDensity(Primary_Samples$Ca....mmol.L.)
+
+```
+
+
+# Ca+2 Stat Tests
+
+
+Differences:
+```{r}
+# Ca+2
+# Primary Samples
+
+# Interactive aov model
+calcium_primary_aov_int <- aov(Ca....mmol.L. ~ Pregnant.Or.Atresia * Ambient.Or.OAH, data = Primary_Samples)
+summary(calcium_primary_aov_int) # interaction not significant
+
+# Additive aov model
+# If interaction not significant (p-value > 0.05), use additive model
+calcium_primary_aov_add <- aov(Ca....mmol.L. ~ Pregnant.Or.Atresia + Ambient.Or.OAH, data = Primary_Samples)
+summary(calcium_primary_aov_add)
+
+# Parametric Post-Hoc: Tukey's HSD test
+TukeyHSD(calcium_primary_aov_add)
+
+# Normality plot
+
+# Qqplot: Residuals of aov or lm model (plot residuals of aov vs lm are identical)
+calcium_primary_res_qqplot <- ggqqplot(residuals(aov(Ca....mmol.L. ~ Pregnant.Or.Atresia + Ambient.Or.OAH, data = Primary_Samples))) +
+labs(title = "Calcium Interactive Residual QQplot",
+     subtitle = "residuals(aov(Ca....mmol.L. ~ Pregnant.Or.Atresia * Ambient.Or.OAH, data = Primary_Samples))",
+                               x = "Calcium Theoretical Quantiles (Predicted values)",
+                               y = "Calcium Sample Quantiles") +
+  theme(plot.title = element_text(hjust = 0.5),
+        plot.subtitle = element_text(size = 10, hjust = 0.5))
+print(calcium_primary_res_qqplot)
+
+# Normality Test
+shapiro.test(Primary_Samples$Ca....mmol.L.)
+
+shapiro.test(residuals(lm(Ca....mmol.L. ~ Pregnant.Or.Atresia * Ambient.Or.OAH, data = Primary_Samples)))
+
+
+# Parametric variance test:
+bartlett.test(Ca....mmol.L. ~ Pregnant.Or.Atresia, data = Primary_Samples) 
+bartlett.test(Ca....mmol.L. ~ Ambient.Or.OAH, data = Primary_Samples)
+
+# Nonparametric variance test:
+LeveneTest(Ca....mmol.L. ~ Pregnant.Or.Atresia, data = Primary_Samples)
+leveneTest(Ca....mmol.L. ~ Ambient.Or.OAH, data = Primary_Samples)
+
+# Nonparametric Stat test & Post-Hoc:
+
+kruskal.test(Ca....mmol.L. ~ Pregnant.Or.Atresia, data = Primary_Samples)
+kruskal.test(Ca....mmol.L. ~ Ambient.Or.OAH, data = Primary_Samples)
+
+DunnTest(Ca....mmol.L. ~ Pregnant.Or.Atresia, data = Primary_Samples)
+DunnTest(Ca....mmol.L. ~ Ambient.Or.OAH, data = Primary_Samples)
+
+boxplot(Ca....mmol.L. ~ Pregnant.Or.Atresia, data = Primary_Samples, horizontal = TRUE)
+boxplot(Ca....mmol.L. ~ Ambient.Or.OAH, data = Primary_Samples, horizontal = TRUE)
+
+# Test outliers
+outlierTest(calcium_primary_aov_add) 
+
+#  Used Ranked model to adjust for outlier
+boxplot(rank(Ca....mmol.L.) ~ Pregnant.Or.Atresia, data = Primary_Samples, horizontal = TRUE)
+boxplot(rank(Ca....mmol.L.) ~ Ambient.Or.OAH, data = Primary_Samples, horizontal = TRUE)
+
+# Nonparametric Wilcoxon test
+wilcox.test(rank(Ca....mmol.L.) ~ Pregnant.Or.Atresia, data = Primary_Samples, alternative = c("two.sided"))
+wilcox.test(rank(Ca....mmol.L.) ~ Ambient.Or.OAH, data = Primary_Samples, alternative = c("two.sided"))
+
+```
+
+Interaction not significant, additive model used.
+
+Results: summary aov additive model
+- Post parturition group significantly different from atresia group (Pr(>F) = 9.35e-05 ***)
+- Ambient treatment significantly different from OAH treatment (Pr(>F) = 0.00169 ** )
+
+
+Parametric Post Hoc: Tukey HSD test
+- Post parturition patients display a significant increase in calcium levels compared to atresia patients (p adj = 9.35e-05)
+- Ambient treatment patients display a significant increase in calcium levels compared to OAH treatment patients (p adj = 0.0017412)
+
+Parametric Assumptions: 
+
+Normality: **Not met**
+- W = 0.93132, p-value = 0.06655
+
+Parametric Scedasticity test (Bartlett's test):
+- Not met for treatment groups
+
+Nonparametric variance test: Levene's test:
+- **Not met** for treatment group
+
+Nonparametric Stat test results: Kruskall Wallis test
+- Post parturition patients display a significant increase in calcium levels compared to atresia patients (Kruskal-Wallis chi-squared = 9.7286, df = 1, p-value = 0.001814)
+- Ambient treatment patients display a significant increase in calcium levels compared to OAH treatment patients (Kruskal-Wallis chi-squared = 8.0703, df = 1, p-value = 0.0045)
+
+Nonparametric Post Hoc: Dunn's Test
+- nparametric Stat test results: Kruskall Wallis test
+- Post parturition patients display a significant increase in calcium levels compared to atresia patients (OAH-Ambient: mean.rank.diff = -10.19048, pval = 0.0018 **)
+- Ambient treatment patients display a significant increase in calcium levels compared to OAH treatment patients (OAH-Ambient: mean.rank.diff = -10.19048, pval = 0.0045 ** )
+
+
+Similarities:
+```{r}
+# calcium
+# Primary Samples
+
+# Regression Model 
+# p-value significant if (a < 0.1 or a < 0.05)
+
+calcium_primary_lm_int <- lm(Ca....mmol.L. ~ Pregnant.Or.Atresia * Ambient.Or.OAH, data = Primary_Samples) # not significant
+summary(calcium_primary_lm_int)
+
+calcium_primary_lm_add <- lm(Ca....mmol.L. ~ Pregnant.Or.Atresia + Ambient.Or.OAH, data = Primary_Samples)
+summary(calcium_primary_lm_add)
+
+# calcium_primary_lm_res_plot <- simulateResiduals(fittedModel = calcium_primary_lm_int)
+# plot(calcium_primary_lm_res_plot)
+
+calcium_primary_lm_res_plot <- simulateResiduals(fittedModel = calcium_primary_lm_add)
+plot(calcium_primary_lm_res_plot) # quantile deviations detected
+
+visualize(calcium_primary_lm_add, plot = "model")
+
+# Check Dispersion or Outliers
+plotResiduals(calcium_primary_lm_add)
+
+testDispersion(calcium_primary_lm_add)
+
+# For shapiro.test
+calcium_primary_lm_add_res <- residuals(calcium_primary_lm_add)
+
+# Normality test
+shapiro.test(calcium_primary_lm_add_res) # nonparametric
+
+
+# Scedasticity test: 
+# bartlett's test parametric
+bartlett.test(Ca....mmol.L. ~ Pregnant.Or.Atresia, data = Primary_Samples) 
+bartlett.test(Ca....mmol.L. ~ Ambient.Or.OAH, data = Primary_Samples)
+
+
+# Nonparametric variance test (Levene's test):
+leveneTest(Ca....mmol.L. ~ Pregnant.Or.Atresia, data = Primary_Samples)
+leveneTest(Ca....mmol.L. ~ Ambient.Or.OAH, data = Primary_Samples)
+
+```
+
+Interaction not significant, additive model used.
+
+lm summary results: additive model
+- Significant relationship detected.
+- Multiple R-squared:  0.576,	Adjusted R-squared:  0.542 
+F-statistic: 16.98 on 2 and 25 DF,  p-value: 2.201e-05
+
+- part 2: for determining which groups have strong correlation
+
+Parametric Assumptions: 
+
+Normality: **Not met** 
+
+Parametric Scedasticity test (Bartlett's test):
+- Not met for treatment groups
+
+Nonparametric variance test: Levene's test:
+- **Not met** for treatment group
+
+
+```{r}
+# Ca+2
+# Primary Samples
+
+# Regression Model pt 2: Not using sqrt model
+
+# Individually assess parameter to parturition groups & treatment groups
+# p-value significant if (a < 0.1 or a < 0.05)
+calcium_primary_lm1 <- lm(Ca....mmol.L. ~ Pregnant.Or.Atresia, data = Primary_Samples)
+summary(calcium_primary_lm1) 
+
+calcium_primary_lm2 <- lm(Ca....mmol.L. ~ Ambient.Or.OAH, data = Primary_Samples)
+summary(calcium_primary_lm2) 
+
+
+calcium_primary_lm_res_plot1 <- simulateResiduals(fittedModel = calcium_primary_lm1)
+plot(calcium_primary_lm_res_plot1)
+
+calcium_primary_lm_res_plot2 <- simulateResiduals(fittedModel = calcium_primary_lm2)
+plot(calcium_primary_lm_res_plot2)
+
+visualize(calcium_primary_lm1, plot = "model") 
+visualize(calcium_primary_lm2, plot = "model")
+
+
+# Check Dispersion or Outliers
+plotResiduals(calcium_primary_lm1)
+testDispersion(calcium_primary_lm1)
+
+plotResiduals(calcium_primary_lm2)
+testDispersion(calcium_primary_lm2)
+
+
+# For shapiro test
+calcium_primary_lm_res1 <- residuals(potassium_primary_lm1)
+
+calcium_primary_lm_res2 <- residuals(potassium_primary_lm2)
+
+# Normality test
+shapiro.test(calcium_primary_lm_res1) # Normal
+
+shapiro.test(calcium_primary_lm_res2) # Normal
+
+
+# Scedasticity test: On sqrt transformed data
+bartlett.test(Ca....mmol.L. ~ Pregnant.Or.Atresia, data = Primary_Samples) 
+bartlett.test(Ca....mmol.L. ~ Ambient.Or.OAH, data = Primary_Samples)
+
+# Nonparametric variance test:
+leveneTest(Ca....mmol.L. ~ Pregnant.Or.Atresia, data = Primary_Samples)
+leveneTest(Ca....mmol.L. ~ Ambient.Or.OAH, data = Primary_Samples)
+
+```
+
+Results:
+- A significant correlation detected, increasing calcium levels associated with post-parturition patients opposed to atresia patients.
+
+- A significant correlation detected, increasing calcium levels assoiciated with ambient treatment patients opposed to OAH treatment patients.
+
+
+**Warning** DHAMA error thrown for treatment group: Levene test for homogeneity of variance significant
+
+Normality: **Not met** (for both factor groups)
+
+Parametric Equal Variance test: Bartlett's test
+- Not met for treatment group
+
+Nonparametric variance test: Levene's test
+- Not met for treatment group
+
+
+
+Residuals Plot (if significant)
+```{r}
+# Ca+2
+# Primary samples
+
+# ggplot with geom_smooth(aes(x=,y=)), method = "lm")
+
+
+# lm for chloride & parturition scatterplot:
+calcium_primary_lm_scatterplot1 <- ggplot(data = Primary_Samples, aes(x = Pregnant.Or.Atresia, y = Ca....mmol.L.)) +
+  geom_point() +
+  geom_smooth(aes(group = 1), method = "lm") +
+  labs(title = "Calcium", x = "Parturition Group", y = "Calcium (mmol/L)", color = "Category") +
+  scale_y_continuous() +
+  theme_classic() +
+  theme(panel.background = element_rect(fill = "white"),
+        plot.background = element_rect(fill = "white"),
+        legend.background = element_rect(fill = "white", color = "black"),
+        plot.title = element_text(size = 25, hjust = 0.5),
+        axis.text.x = element_text(size = 15),
+        axis.text.y = element_text(size = 20),
+        axis.title.x = element_text(size = 20),
+        axis.title.y = element_text(size = 20))
+
+print(calcium_primary_lm_scatterplot1)
+
+ggsave(filename = "data-images/calcium_primary_lm_scatterplot1.pdf", plot = calcium_primary_lm_scatterplot1, device = "pdf")
+ggsave(filename = "data-images/calcium_primary_lm_scatterplot1.png", plot = calcium_primary_lm_scatterplot1, device = "png")
+
+# lm for glucose & treatment scatterplot:
+calcium_primary_lm_scatterplot2 <- ggplot(data = Primary_Samples, aes(x = Ambient.Or.OAH, y = Ca....mmol.L.)) +
+  geom_point() +
+  geom_smooth(aes(group = 1), method = "lm") +
+  labs(title = "Calcium", x = "Treatment Group", y = "Calcium (mmol/L)", color = "Category") +
+  scale_y_continuous() +
+  theme_classic() +
+  theme(panel.background = element_rect(fill = "white"),
+        plot.background = element_rect(fill = "white"),
+        legend.background = element_rect(fill = "white", color = "black"),
+        plot.title = element_text(size = 25, hjust = 0.5),
+        axis.text.x = element_text(size = 15),
+        axis.text.y = element_text(size = 20),
+        axis.title.x = element_text(size = 20),
+        axis.title.y = element_text(size = 20))
+
+print(calcium_primary_lm_scatterplot2)
+
+ggsave(filename = "data-images/calcium_primary_lm_scatterplot2.pdf", plot = calcium_primary_lm_scatterplot2, device = "pdf")
+ggsave(filename = "data-images/calcium_primary_lm_scatterplot2.png", plot = calcium_primary_lm_scatterplot2, device = "png")
+
+```
+
+
+```{r}
+# Ca+2
+# lm Boxplot
+
+calcium_primary_lm_boxplot1 <- ggplot(data = Primary_Samples, aes(x = Pregnant.Or.Atresia, y = Ca....mmol.L.)) +
+  geom_boxplot() +
+  geom_point() +
+  geom_smooth(aes(group = 1), method = "lm") +
+  labs(title = "Calcium", x = "Parturition Group", y = "Calcium (mmol/L)", color = "Category") +
+  scale_y_continuous() +
+  theme_classic() +
+  theme(panel.background = element_rect(fill = "white"),
+        plot.background = element_rect(fill = "white"),
+        legend.background = element_rect(fill = "white", color = "black"),
+        plot.title = element_text(size = 25, hjust = 0.5),
+        axis.text.x = element_text(size = 15),
+        axis.text.y = element_text(size = 20),
+        axis.title.x = element_text(size = 20),
+        axis.title.y = element_text(size = 20))
+print(calcium_primary_lm_boxplot1)
+
+calcium_primary_lm_boxplot2 <- ggplot(data = Primary_Samples, aes(x = Ambient.Or.OAH, y = Ca....mmol.L.)) +
+  geom_boxplot() +
+  geom_point() +
+  geom_smooth(aes(group = 1), method = "lm") +
+  labs(title = "Calcium", x = "Parturition Group", y = "Calcium (mmol/L)", color = "Category") +
+  scale_y_continuous() +
+  theme_classic() +
+  theme(panel.background = element_rect(fill = "white"),
+        plot.background = element_rect(fill = "white"),
+        legend.background = element_rect(fill = "white", color = "black"),
+        plot.title = element_text(size = 25, hjust = 0.5),
+        axis.text.x = element_text(size = 15),
+        axis.text.y = element_text(size = 20),
+        axis.title.x = element_text(size = 20),
+        axis.title.y = element_text(size = 20))
+print(calcium_primary_lm_boxplot2)
+
+```
+
+
+transform data (if necessary)
+```{r}
+# Ca+2
+# Primary Samples
+
+# Transform data: square root
+calcium_primary_sqrt <- Primary_Samples %>%
+  mutate(Ca....mmol.L. = sqrt(Ca....mmol.L.))
+
+# Rerun lm model with square root transformed data
+calcium_primary_sqrt_lm_int <- lm(Ca....mmol.L. ~ Pregnant.Or.Atresia * Ambient.Or.OAH, data = calcium_primary_sqrt) 
+summary(calcium_primary_sqrt_lm_int) # still not significant
+
+calcium_primary_sqrt_lm_add <- lm(Ca....mmol.L. ~ Pregnant.Or.Atresia + Ambient.Or.OAH, data = calcium_primary_sqrt)
+summary(calcium_primary_sqrt_lm_add)
+
+
+# Check hows it
+calcium_primary_sqrt_lm_res_plot <- simulateResiduals(fittedModel = calcium_primary_sqrt_lm_add)
+plot(calcium_primary_sqrt_lm_res_plot) # KS still significant
+
+plotResiduals(calcium_primary_sqrt_lm_add)
+
+testDispersion(calcium_primary_sqrt_lm_add)
+
+
+# Residuals of model for shapiro test
+calcium_primary_lm_add_sqrt_res <- residuals(calcium_primary_sqrt_lm_add)
+
+# Normality test
+shapiro.test(calcium_primary_lm_add_sqrt_res) # nonparametric
+
+
+# Scedasticity test: 
+# bartlett's test parametric
+bartlett.test(Ca....mmol.L. ~ Pregnant.Or.Atresia, data = calcium_primary_sqrt) 
+bartlett.test(Ca....mmol.L. ~ Ambient.Or.OAH, data = calcium_primary_sqrt)
+
+# Levene's test if nonparametric
+leveneTest(Ca....mmol.L. ~ Pregnant.Or.Atresia * Ambient.Or.OAH, data = calcium_primary_sqrt)
+leveneTest(Ca....mmol.L. ~ Pregnant.Or.Atresia, data = calcium_primary_sqrt)
+leveneTest(Ca....mmol.L. ~ Ambient.Or.OAH, data = calcium_primary_sqrt)
+
+# Non-parametric regression test???:
+
+```
+
+

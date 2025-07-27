@@ -1,0 +1,16 @@
+"0","# Nonparametric Post Hoc: Dunns test
+DunnettTest(Ca....mmol.L. ~ Fecundity_Class, data = Ambient_Samples)
+"
+"1","
+  Dunnett's test for comparing several treatments with a control :  
+    95% family-wise confidence level
+
+$`High (>50,000)`
+                                   diff     lwr.ci     upr.ci   pval    
+Low (~1,000s)-High (>50,000) -0.0375000 -0.1980658  0.1230658 0.7893    
+Atresia-High (>50,000)       -0.1807692 -0.3106040 -0.0509345 0.0071 ** 
+
+---
+Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1
+
+"

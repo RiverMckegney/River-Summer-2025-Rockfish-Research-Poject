@@ -1,0 +1,62 @@
+"0","# glucose"
+"0","# Primary Samples"
+"0",""
+"0","# Interactive aov model"
+"0","glucose_primary_aov_int <- aov(Glu..mmol.L. ~ Pregnant.Or.Atresia * Ambient.Or.OAH, data = Primary_Samples)"
+"0","summary(glucose_primary_aov_int) # interaction significant"
+"1","                                   Df Sum Sq Mean Sq F value Pr(>F)  
+Pregnant.Or.Atresia                 1  0.330  0.3303   0.693 0.4134  
+Ambient.Or.OAH                      1  0.369  0.3690   0.774 0.3877  
+Pregnant.Or.Atresia:Ambient.Or.OAH  1  1.753  1.7533   3.678 0.0671 .
+Residuals                          24 11.442  0.4767                 
+---
+Signif. codes:  0 ‘***’ 0.001 ‘**’ 0.01 ‘*’ 0.05 ‘.’ 0.1 ‘ ’ 1
+"
+"0","# Additive aov model"
+"0","# If interaction not significant (p-value > 0.05), use additive model"
+"0","# glucose_primary_aov_additive <- aov(Glu..mmol.L. ~ Pregnant.Or.Atresia + Ambient.Or.OAH, data = Primary_Samples)"
+"0","# summary(glucose_primary_aov_additive)"
+"0",""
+"0","# Parametric Post-Hoc: Tukey's HSD test"
+"0","TukeyHSD(glucose_primary_aov_int)"
+"1","  Tukey multiple comparisons of means
+    95% family-wise confidence level
+
+Fit: aov(formula = Glu..mmol.L. ~ Pregnant.Or.Atresia * Ambient.Or.OAH, data = Primary_Samples)
+
+$Pregnant.Or.Atresia
+                              diff        lwr       upr     p adj
+Atresia-Post Parturition 0.2266667 -0.3353791 0.7887124 0.4134193
+
+$Ambient.Or.OAH
+                diff        lwr       upr     p adj
+OAH-Ambient 0.264127 -0.3578141 0.8860681 0.3894475
+
+$`Pregnant.Or.Atresia:Ambient.Or.OAH`
+                                                 diff        lwr
+Atresia:Ambient-Post Parturition:Ambient       0.4875 -0.3684013
+Post Parturition:OAH-Post Parturition:Ambient  1.1375 -0.3683119
+Atresia:OAH-Post Parturition:Ambient           0.3675 -0.7183564
+Post Parturition:OAH-Atresia:Ambient           0.6500 -0.7967373
+Atresia:OAH-Atresia:Ambient                   -0.1200 -1.1223290
+Atresia:OAH-Post Parturition:OAH              -0.7700 -2.3636015
+                                                    upr     p adj
+Atresia:Ambient-Post Parturition:Ambient      1.3434013 0.4131342
+Post Parturition:OAH-Post Parturition:Ambient 2.6433119 0.1869587
+Atresia:OAH-Post Parturition:Ambient          1.4533564 0.7872361
+Post Parturition:OAH-Atresia:Ambient          2.0967373 0.6087444
+Atresia:OAH-Atresia:Ambient                   0.8823290 0.9872576
+Atresia:OAH-Post Parturition:OAH              0.8236015 0.5518182
+
+"
+"0","# Normality plot"
+"0",""
+"0","# Qqplot: Residuals of aov or lm model (plot residuals of aov vs lm are identical)"
+"0","glucose_primary_res_qqplot <- ggqqplot(residuals(aov(Glu..mmol.L. ~ Pregnant.Or.Atresia * Ambient.Or.OAH, data = Primary_Samples))) +"
+"0","labs(title = ""Glucose Interactive Residual QQplot"","
+"0","     subtitle = ""residuals(aov(Glu..mmol.L. ~ Pregnant.Or.Atresia * Ambient.Or.OAH, data = Primary_Samples))"","
+"0","                               x = ""Glucose Theoretical Quantiles (Predicted values)"","
+"0","                               y = ""Glucose Sample Quantiles"") +"
+"0","  theme(plot.title = element_text(hjust = 0.5),"
+"0","        plot.subtitle = element_text(hjust = 0.5))"
+"0","print(glucose_primary_res_qqplot)"

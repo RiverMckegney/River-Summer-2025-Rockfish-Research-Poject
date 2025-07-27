@@ -1,0 +1,65 @@
+"0","# Ca+2"
+"0","# Primary Samples"
+"0",""
+"0","# Transform data: square root"
+"0","calcium_primary_sqrt <- Primary_Samples %>%"
+"0","  mutate(Ca....mmol.L. = sqrt(Ca....mmol.L.))"
+"0",""
+"0","# Rerun lm model with square root transformed data"
+"0","calcium_primary_sqrt_lm_int <- lm(Ca....mmol.L. ~ Pregnant.Or.Atresia * Ambient.Or.OAH, data = calcium_primary_sqrt) "
+"0","summary(calcium_primary_sqrt_lm_int) # still not significant"
+"1","
+Call:
+lm(formula = Ca....mmol.L. ~ Pregnant.Or.Atresia * Ambient.Or.OAH, 
+    data = calcium_primary_sqrt)
+
+Residuals:
+      Min        1Q    Median        3Q       Max 
+-0.067294 -0.021721 -0.001756  0.014485  0.111337 
+
+Coefficients:
+                                        Estimate Std. Error t value
+(Intercept)                             1.129150   0.008855 127.513
+Pregnant.Or.Atresia.L                  -0.039421   0.012523  -3.148
+Ambient.Or.OAH.L                       -0.044925   0.012523  -3.587
+Pregnant.Or.Atresia.L:Ambient.Or.OAH.L  0.014896   0.017710   0.841
+                                       Pr(>|t|)    
+(Intercept)                             < 2e-16 ***
+Pregnant.Or.Atresia.L                   0.00436 ** 
+Ambient.Or.OAH.L                        0.00148 ** 
+Pregnant.Or.Atresia.L:Ambient.Or.OAH.L  0.40860    
+---
+Signif. codes:  0 ‘***’ 0.001 ‘**’ 0.01 ‘*’ 0.05 ‘.’ 0.1 ‘ ’ 1
+
+Residual standard error: 0.0373 on 24 degrees of freedom
+Multiple R-squared:  0.5924,	Adjusted R-squared:  0.5415 
+F-statistic: 11.63 on 3 and 24 DF,  p-value: 6.689e-05
+
+"
+"0","calcium_primary_sqrt_lm_add <- lm(Ca....mmol.L. ~ Pregnant.Or.Atresia + Ambient.Or.OAH, data = calcium_primary_sqrt)"
+"0","summary(calcium_primary_sqrt_lm_add)"
+"1","
+Call:
+lm(formula = Ca....mmol.L. ~ Pregnant.Or.Atresia + Ambient.Or.OAH, 
+    data = calcium_primary_sqrt)
+
+Residuals:
+      Min        1Q    Median        3Q       Max 
+-0.069835 -0.017804 -0.000962  0.017027  0.108797 
+
+Coefficients:
+                       Estimate Std. Error t value Pr(>|t|)    
+(Intercept)            1.131231   0.008453 133.829  < 2e-16 ***
+Pregnant.Or.Atresia.L -0.045238   0.010379  -4.359 0.000196 ***
+Ambient.Or.OAH.L      -0.040860   0.011485  -3.558 0.001527 ** 
+---
+Signif. codes:  0 ‘***’ 0.001 ‘**’ 0.01 ‘*’ 0.05 ‘.’ 0.1 ‘ ’ 1
+
+Residual standard error: 0.03708 on 25 degrees of freedom
+Multiple R-squared:  0.5804,	Adjusted R-squared:  0.5468 
+F-statistic: 17.29 on 2 and 25 DF,  p-value: 1.93e-05
+
+"
+"0","# Check hows it"
+"0","calcium_primary_sqrt_lm_res_plot <- simulateResiduals(fittedModel = calcium_primary_sqrt_lm_add)"
+"0","plot(calcium_primary_sqrt_lm_res_plot) # KS still significant"

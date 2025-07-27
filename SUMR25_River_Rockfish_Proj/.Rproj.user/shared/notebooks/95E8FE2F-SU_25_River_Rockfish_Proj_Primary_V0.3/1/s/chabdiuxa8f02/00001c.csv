@@ -1,0 +1,55 @@
+"0",""
+"0","# For shapiro test"
+"0","chloride_primary_lm_res1 <- residuals(chloride_primary_lm1)"
+"0",""
+"0","chloride_primary_lm_res2 <- residuals(chloride_primary_lm2)"
+"0",""
+"0","# Normality test"
+"0","shapiro.test(chloride_primary_lm_res1) # Normal"
+"1","
+	Shapiro-Wilk normality test
+
+data:  chloride_primary_lm_res1
+W = 0.97367, p-value = 0.6816
+
+"
+"0","shapiro.test(chloride_primary_lm_res2) # Normal"
+"1","
+	Shapiro-Wilk normality test
+
+data:  chloride_primary_lm_res2
+W = 0.96785, p-value = 0.5243
+
+"
+"0","# Scedasticity test: On sqrt transformed data"
+"0","bartlett.test(Cl...mmol.L. ~ Pregnant.Or.Atresia, data = chloride_primary_sqrt) "
+"1","
+	Bartlett test of homogeneity of variances
+
+data:  Cl...mmol.L. by Pregnant.Or.Atresia
+Bartlett's K-squared = 0.75694, df = 1, p-value = 0.3843
+
+"
+"0","bartlett.test(Cl...mmol.L. ~ Ambient.Or.OAH, data = chloride_primary_sqrt)"
+"1","
+	Bartlett test of homogeneity of variances
+
+data:  Cl...mmol.L. by Ambient.Or.OAH
+Bartlett's K-squared = 3.6841, df = 1, p-value = 0.05494
+
+"
+"0","# Nonparametric variance test:"
+"0","leveneTest(Cl...mmol.L. ~ Pregnant.Or.Atresia, data = chloride_primary_sqrt)"
+"1","Levene's Test for Homogeneity of Variance (center = median)
+      Df F value Pr(>F)
+group  1  0.1473 0.7042
+      26               
+"
+"0","leveneTest(Cl...mmol.L. ~ Ambient.Or.OAH, data = chloride_primary_sqrt)"
+"1","Levene's Test for Homogeneity of Variance (center = median)
+      Df F value  Pr(>F)  
+group  1  3.0146 0.09436 .
+      26                  
+---
+Signif. codes:  0 ‘***’ 0.001 ‘**’ 0.01 ‘*’ 0.05 ‘.’ 0.1 ‘ ’ 1
+"

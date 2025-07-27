@@ -1,0 +1,15 @@
+"0","leveneTest(Ca....mmol.L. ~ Pregnant.Or.Atresia, data = Primary_Samples)
+"
+"1","Levene's Test for Homogeneity of Variance (center = median)
+      Df F value Pr(>F)
+group  1  0.2268 0.6379
+      26               
+"
+"0","leveneTest(Ca....mmol.L. ~ Ambient.Or.OAH, data = Primary_Samples)"
+"1","Levene's Test for Homogeneity of Variance (center = median)
+      Df F value Pr(>F)  
+group  1   6.801 0.0149 *
+      26                 
+---
+Signif. codes:  0 ‘***’ 0.001 ‘**’ 0.01 ‘*’ 0.05 ‘.’ 0.1 ‘ ’ 1
+"

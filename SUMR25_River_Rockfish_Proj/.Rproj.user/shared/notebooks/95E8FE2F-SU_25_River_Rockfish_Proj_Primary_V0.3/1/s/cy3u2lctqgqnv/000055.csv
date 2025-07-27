@@ -1,0 +1,62 @@
+"0","# Transform data: square root"
+"0","sodium_primary_sqrt <- Primary_Samples %>%"
+"0","  mutate(Na...mmol.L. = sqrt(Na...mmol.L.))"
+"0",""
+"0","# Rerun lm model with square root transformed data"
+"0","sodium_primary_sqrt_lm_int <- lm(Na...mmol.L. ~ Pregnant.Or.Atresia * Ambient.Or.OAH, data = sodium_primary_sqrt) "
+"0","summary(sodium_primary_sqrt_lm_int) # still not significant"
+"1","
+Call:
+lm(formula = Na...mmol.L. ~ Pregnant.Or.Atresia * Ambient.Or.OAH, 
+    data = sodium_primary_sqrt)
+
+Residuals:
+     Min       1Q   Median       3Q      Max 
+-0.26562 -0.12425 -0.03893  0.04045  1.30830 
+
+Coefficients:
+                                       Estimate Std. Error t value
+(Intercept)                            13.31135    0.07073 188.202
+Pregnant.Or.Atresia.L                   0.01733    0.10003   0.173
+Ambient.Or.OAH.L                       -0.06389    0.10003  -0.639
+Pregnant.Or.Atresia.L:Ambient.Or.OAH.L -0.17549    0.14146  -1.241
+                                       Pr(>|t|)    
+(Intercept)                              <2e-16 ***
+Pregnant.Or.Atresia.L                     0.864    
+Ambient.Or.OAH.L                          0.529    
+Pregnant.Or.Atresia.L:Ambient.Or.OAH.L    0.227    
+---
+Signif. codes:  0 ‘***’ 0.001 ‘**’ 0.01 ‘*’ 0.05 ‘.’ 0.1 ‘ ’ 1
+
+Residual standard error: 0.2979 on 24 degrees of freedom
+Multiple R-squared:  0.1388,	Adjusted R-squared:  0.03118 
+F-statistic:  1.29 on 3 and 24 DF,  p-value: 0.3006
+
+"
+"0","sodium_primary_sqrt_lm_add <- lm(Na...mmol.L. ~ Pregnant.Or.Atresia + Ambient.Or.OAH, data = sodium_primary_sqrt)"
+"0","summary(sodium_primary_sqrt_lm_add)"
+"1","
+Call:
+lm(formula = Na...mmol.L. ~ Pregnant.Or.Atresia + Ambient.Or.OAH, 
+    data = sodium_primary_sqrt)
+
+Residuals:
+     Min       1Q   Median       3Q      Max 
+-0.30517 -0.12246 -0.06196  0.03584  1.33823 
+
+Coefficients:
+                      Estimate Std. Error t value Pr(>|t|)    
+(Intercept)           13.28684    0.06864 193.567   <2e-16 ***
+Pregnant.Or.Atresia.L  0.08586    0.08428   1.019    0.318    
+Ambient.Or.OAH.L      -0.11178    0.09327  -1.198    0.242    
+---
+Signif. codes:  0 ‘***’ 0.001 ‘**’ 0.01 ‘*’ 0.05 ‘.’ 0.1 ‘ ’ 1
+
+Residual standard error: 0.3011 on 25 degrees of freedom
+Multiple R-squared:  0.08361,	Adjusted R-squared:  0.01029 
+F-statistic:  1.14 on 2 and 25 DF,  p-value: 0.3358
+
+"
+"0","# Check hows it"
+"0","sodium_primary_sqrt_lm_res_plot <- simulateResiduals(fittedModel = sodium_primary_sqrt_lm_add)"
+"0","plot(sodium_primary_sqrt_lm_res_plot) # KS still significant"

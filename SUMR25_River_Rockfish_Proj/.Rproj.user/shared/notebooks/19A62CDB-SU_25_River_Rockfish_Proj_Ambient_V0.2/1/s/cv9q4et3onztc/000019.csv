@@ -1,0 +1,5 @@
+"0","bartlett.test(K...mmol.L. ~ Weight_Adjusted_Fecundity_Fecundity.Mean_Weight, data = potassium_ambient_sqrt)
+"
+"2","G1;H1;Errorh in bartlett.test.default(x = mf[[1L]], g = mf[[2L]]) : 
+  there must be at least 2 observations in each group
+g"

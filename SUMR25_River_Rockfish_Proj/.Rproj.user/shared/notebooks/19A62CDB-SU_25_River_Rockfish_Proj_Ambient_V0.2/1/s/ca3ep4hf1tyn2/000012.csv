@@ -1,0 +1,8 @@
+"0","# Nonparametric variance test (Levene's test):
+leveneTest(Hct.... ~ Consensus_Brood_Condition, data = Ambient_Samples)
+"
+"1","Levene's Test for Homogeneity of Variance (center = median)
+      Df F value Pr(>F)
+group  3   0.507 0.6826
+      17               
+"

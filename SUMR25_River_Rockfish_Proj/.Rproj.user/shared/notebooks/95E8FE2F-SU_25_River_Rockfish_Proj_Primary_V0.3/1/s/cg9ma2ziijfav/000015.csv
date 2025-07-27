@@ -1,0 +1,53 @@
+"0","# Residuals of model for shapiro test"
+"0","calcium_primary_lm_add_sqrt_res <- residuals(calcium_primary_sqrt_lm_add)"
+"0",""
+"0","# Normality test"
+"0","shapiro.test(calcium_primary_lm_add_sqrt_res) # nonparametric"
+"1","
+	Shapiro-Wilk normality test
+
+data:  calcium_primary_lm_add_sqrt_res
+W = 0.94977, p-value = 0.1955
+
+"
+"0","# Scedasticity test: "
+"0","# bartlett's test parametric"
+"0","bartlett.test(Ca....mmol.L. ~ Pregnant.Or.Atresia, data = calcium_primary_sqrt) "
+"1","
+	Bartlett test of homogeneity of variances
+
+data:  Ca....mmol.L. by Pregnant.Or.Atresia
+Bartlett's K-squared = 0.57932, df = 1, p-value = 0.4466
+
+"
+"0","bartlett.test(Ca....mmol.L. ~ Ambient.Or.OAH, data = calcium_primary_sqrt)"
+"1","
+	Bartlett test of homogeneity of variances
+
+data:  Ca....mmol.L. by Ambient.Or.OAH
+Bartlett's K-squared = 3.1949, df = 1, p-value = 0.07387
+
+"
+"0","# Levene's test if nonparametric"
+"0","leveneTest(Ca....mmol.L. ~ Pregnant.Or.Atresia * Ambient.Or.OAH, data = calcium_primary_sqrt)"
+"1","Levene's Test for Homogeneity of Variance (center = median)
+      Df F value Pr(>F)
+group  3  1.7959 0.1749
+      24               
+"
+"0","leveneTest(Ca....mmol.L. ~ Pregnant.Or.Atresia, data = calcium_primary_sqrt)"
+"1","Levene's Test for Homogeneity of Variance (center = median)
+      Df F value Pr(>F)
+group  1   0.327 0.5723
+      26               
+"
+"0","leveneTest(Ca....mmol.L. ~ Ambient.Or.OAH, data = calcium_primary_sqrt)"
+"1","Levene's Test for Homogeneity of Variance (center = median)
+      Df F value  Pr(>F)  
+group  1  6.1011 0.02039 *
+      26                  
+---
+Signif. codes:  0 ‘***’ 0.001 ‘**’ 0.01 ‘*’ 0.05 ‘.’ 0.1 ‘ ’ 1
+"
+"0","# Non-parametric regression test???:"
+"0",""

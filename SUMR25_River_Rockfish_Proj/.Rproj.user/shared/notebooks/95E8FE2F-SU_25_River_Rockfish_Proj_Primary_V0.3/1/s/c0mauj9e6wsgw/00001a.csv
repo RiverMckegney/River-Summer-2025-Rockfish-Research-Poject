@@ -1,0 +1,55 @@
+"0","# glucose"
+"0","# Primary Samples"
+"0",""
+"0","# Regression Model pt 2"
+"0",""
+"0","# Individually assess parameter to parturition groups & treatment groups"
+"0","sodium_primary_lm1 <- lm(Na...mmol.L. ~ Pregnant.Or.Atresia, data = sodium_primary_sqrt)"
+"0",""
+"0","sodium_primary_lm2 <- lm(Na...mmol.L. ~ Ambient.Or.OAH, data = sodium_primary_sqrt)"
+"0",""
+"0","# p-value significant if (a < 0.1 or a < 0.05)"
+"0","summary(sodium_primary_lm1) "
+"1","
+Call:
+lm(formula = Na...mmol.L. ~ Pregnant.Or.Atresia, data = sodium_primary_sqrt)
+
+Residuals:
+     Min       1Q   Median       3Q      Max 
+-0.30599 -0.11729 -0.04291  0.04232  1.38214 
+
+Coefficients:
+                      Estimate Std. Error t value Pr(>|t|)    
+(Intercept)           13.32812    0.05987 222.606   <2e-16 ***
+Pregnant.Or.Atresia.L  0.07717    0.08467   0.911     0.37    
+---
+Signif. codes:  0 ‘***’ 0.001 ‘**’ 0.01 ‘*’ 0.05 ‘.’ 0.1 ‘ ’ 1
+
+Residual standard error: 0.3036 on 26 degrees of freedom
+Multiple R-squared:  0.03096,	Adjusted R-squared:  -0.006314 
+F-statistic: 0.8306 on 1 and 26 DF,  p-value: 0.3705
+
+"
+"0","summary(sodium_primary_lm2) "
+"1","
+Call:
+lm(formula = Na...mmol.L. ~ Ambient.Or.OAH, data = sodium_primary_sqrt)
+
+Residuals:
+     Min       1Q   Median       3Q      Max 
+-0.38034 -0.08912 -0.04079 -0.00125  1.38449 
+
+Coefficients:
+                 Estimate Std. Error t value Pr(>|t|)    
+(Intercept)      13.30708    0.06575 202.382   <2e-16 ***
+Ambient.Or.OAH.L -0.10360    0.09299  -1.114    0.275    
+---
+Signif. codes:  0 ‘***’ 0.001 ‘**’ 0.01 ‘*’ 0.05 ‘.’ 0.1 ‘ ’ 1
+
+Residual standard error: 0.3013 on 26 degrees of freedom
+Multiple R-squared:  0.04557,	Adjusted R-squared:  0.008856 
+F-statistic: 1.241 on 1 and 26 DF,  p-value: 0.2754
+
+"
+"0","sodium_primary_lm_res_plot1 <- simulateResiduals(fittedModel = sodium_primary_lm1)"
+"0","plot(sodium_primary_lm_res_plot1) # Warning appears"

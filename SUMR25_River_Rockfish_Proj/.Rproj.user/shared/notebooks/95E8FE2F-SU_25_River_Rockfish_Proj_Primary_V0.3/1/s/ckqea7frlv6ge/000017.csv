@@ -1,0 +1,53 @@
+"0",""
+"0",""
+"0","# Residuals of model for shapiro test"
+"0","pH_primary_lm_res <- residuals(pH_primary_lm)"
+"0",""
+"0","# Normality test"
+"0","shapiro.test(pH_primary_lm_res)"
+"1","
+	Shapiro-Wilk normality test
+
+data:  pH_primary_lm_res
+W = 0.96397, p-value = 0.431
+
+"
+"0","# Scedasticity test: "
+"0","# bartlett's test parametric"
+"0","bartlett.test(pH ~ Pregnant.Or.Atresia, data = Primary_Samples) # nonparametric"
+"1","
+	Bartlett test of homogeneity of variances
+
+data:  pH by Pregnant.Or.Atresia
+Bartlett's K-squared = 3.4356, df = 1, p-value = 0.0638
+
+"
+"0","bartlett.test(pH ~ Ambient.Or.OAH, data = Primary_Samples)"
+"1","
+	Bartlett test of homogeneity of variances
+
+data:  pH by Ambient.Or.OAH
+Bartlett's K-squared = 0.33993, df = 1, p-value = 0.5599
+
+"
+"0","# Levene's test if nonparametric"
+"0","leveneTest(pH ~ Pregnant.Or.Atresia * Ambient.Or.OAH, data = Primary_Samples)"
+"1","Levene's Test for Homogeneity of Variance (center = median)
+      Df F value Pr(>F)
+group  3  0.6518 0.5896
+      24               
+"
+"0","leveneTest(pH ~ Pregnant.Or.Atresia, data = Primary_Samples) # Close to significant"
+"1","Levene's Test for Homogeneity of Variance (center = median)
+      Df F value Pr(>F)
+group  1  2.3324 0.1388
+      26               
+"
+"0","leveneTest(pH ~ Ambient.Or.OAH, data = Primary_Samples)"
+"1","Levene's Test for Homogeneity of Variance (center = median)
+      Df F value Pr(>F)
+group  1  0.1912 0.6655
+      26               
+"
+"0","# Non-parametric regression test???:"
+"0",""

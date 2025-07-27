@@ -1,0 +1,21 @@
+"0",""
+"0"," pdf(""data-images/primary_sample_table.pdf"")"
+"0"," grid.table(primary_sample_table)"
+"0"," dev.off()"
+"1","null device 
+          1 
+"
+"0"," "
+"0"," png(""data-images/primary_sample_table.png"")"
+"0"," grid.table(primary_sample_table)"
+"0"," dev.off()"
+"1","null device 
+          1 
+"
+"0"," "
+"0"," "
+"0","# Primary data: Brood Condition"
+"0","primary_sample_table_brood_codnition <- Primary_Samples %>%"
+"0","  group_by(Ambient.Or.OAH, Consensus_Brood_Condition) %>%"
+"0","  summarise(n_size = n_distinct(Patient.ID_edited), .groups = ""drop"")"
+"0","print(primary_sample_table_brood_codnition)"

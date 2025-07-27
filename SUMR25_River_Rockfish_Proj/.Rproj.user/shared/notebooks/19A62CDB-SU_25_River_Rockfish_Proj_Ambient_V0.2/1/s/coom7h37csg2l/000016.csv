@@ -1,0 +1,17 @@
+"0","TukeyHSD(pH_aov_ambient)
+"
+"1","  Tukey multiple comparisons of means
+    95% family-wise confidence level
+
+Fit: aov(formula = pH ~ Consensus_Brood_Condition, data = Ambient_Samples)
+
+$Consensus_Brood_Condition
+                         diff        lwr        upr     p adj
+Normal-Excellent   0.01675000 -0.2799312 0.31343123 0.9984685
+Low-Excellent      0.00400000 -0.3024111 0.31041106 0.9999809
+Atresia-Excellent -0.05430769 -0.3296845 0.22106915 0.9423449
+Low-Normal        -0.01275000 -0.2154219 0.18992187 0.9978869
+Atresia-Normal    -0.07105769 -0.2227829 0.08066756 0.5566650
+Atresia-Low       -0.05830769 -0.2282740 0.11165858 0.7651322
+
+"

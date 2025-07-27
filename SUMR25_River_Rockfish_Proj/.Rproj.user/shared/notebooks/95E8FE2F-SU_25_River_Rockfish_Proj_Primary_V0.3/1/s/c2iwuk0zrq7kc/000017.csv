@@ -1,0 +1,9 @@
+"0","bartlett.test(Ca....mmol.L. ~ Ambient.Or.OAH, data = Primary_Samples)
+"
+"1","
+	Bartlett test of homogeneity of variances
+
+data:  Ca....mmol.L. by Ambient.Or.OAH
+Bartlett's K-squared = 3.5462, df = 1, p-value = 0.05968
+
+"
