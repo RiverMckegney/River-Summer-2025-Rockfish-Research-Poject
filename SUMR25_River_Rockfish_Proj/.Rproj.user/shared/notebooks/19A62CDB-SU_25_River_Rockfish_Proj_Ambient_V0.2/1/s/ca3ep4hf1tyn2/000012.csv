@@ -1,8 +1,62 @@
-"0","# Nonparametric variance test (Levene's test):
-leveneTest(Hct.... ~ Consensus_Brood_Condition, data = Ambient_Samples)
+"0","# hct"
+"0","# Ambient ANOVA Test"
+"0",""
+"0","# Testing for differences in ambient parturition success metrics"
+"0","# One-way ANOVA (parametric) or Kruskal-Wallis test (nonparametric)"
+"0",""
+"0","hct_aov_ambient_brood <- aov(Hct.... ~ Consensus_Brood_Condition, data = Ambient_Samples)"
+"0","summary(hct_aov_ambient_brood) # Significant"
+"1","                          Df Sum Sq Mean Sq F value Pr(>F)  
+Consensus_Brood_Condition  3  68.88  22.959   2.735 0.0758 .
+Residuals                 17 142.69   8.394                 
+---
+Signif. codes:  0 ‘***’ 0.001 ‘**’ 0.01 ‘*’ 0.05 ‘.’ 0.1 ‘ ’ 1
 "
-"1","Levene's Test for Homogeneity of Variance (center = median)
-      Df F value Pr(>F)
-group  3   0.507 0.6826
-      17               
+"0","# If significant, Post Hoc Test: "
+"0","# - Tukey's HSD (parametric, normality & equal variance across groups)"
+"0","# - Dunn's test (non-parametric, after Kruskal-Wallis test)"
+"0",""
+"0","TukeyHSD(hct_aov_ambient_brood) # Atresia-Low Significant"
+"1","  Tukey multiple comparisons of means
+    95% family-wise confidence level
+
+Fit: aov(formula = Hct.... ~ Consensus_Brood_Condition, data = Ambient_Samples)
+
+$Consensus_Brood_Condition
+                           diff         lwr       upr     p adj
+Normal-Excellent  -2.825000e+00 -12.0325283  6.382528 0.8190431
+Low-Excellent     -4.766667e+00 -14.2761610  4.742828 0.5017753
+Atresia-Excellent  3.552714e-15  -8.5463446  8.546345 1.0000000
+Low-Normal        -1.941667e+00  -8.2316060  4.348273 0.8163755
+Atresia-Normal     2.825000e+00  -1.8838065  7.533807 0.3513279
+Atresia-Low        4.766667e+00  -0.5082517 10.041585 0.0843920
+
 "
+"0","# Parametric tests"
+"0",""
+"0","# Normality"
+"0","shapiro.test(Ambient_Samples$Hct....)"
+"1","
+	Shapiro-Wilk normality test
+
+data:  Ambient_Samples$Hct....
+W = 0.97482, p-value = 0.8355
+
+"
+"0","shapiro.test(residuals(aov(Hct.... ~ Consensus_Brood_Condition, data = Ambient_Samples)))"
+"1","
+	Shapiro-Wilk normality test
+
+data:  residuals(aov(Hct.... ~ Consensus_Brood_Condition, data = Ambient_Samples))
+W = 0.9585, p-value = 0.4864
+
+"
+"0","# QQplot:"
+"0","hct_ambient_res_qqplot <- ggqqplot(residuals(aov(Hct.... ~ Consensus_Brood_Condition, data = Ambient_Samples))) +"
+"0","labs(title = ""Ambint Hematocrit Residual QQplot"","
+"0","     subtitle = ""residuals(aov(Hct.... ~ Consensus_Brood_Condition, data = Ambient_Samples))"","
+"0","                               x = ""Hct Theoretical Quantiles (Predicted values)"","
+"0","                               y = ""Hct Sample Quantiles"") +"
+"0","  theme(plot.title = element_text(hjust = 0.5),"
+"0","        plot.subtitle = element_text(hjust = 0.5))"
+"0","print(hct_ambient_res_qqplot)"

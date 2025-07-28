@@ -1,17 +1,62 @@
-"0","# Nonparametric Post Hoc: Dunn's test
-DunnTest(Ca....mmol.L. ~ Consensus_Brood_Condition, data = Ambient_Samples)
-"
-"1","
- Dunn's test of multiple comparisons using rank sums : holm  
-
-                  mean.rank.diff   pval    
-Normal-Excellent       -3.125000 1.0000    
-Low-Excellent          -3.500000 1.0000    
-Atresia-Excellent     -11.153846 0.3321    
-Low-Normal             -0.375000 1.0000    
-Atresia-Normal         -8.028846 0.1412    
-Atresia-Low            -7.653846 0.2698    
+"0","# Ca+2"
+"0","# Ambient ANOVA Test"
+"0",""
+"0","# Testing for differences in ambient parturition success metrics"
+"0","# One-way ANOVA (parametric) or Kruskal-Wallis test (nonparametric)"
+"0",""
+"0","calcium_aov_ambient_brood <- aov(Ca....mmol.L. ~ Consensus_Brood_Condition, data = Ambient_Samples)"
+"0","summary(calcium_aov_ambient_brood) "
+"1","                          Df Sum Sq Mean Sq F value Pr(>F)  
+Consensus_Brood_Condition  3 0.1319 0.04396   4.527 0.0165 *
+Residuals                 17 0.1651 0.00971                 
 ---
-Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1
+Signif. codes:  0 ‘***’ 0.001 ‘**’ 0.01 ‘*’ 0.05 ‘.’ 0.1 ‘ ’ 1
+"
+"0","# If significant, Post Hoc Test: "
+"0","# - Tukey's HSD (parametric, normality & equal variance across groups)"
+"0","# - Dunn's test (non-parametric, after Kruskal-Wallis test)"
+"0",""
+"0","TukeyHSD(calcium_aov_ambient_brood) "
+"1","  Tukey multiple comparisons of means
+    95% family-wise confidence level
+
+Fit: aov(formula = Ca....mmol.L. ~ Consensus_Brood_Condition, data = Ambient_Samples)
+
+$Consensus_Brood_Condition
+                        diff        lwr           upr     p adj
+Normal-Excellent  -0.0400000 -0.3531867  0.2731867446 0.9830709
+Low-Excellent     -0.0500000 -0.3734579  0.2734578789 0.9707679
+Atresia-Excellent -0.2007692 -0.4914663  0.0899278749 0.2401278
+Low-Normal        -0.0100000 -0.2239473  0.2039472768 0.9991279
+Atresia-Normal    -0.1607692 -0.3209355 -0.0006029264 0.0489650
+Atresia-Low       -0.1507692 -0.3301914  0.0286529182 0.1173091
 
 "
+"0","# Parametric tests"
+"0",""
+"0","# Normality"
+"0","shapiro.test(Ambient_Samples$Ca....mmol.L.)"
+"1","
+	Shapiro-Wilk normality test
+
+data:  Ambient_Samples$Ca....mmol.L.
+W = 0.9463, p-value = 0.2894
+
+"
+"0","shapiro.test(residuals(aov(Ca....mmol.L. ~ Consensus_Brood_Condition, data = Ambient_Samples)))"
+"1","
+	Shapiro-Wilk normality test
+
+data:  residuals(aov(Ca....mmol.L. ~ Consensus_Brood_Condition, data = Ambient_Samples))
+W = 0.91568, p-value = 0.07117
+
+"
+"0","# QQplot:"
+"0","calcium_ambient_res_qqplot <- ggqqplot(residuals(aov(Ca....mmol.L. ~ Consensus_Brood_Condition, data = Ambient_Samples))) +"
+"0","labs(title = ""Calcium Residual QQplot"","
+"0","     subtitle = ""residuals(aov(Ca....mmol.L. ~ Consensus_Brood_Condition, data = Ambient_Samples))"","
+"0","                               x = ""Calcium Theoretical Quantiles (Predicted values)"","
+"0","                               y = ""Calcium Sample Quantiles"") +"
+"0","  theme(plot.title = element_text(hjust = 0.5),"
+"0","        plot.subtitle = element_text(hjust = 0.5))"
+"0","print(calcium_ambient_res_qqplot)"

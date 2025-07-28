@@ -1,9 +1,57 @@
-"0","bartlett.test(Na...mmol.L. ~ Fecundity_Class, data = Ambient_Samples)
+"0","# Na+"
+"0","# Ambient ANOVA Test"
+"0",""
+"0","# Testing for differences in ambient parturition success metrics"
+"0","# One-way ANOVA (parametric) or Kruskal-Wallis test (nonparametric)"
+"0",""
+"0","sodium_aov_ambient_fec <- aov(Na...mmol.L. ~ Fecundity_Class, data = Ambient_Samples)"
+"0","summary(sodium_aov_ambient_fec)"
+"1","                Df Sum Sq Mean Sq F value Pr(>F)
+Fecundity_Class  2  156.8   78.38   0.865  0.438
+Residuals       18 1631.8   90.66               
 "
+"0","# If significant, Post Hoc Test: "
+"0","# - Tukey's HSD (parametric, normality & equal variance across groups)"
+"0","# - Dunn's test (non-parametric, after Kruskal-Wallis test)"
+"0",""
+"0","TukeyHSD(sodium_aov_ambient_fec)"
+"1","  Tukey multiple comparisons of means
+    95% family-wise confidence level
+
+Fit: aov(formula = Na...mmol.L. ~ Fecundity_Class, data = Ambient_Samples)
+
+$Fecundity_Class
+                                  diff       lwr      upr     p adj
+Low (~1,000s)-High (>50,000) -2.000000 -19.18271 15.18271 0.9526465
+Atresia-High (>50,000)        4.480769  -9.41330 18.37484 0.6939179
+Atresia-Low (~1,000s)         6.480769  -7.41330 20.37484 0.4737484
+
+"
+"0","# Parametric tests"
+"0",""
+"0","# Normality"
+"0","shapiro.test(Ambient_Samples$Na...mmol.L.)"
 "1","
-	Bartlett test of homogeneity of variances
+	Shapiro-Wilk normality test
 
-data:  Na...mmol.L. by Fecundity_Class
-Bartlett's K-squared = 7.4634, df = 2, p-value = 0.02395
+data:  Ambient_Samples$Na...mmol.L.
+W = 0.52676, p-value = 3.625e-07
 
 "
+"0","shapiro.test(residuals(aov(Na...mmol.L. ~ Fecundity_Class, data = Ambient_Samples)))"
+"1","
+	Shapiro-Wilk normality test
+
+data:  residuals(aov(Na...mmol.L. ~ Fecundity_Class, data = Ambient_Samples))
+W = 0.56321, p-value = 8.235e-07
+
+"
+"0","# QQplot:"
+"0","sodium_ambient_fec_res_qqplot <- ggqqplot(residuals(aov(Na...mmol.L. ~ Fecundity_Class, data = Ambient_Samples))) +"
+"0","labs(title = ""Ambient Sodium Residual QQplot"","
+"0","     subtitle = ""residuals(aov(Na...mmol.L. ~ Fecundity_Class, data = Ambient_Samples))"","
+"0","                               x = ""Sodium Theoretical Quantiles (Predicted values)"","
+"0","                               y = ""Sodium Sample Quantiles"") +"
+"0","  theme(plot.title = element_text(hjust = 0.5),"
+"0","        plot.subtitle = element_text(hjust = 0.5))"
+"0","print(sodium_ambient_fec_res_qqplot)"

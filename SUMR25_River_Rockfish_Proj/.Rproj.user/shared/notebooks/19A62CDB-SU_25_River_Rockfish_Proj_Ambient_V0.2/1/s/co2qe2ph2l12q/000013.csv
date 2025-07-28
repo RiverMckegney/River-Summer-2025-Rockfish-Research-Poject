@@ -1,0 +1,42 @@
+"0",""
+"0",""
+"0","# Parametric Variance test (Bartlett's test): require at least 2 obs for each group"
+"0","bartlett.test(Ca....mmol.L. ~ Fecundity_Class, data = Ambient_Samples)"
+"1","
+	Bartlett test of homogeneity of variances
+
+data:  Ca....mmol.L. by Fecundity_Class
+Bartlett's K-squared = 6.1296, df = 2, p-value = 0.04666
+
+"
+"0","# Nonparametric variance test (Levene's test):"
+"0","leveneTest(Ca....mmol.L. ~ Fecundity_Class, data = Ambient_Samples)"
+"1","Levene's Test for Homogeneity of Variance (center = median)
+      Df F value Pr(>F)
+group  2  1.2704 0.3047
+      18               
+"
+"0","# Nonparametric stat test: Kruskall Wallis"
+"0","kruskal.test(Ca....mmol.L. ~ Fecundity_Class, data = Ambient_Samples)"
+"1","
+	Kruskal-Wallis rank sum test
+
+data:  Ca....mmol.L. by Fecundity_Class
+Kruskal-Wallis chi-squared = 9.153, df = 2, p-value = 0.01029
+
+"
+"0","# Nonparametric Post Hoc: Dunns test"
+"0","DunnettTest(Ca....mmol.L. ~ Fecundity_Class, data = Ambient_Samples)"
+"1","
+  Dunnett's test for comparing several treatments with a control :  
+    95% family-wise confidence level
+
+$`High (>50,000)`
+                                   diff     lwr.ci     upr.ci   pval    
+Low (~1,000s)-High (>50,000) -0.0375000 -0.1980658  0.1230658 0.7893    
+Atresia-High (>50,000)       -0.1807692 -0.3106040 -0.0509345 0.0071 ** 
+
+---
+Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1
+
+"

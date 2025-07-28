@@ -1,11 +1,60 @@
-"0","# Normality
-shapiro.test(Ambient_Samples$Na...mmol.L.)
+"0","# Na+"
+"0","# Ambient ANOVA Test"
+"0",""
+"0","# Testing for differences in ambient parturition success metrics"
+"0","# One-way ANOVA (parametric) or Kruskal-Wallis test (nonparametric)"
+"0",""
+"0","sodium_aov_ambient_brood <- aov(Na...mmol.L. ~ Consensus_Brood_Condition, data = Ambient_Samples)"
+"0","summary(sodium_aov_ambient_brood) "
+"1","                          Df Sum Sq Mean Sq F value Pr(>F)
+Consensus_Brood_Condition  3  176.8   58.95   0.622  0.611
+Residuals                 17 1611.7   94.81               
 "
+"0","# If significant, Post Hoc Test: "
+"0","# - Tukey's HSD (parametric, normality & equal variance across groups)"
+"0","# - Dunn's test (non-parametric, after Kruskal-Wallis test)"
+"0",""
+"0","TukeyHSD(sodium_aov_ambient_brood) "
+"1","  Tukey multiple comparisons of means
+    95% family-wise confidence level
+
+Fit: aov(formula = Na...mmol.L. ~ Consensus_Brood_Condition, data = Ambient_Samples)
+
+$Consensus_Brood_Condition
+                       diff        lwr      upr     p adj
+Normal-Excellent   0.250000 -30.694633 31.19463 0.9999955
+Low-Excellent     -3.666667 -35.626146 28.29281 0.9875929
+Atresia-Excellent  4.230769 -24.491760 32.95330 0.9745138
+Low-Normal        -3.916667 -25.055875 17.22254 0.9514394
+Atresia-Normal     3.980769 -11.844573 19.80611 0.8897586
+Atresia-Low        7.897436  -9.830494 25.62537 0.5954090
+
+"
+"0","# Parametric tests"
+"0",""
+"0","# Normality"
+"0","shapiro.test(Ambient_Samples$Na...mmol.L.)"
 "1","
 	Shapiro-Wilk normality test
 
 data:  Ambient_Samples$Na...mmol.L.
-"
-"1","W = 0.52676, p-value = 3.625e-07
+W = 0.52676, p-value = 3.625e-07
 
 "
+"0","shapiro.test(residuals(aov(Na...mmol.L. ~ Consensus_Brood_Condition, data = Ambient_Samples)))"
+"1","
+	Shapiro-Wilk normality test
+
+data:  residuals(aov(Na...mmol.L. ~ Consensus_Brood_Condition, data = Ambient_Samples))
+W = 0.54475, p-value = 5.408e-07
+
+"
+"0","# QQplot:"
+"0","sodium_ambient_res_qqplot <- ggqqplot(residuals(aov(Na...mmol.L. ~ Consensus_Brood_Condition, data = Ambient_Samples))) +"
+"0","labs(title = ""Sodium Residual QQplot"","
+"0","     subtitle = ""residuals(aov(Na...mmol.L. ~ Consensus_Brood_Condition, data = Ambient_Samples))"","
+"0","                               x = ""Sodium Theoretical Quantiles (Predicted values)"","
+"0","                               y = ""Sodium Sample Quantiles"") +"
+"0","  theme(plot.title = element_text(hjust = 0.5),"
+"0","        plot.subtitle = element_text(hjust = 0.5))"
+"0","print(sodium_ambient_res_qqplot)"

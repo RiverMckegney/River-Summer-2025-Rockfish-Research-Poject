@@ -1,0 +1,37 @@
+"0",""
+"0",""
+"0","# Parametric Variance test (Bartlett's test): require at least 2 obs for each group"
+"0","#bartlett.test(pH ~ Consensus_Brood_Condition, data = Ambient_Samples)"
+"0",""
+"0","# Nonparametric variance test (Levene's test):"
+"0","leveneTest(pH ~ Consensus_Brood_Condition, data = Ambient_Samples)"
+"1","Levene's Test for Homogeneity of Variance (center = median)
+      Df F value Pr(>F)
+group  3   0.671 0.5815
+      17               
+"
+"0","# Nonparametric stat test: Kruskall Wallis"
+"0","kruskal.test(pH ~ Consensus_Brood_Condition, data = Ambient_Samples)"
+"1","
+	Kruskal-Wallis rank sum test
+
+data:  pH by Consensus_Brood_Condition
+Kruskal-Wallis chi-squared = 2.8578, df = 3, p-value = 0.4141
+
+"
+"0","# Nonparametric Post Hoc: Dunn's Test"
+"0","DunnettTest(pH ~ Consensus_Brood_Condition, data = Ambient_Samples)"
+"1","
+  Dunnett's test for comparing several treatments with a control :  
+    95% family-wise confidence level
+
+$Excellent
+                         diff     lwr.ci    upr.ci   pval    
+Normal-Excellent   0.01675000 -0.2376275 0.2711275 0.9925    
+Low-Excellent      0.00400000 -0.2587200 0.2667200 0.9999    
+Atresia-Excellent -0.05430769 -0.2904186 0.1818032 0.8156    
+
+---
+Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1
+
+"

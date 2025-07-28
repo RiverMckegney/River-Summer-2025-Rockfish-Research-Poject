@@ -1,0 +1,60 @@
+"0","# Cl-"
+"0","# Ambient ANOVA Test"
+"0",""
+"0","# Testing for differences in ambient parturition success metrics"
+"0","# One-way ANOVA (parametric) or Kruskal-Wallis test (nonparametric)"
+"0",""
+"0","chloride_aov_ambient_brood <- aov(Cl...mmol.L. ~ Consensus_Brood_Condition, data = Ambient_Samples)"
+"0","summary(chloride_aov_ambient_brood) "
+"1","                          Df Sum Sq Mean Sq F value Pr(>F)
+Consensus_Brood_Condition  3  24.59   8.197   0.463  0.711
+Residuals                 17 300.65  17.685               
+"
+"0","# If significant, Post Hoc Test: "
+"0","# - Tukey's HSD (parametric, normality & equal variance across groups)"
+"0","# - Dunn's test (non-parametric, after Kruskal-Wallis test)"
+"0",""
+"0","TukeyHSD(chloride_aov_ambient_brood) "
+"1","  Tukey multiple comparisons of means
+    95% family-wise confidence level
+
+Fit: aov(formula = Cl...mmol.L. ~ Consensus_Brood_Condition, data = Ambient_Samples)
+
+$Consensus_Brood_Condition
+                        diff        lwr       upr     p adj
+Normal-Excellent   1.2500000 -12.114992 14.614992 0.9931731
+Low-Excellent     -2.3333333 -16.136638 11.469971 0.9623849
+Atresia-Excellent  0.4615385 -11.943726 12.866803 0.9995589
+Low-Normal        -3.5833333 -12.713361  5.546694 0.6851430
+Atresia-Normal    -0.7884615  -7.623430  6.046506 0.9873943
+Atresia-Low        2.7948718  -4.861824 10.451567 0.7302966
+
+"
+"0","# Parametric tests"
+"0",""
+"0","# Normality"
+"0","shapiro.test(Ambient_Samples$Cl...mmol.L.)"
+"1","
+	Shapiro-Wilk normality test
+
+data:  Ambient_Samples$Cl...mmol.L.
+W = 0.96502, p-value = 0.6224
+
+"
+"0","shapiro.test(residuals(aov(Cl...mmol.L. ~ Consensus_Brood_Condition, data = Ambient_Samples)))"
+"1","
+	Shapiro-Wilk normality test
+
+data:  residuals(aov(Cl...mmol.L. ~ Consensus_Brood_Condition, data = Ambient_Samples))
+W = 0.9502, p-value = 0.3437
+
+"
+"0","# QQplot:"
+"0","chloride_ambient_res_qqplot <- ggqqplot(residuals(aov(Cl...mmol.L. ~ Consensus_Brood_Condition, data = Ambient_Samples))) +"
+"0","labs(title = ""Chloride Residual QQplot"","
+"0","     subtitle = ""residuals(aov(Cl...mmol.L. ~ Consensus_Brood_Condition, data = Ambient_Samples))"","
+"0","                               x = ""Chloride Theoretical Quantiles (Predicted values)"","
+"0","                               y = ""Chloride Sample Quantiles"") +"
+"0","  theme(plot.title = element_text(hjust = 0.5),"
+"0","        plot.subtitle = element_text(hjust = 0.5))"
+"0","print(chloride_ambient_res_qqplot)"

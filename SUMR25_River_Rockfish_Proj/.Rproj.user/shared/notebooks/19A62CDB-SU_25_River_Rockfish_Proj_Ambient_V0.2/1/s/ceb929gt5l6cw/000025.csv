@@ -1,0 +1,42 @@
+"0","# Normality test"
+"0","shapiro.test(residuals(hct_amb_fec_no_atresia_lm))"
+"1","
+	Shapiro-Wilk normality test
+
+data:  residuals(hct_amb_fec_no_atresia_lm)
+W = 0.89945, p-value = 0.2161
+
+"
+"0","# Transform data: square root (undo log scale?)"
+"0","hct_ambient_sqrt <- Amb_Fec_No_Atresia_Samples %>%"
+"0","  mutate(Hct.... = sqrt(Hct....))"
+"0",""
+"0","# Rerun lm model with square root transformed data"
+"0","hct_amb_fec_no_atresia_lm_sqrt <- lm(Hct.... ~ Weight_Adjusted_Fecundity_Fecundity.Mean_Weight, data = hct_ambient_sqrt)"
+"0","summary(hct_amb_fec_no_atresia_lm_sqrt)"
+"1","
+Call:
+lm(formula = Hct.... ~ Weight_Adjusted_Fecundity_Fecundity.Mean_Weight, 
+    data = hct_ambient_sqrt)
+
+Residuals:
+     Min       1Q   Median       3Q      Max 
+-0.45751 -0.18537 -0.07738  0.06130  0.87682 
+
+Coefficients:
+                                                Estimate Std. Error t value
+(Intercept)                                     3.549914   0.292111  12.153
+Weight_Adjusted_Fecundity_Fecundity.Mean_Weight 0.002034   0.001664   1.223
+                                                Pr(>|t|)    
+(Intercept)                                     1.89e-05 ***
+Weight_Adjusted_Fecundity_Fecundity.Mean_Weight    0.267    
+---
+Signif. codes:  0 ‘***’ 0.001 ‘**’ 0.01 ‘*’ 0.05 ‘.’ 0.1 ‘ ’ 1
+
+Residual standard error: 0.456 on 6 degrees of freedom
+Multiple R-squared:  0.1995,	Adjusted R-squared:  0.06603 
+F-statistic: 1.495 on 1 and 6 DF,  p-value: 0.2673
+
+"
+"0","hct_amb_fec_sqrt_sim <- simulateResiduals(fittedModel = hct_amb_fec_no_atresia_lm_sqrt) "
+"0","plot(hct_amb_fec_sqrt_sim)"

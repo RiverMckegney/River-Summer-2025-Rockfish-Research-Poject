@@ -1,0 +1,42 @@
+"0","# Shapiro Test"
+"0","shapiro.test(residuals(calcium_amb_fec_no_atresia_lm))"
+"1","
+	Shapiro-Wilk normality test
+
+data:  residuals(calcium_amb_fec_no_atresia_lm)
+W = 0.9084, p-value = 0.2702
+
+"
+"0","# Transform data: square root "
+"0","calcium_ambient_sqrt <- Amb_Fec_No_Atresia_Samples %>%"
+"0","  mutate(Ca....mmol.L. = sqrt(Ca....mmol.L.))"
+"0",""
+"0","# Rerun lm model with square root transformed data"
+"0","calcium_amb_fec_no_atresia_lm_sqrt <- lm(Ca....mmol.L. ~ Weight_Adjusted_Fecundity_Fecundity.Mean_Weight, data = calcium_ambient_sqrt)"
+"0","summary(calcium_amb_fec_no_atresia_lm_sqrt)"
+"1","
+Call:
+lm(formula = Ca....mmol.L. ~ Weight_Adjusted_Fecundity_Fecundity.Mean_Weight, 
+    data = calcium_ambient_sqrt)
+
+Residuals:
+      Min        1Q    Median        3Q       Max 
+-0.009302 -0.007894 -0.006232  0.004396  0.026830 
+
+Coefficients:
+                                                 Estimate Std. Error t value
+(Intercept)                                     1.180e+00  8.621e-03 136.816
+Weight_Adjusted_Fecundity_Fecundity.Mean_Weight 1.143e-04  4.911e-05   2.328
+                                                Pr(>|t|)    
+(Intercept)                                     1.03e-11 ***
+Weight_Adjusted_Fecundity_Fecundity.Mean_Weight   0.0588 .  
+---
+Signif. codes:  0 ‘***’ 0.001 ‘**’ 0.01 ‘*’ 0.05 ‘.’ 0.1 ‘ ’ 1
+
+Residual standard error: 0.01346 on 6 degrees of freedom
+Multiple R-squared:  0.4745,	Adjusted R-squared:  0.3869 
+F-statistic: 5.418 on 1 and 6 DF,  p-value: 0.05882
+
+"
+"0","calcium_amb_fec_sqrt_sim <- simulateResiduals(fittedModel = calcium_amb_fec_no_atresia_lm_sqrt) "
+"0","plot(calcium_amb_fec_sqrt_sim)"

@@ -1,0 +1,20 @@
+"0","# Residuals of model for shapiro test"
+"0","chloride_amb_fec_no_atresia_lm_res <- residuals(chloride_amb_fec_no_atresia_lm_sqrt) "
+"0",""
+"0","# Normality test"
+"0","shapiro.test(chloride_amb_fec_no_atresia_lm_res) "
+"1","
+	Shapiro-Wilk normality test
+
+data:  chloride_amb_fec_no_atresia_lm_res
+W = 0.94043, p-value = 0.6153
+
+"
+"0","# Parametric variance test: bartlett's test"
+"0","# Require at least 2 obs for each group"
+"0","#bartlett.test(Cl...mmol.L. ~ Weight_Adjusted_Fecundity_Fecundity.Mean_Weight, data = chloride_ambient_sqrt) "
+"0",""
+"0","# Nonparametric variance test (Levene's test)"
+"0","# NA for quantitative explanatory variables"
+"0","# leveneTest(Cl...mmol.L. ~ Weight_Adjusted_Fecundity_Fecundity.Mean_Weight, data = chloride_ambient_sqrt)"
+"0",""

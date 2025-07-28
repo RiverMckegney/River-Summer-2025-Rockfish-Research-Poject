@@ -1,17 +1,60 @@
-"0","# Nonparametric stat test: Dunns
-DunnTest(Glu..mmol.L. ~ Consensus_Brood_Condition, data = Ambient_Samples)
+"0","# glucose"
+"0","# Ambient ANOVA Test"
+"0",""
+"0","# Testing for differences in ambient parturition success metrics"
+"0","# One-way ANOVA (parametric) or Kruskal-Wallis test (nonparametric)"
+"0",""
+"0","glucose_aov_ambient_brood <- aov(Glu..mmol.L. ~ Consensus_Brood_Condition, data = Ambient_Samples)"
+"0","summary(glucose_aov_ambient_brood) "
+"1","                          Df Sum Sq Mean Sq F value Pr(>F)
+Consensus_Brood_Condition  3  1.218  0.4061   0.837  0.492
+Residuals                 17  8.247  0.4851               
 "
+"0","# If significant, Post Hoc Test: "
+"0","# - Tukey's HSD (parametric, normality & equal variance across groups)"
+"0","# - Dunn's test (non-parametric, after Kruskal-Wallis test)"
+"0",""
+"0","TukeyHSD(glucose_aov_ambient_brood) "
+"1","  Tukey multiple comparisons of means
+    95% family-wise confidence level
+
+Fit: aov(formula = Glu..mmol.L. ~ Consensus_Brood_Condition, data = Ambient_Samples)
+
+$Consensus_Brood_Condition
+                    diff        lwr      upr     p adj
+Normal-Excellent  -0.225 -2.4386100 1.988610 0.9912859
+Low-Excellent     -0.200 -2.4862066 2.086207 0.9943918
+Atresia-Excellent  0.300 -1.7546528 2.354653 0.9751438
+Low-Normal         0.025 -1.4871835 1.537184 0.9999611
+Atresia-Normal     0.525 -0.6070586 1.657059 0.5643929
+Atresia-Low        0.500 -0.7681593 1.768159 0.6821448
+
+"
+"0","# Parametric tests"
+"0",""
+"0","# Normality"
+"0","shapiro.test(Ambient_Samples$Glu..mmol.L.)"
 "1","
- Dunn's test of multiple comparisons using rank sums : holm  
+	Shapiro-Wilk normality test
 
-                  mean.rank.diff   pval    
-Normal-Excellent      -3.5000000 1.0000    
-Low-Excellent         -2.8333333 1.0000    
-Atresia-Excellent      2.5384615 1.0000    
-Low-Normal             0.6666667 1.0000    
-Atresia-Normal         6.0384615 0.5244    
-Atresia-Low            5.3717949 0.8733    
----
-Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1
+data:  Ambient_Samples$Glu..mmol.L.
+W = 0.85634, p-value = 0.005473
 
 "
+"0","shapiro.test(residuals(aov(Glu..mmol.L. ~ Consensus_Brood_Condition, data = Ambient_Samples)))"
+"1","
+	Shapiro-Wilk normality test
+
+data:  residuals(aov(Glu..mmol.L. ~ Consensus_Brood_Condition, data = Ambient_Samples))
+W = 0.79895, p-value = 0.0006323
+
+"
+"0","# QQplot:"
+"0","glucose_ambient_res_qqplot <- ggqqplot(residuals(aov(Glu..mmol.L. ~ Consensus_Brood_Condition, data = Ambient_Samples))) +"
+"0","labs(title = ""Glucose Interactive Residual QQplot"","
+"0","     subtitle = ""residuals(aov(Glu..mmol.L. ~ Consensus_Brood_Condition, data = Ambient_Samples))"","
+"0","                               x = ""Glucose Theoretical Quantiles (Predicted values)"","
+"0","                               y = ""Glucose Sample Quantiles"") +"
+"0","  theme(plot.title = element_text(hjust = 0.5),"
+"0","        plot.subtitle = element_text(hjust = 0.5))"
+"0","print(glucose_ambient_res_qqplot)"

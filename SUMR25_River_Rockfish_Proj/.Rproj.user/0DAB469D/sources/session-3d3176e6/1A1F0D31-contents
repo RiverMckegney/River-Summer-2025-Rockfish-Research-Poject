@@ -2003,7 +2003,7 @@ Ca_lm_sqrt <- ggplot(data = calcium_fec_na_sqrt, aes(x = Weight_Adjusted_Fecundi
         
 # Merge lm regression plots
 
-param_regress_sqrt_plots <- pH_lm_sqrt + hct_lm_sqrt + glucose_lm_sqrt + Na_lm_sqrt + Cl_lm_sqrt + K_lm_sqrt + Ca_lm_sqrt + plot_layout(ncol = 3, guides = "collect") 
+param_regress_sqrt_plots <- pH_lm_sqrt + hct_lm_sqrt + glucose_lm_sqrt + Na_lm_sqrt + Cl_lm_sqrt + K_lm_sqrt + Ca_lm_sqrt + plot_layout(guides = "collect") 
 param_regress_sqrt_plots
   
 ```

@@ -1,0 +1,20 @@
+"0","# Residuals of model for shapiro test"
+"0","potassium_amb_fec_no_atresia_lm_res <- residuals(potassium_amb_fec_no_atresia_lm_sqrt) "
+"0",""
+"0","# Normality test"
+"0","shapiro.test(potassium_amb_fec_no_atresia_lm_res) "
+"1","
+	Shapiro-Wilk normality test
+
+data:  potassium_amb_fec_no_atresia_lm_res
+W = 0.88746, p-value = 0.2216
+
+"
+"0","# Parametric variance test: bartlett's test"
+"0","# Require at least 2 obs for each group"
+"0","# bartlett.test(K...mmol.L. ~ Weight_Adjusted_Fecundity_Fecundity.Mean_Weight, data = potassium_ambient_sqrt)"
+"0",""
+"0","# Nonparametric variance test (Levene's test)"
+"0","# NA for quantitative explanatory variables"
+"0","# leveneTest(K...mmol.L. ~ Weight_Adjusted_Fecundity_Fecundity.Mean_Weight, data = potassium_ambient_sqrt)"
+"0",""

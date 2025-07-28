@@ -1,0 +1,60 @@
+"0","# K+"
+"0","# Ambient ANOVA Test"
+"0",""
+"0","# Testing for differences in ambient parturition success metrics"
+"0","# One-way ANOVA (parametric) or Kruskal-Wallis test (nonparametric)"
+"0",""
+"0","potassium_aov_ambient_brood <- aov(K...mmol.L. ~ Consensus_Brood_Condition, data = Ambient_Samples)"
+"0","summary(potassium_aov_ambient_brood) "
+"1","                          Df Sum Sq Mean Sq F value Pr(>F)
+Consensus_Brood_Condition  3 0.1121 0.03736   0.505  0.684
+Residuals                 17 1.2574 0.07397               
+"
+"0","# If significant, Post Hoc Test: "
+"0","# - Tukey's HSD (parametric, normality & equal variance across groups)"
+"0","# - Dunn's test (non-parametric, after Kruskal-Wallis test)"
+"0",""
+"0","TukeyHSD(potassium_aov_ambient_brood) "
+"1","  Tukey multiple comparisons of means
+    95% family-wise confidence level
+
+Fit: aov(formula = K...mmol.L. ~ Consensus_Brood_Condition, data = Ambient_Samples)
+
+$Consensus_Brood_Condition
+                        diff        lwr       upr     p adj
+Normal-Excellent  0.00000000 -0.8643366 0.8643366 1.0000000
+Low-Excellent     0.03333333 -0.8593496 0.9260163 0.9995541
+Atresia-Excellent 0.16153846 -0.6407309 0.9638078 0.9389808
+Low-Normal        0.03333333 -0.5571209 0.6237876 0.9984688
+Atresia-Normal    0.16153846 -0.2804904 0.6035674 0.7296107
+Atresia-Low       0.12820513 -0.3669663 0.6233765 0.8812696
+
+"
+"0","# Parametric tests"
+"0",""
+"0","# Normality"
+"0","shapiro.test(Ambient_Samples$K...mmol.L.)"
+"1","
+	Shapiro-Wilk normality test
+
+data:  Ambient_Samples$K...mmol.L.
+W = 0.81347, p-value = 0.001062
+
+"
+"0","shapiro.test(residuals(aov(K...mmol.L. ~ Consensus_Brood_Condition, data = Ambient_Samples)))"
+"1","
+	Shapiro-Wilk normality test
+
+data:  residuals(aov(K...mmol.L. ~ Consensus_Brood_Condition, data = Ambient_Samples))
+W = 0.886, p-value = 0.0189
+
+"
+"0","# QQplot:"
+"0","potassium_ambient_res_qqplot <- ggqqplot(residuals(aov(K...mmol.L. ~ Consensus_Brood_Condition, data = Ambient_Samples))) +"
+"0","labs(title = ""Potassium Residual QQplot"","
+"0","     subtitle = ""residuals(aov(K...mmol.L. ~ Consensus_Brood_Condition, data = Ambient_Samples))"","
+"0","                               x = ""Potassium Theoretical Quantiles (Predicted values)"","
+"0","                               y = ""Potassium Sample Quantiles"") +"
+"0","  theme(plot.title = element_text(hjust = 0.5),"
+"0","        plot.subtitle = element_text(hjust = 0.5))"
+"0","print(potassium_ambient_res_qqplot)"

@@ -1,5 +1,44 @@
-"0","shapiro.test(residuals(aov(Cl...mmol.L. ~ Fecundity_Class, data = Ambient_Samples)))
+"0","# pH"
+"0","# Ambient ANOVA Test"
+"0",""
+"0","# Testing for differences in ambient parturition success metrics"
+"0","# One-way ANOVA (parametric) or Kruskal-Wallis test (nonparametric)"
+"0",""
+"0","pH_aov_ambient_fec <- aov(pH ~ Fecundity_Class, data = Ambient_Samples)"
+"0","summary(pH_aov_ambient_fec)"
+"1","                Df  Sum Sq  Mean Sq F value Pr(>F)
+Fecundity_Class  2 0.02183 0.010916   1.336  0.288
+Residuals       18 0.14711 0.008173               
 "
+"0","# If significant, Post Hoc Test: "
+"0","# - Tukey's HSD (parametric, normality & equal variance across groups)"
+"0","# - Dunn's test (non-parametric, after Kruskal-Wallis test)"
+"0",""
+"0","TukeyHSD(pH_aov_ambient_fec)"
+"1","  Tukey multiple comparisons of means
+    95% family-wise confidence level
+
+Fit: aov(formula = pH ~ Fecundity_Class, data = Ambient_Samples)
+
+$Fecundity_Class
+                                    diff        lwr        upr     p adj
+Low (~1,000s)-High (>50,000)  0.02675000 -0.1363959 0.18989587 0.9084726
+Atresia-High (>50,000)       -0.05080769 -0.1827287 0.08111329 0.5966404
+Atresia-Low (~1,000s)        -0.07755769 -0.2094787 0.05436329 0.3141611
+
+"
+"0","# Parametric tests"
+"0",""
+"0","# Normality"
+"0","shapiro.test(Ambient_Samples$pH)"
+"1","
+	Shapiro-Wilk normality test
+
+data:  Ambient_Samples$pH
+W = 0.98534, p-value = 0.9808
+
+"
+"0","shapiro.test(residuals(aov(Cl...mmol.L. ~ Fecundity_Class, data = Ambient_Samples)))"
 "1","
 	Shapiro-Wilk normality test
 
@@ -7,3 +46,12 @@ data:  residuals(aov(Cl...mmol.L. ~ Fecundity_Class, data = Ambient_Samples))
 W = 0.96555, p-value = 0.6339
 
 "
+"0","# QQplot:"
+"0","pH_ambient_fec_res_qqplot <- ggqqplot(residuals(aov(pH ~ Fecundity_Class, data = Ambient_Samples))) +"
+"0","labs(title = ""Ambient pH Residual QQplot"","
+"0","     subtitle = ""residuals(aov(pH ~ Fecundity_Class, data = Ambient_Samples))"","
+"0","                               x = ""pH Theoretical Quantiles (Predicted values)"","
+"0","                               y = ""pH Sample Quantiles"") +"
+"0","  theme(plot.title = element_text(hjust = 0.5),"
+"0","        plot.subtitle = element_text(hjust = 0.5))"
+"0","print(pH_ambient_fec_res_qqplot)"

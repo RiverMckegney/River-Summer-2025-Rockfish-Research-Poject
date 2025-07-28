@@ -1,0 +1,31 @@
+"0","# K+"
+"0","# Linear Model"
+"0","potassium_amb_fec_no_atresia_lm <- lm(K...mmol.L. ~ Weight_Adjusted_Fecundity_Fecundity.Mean_Weight, data = Fecundity_No_Atresia_Samples)"
+"0","summary(potassium_amb_fec_no_atresia_lm)"
+"1","
+Call:
+lm(formula = K...mmol.L. ~ Weight_Adjusted_Fecundity_Fecundity.Mean_Weight, 
+    data = Fecundity_No_Atresia_Samples)
+
+Residuals:
+     Min       1Q   Median       3Q      Max 
+-0.21166 -0.11568 -0.04065  0.00147  0.39801 
+
+Coefficients:
+                                                 Estimate Std. Error t value
+(Intercept)                                     2.6473078  0.1245207  21.260
+Weight_Adjusted_Fecundity_Fecundity.Mean_Weight 0.0007432  0.0006530   1.138
+                                                Pr(>|t|)    
+(Intercept)                                     2.52e-08 ***
+Weight_Adjusted_Fecundity_Fecundity.Mean_Weight    0.288    
+---
+Signif. codes:  0 ‘***’ 0.001 ‘**’ 0.01 ‘*’ 0.05 ‘.’ 0.1 ‘ ’ 1
+
+Residual standard error: 0.1971 on 8 degrees of freedom
+  (18 observations deleted due to missingness)
+Multiple R-squared:  0.1393,	Adjusted R-squared:  0.03177 
+F-statistic: 1.295 on 1 and 8 DF,  p-value: 0.288
+
+"
+"0","potassium_ambient_sim <- simulateResiduals(fittedModel = potassium_amb_fec_no_atresia_lm) "
+"0","plot(potassium_ambient_sim)"

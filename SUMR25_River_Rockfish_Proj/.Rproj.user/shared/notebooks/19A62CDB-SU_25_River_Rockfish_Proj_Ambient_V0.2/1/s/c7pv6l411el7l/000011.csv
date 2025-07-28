@@ -1,0 +1,28 @@
+"0",""
+"0",""
+"0","# Parametric Variance test (Bartlett's test): require at least 2 obs for each group"
+"0","# bartlett.test(Na...mmol.L. ~ Consensus_Brood_Condition, data = Ambient_Samples)"
+"0",""
+"0","# Nonparametric variance test (Levene's test):"
+"0","leveneTest(Na...mmol.L. ~ Consensus_Brood_Condition, data = Ambient_Samples)"
+"1","Levene's Test for Homogeneity of Variance (center = median)
+      Df F value Pr(>F)
+group  3   0.194  0.899
+      17               
+"
+"0","# Nonparametric stat test: Dunns"
+"0","DunnTest(Na...mmol.L. ~ Consensus_Brood_Condition, data = Ambient_Samples)"
+"1","
+ Dunn's test of multiple comparisons using rank sums : holm  
+
+                  mean.rank.diff   pval    
+Normal-Excellent       3.0000000 1.0000    
+Low-Excellent         -5.5000000 1.0000    
+Atresia-Excellent      3.5769231 1.0000    
+Low-Normal            -8.5000000 0.3481    
+Atresia-Normal         0.5769231 1.0000    
+Atresia-Low            9.0769231 0.1252    
+---
+Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1
+
+"

@@ -3234,5 +3234,252 @@ ggsave(filename = "data-images/calcium_ambient_lm_scatterplot.png", plot = calci
 
 
 
+# Combined plots
+
+```{r}
+# Brood Condition Boxplots
+
+ph_amb_bc <- ggplot(data = Ambient_Samples) + 
+  geom_boxplot(aes(x = Consensus_Brood_Condition, y = pH)) +
+  geom_point(aes(x = Consensus_Brood_Condition, y = pH), alpha = 0.5, colour = "black") +
+  labs(title = "pH", x = "Parturition Success", y = "pH") +
+  facet_wrap(~ Ambient.Or.OAH) +
+  theme_classic() +
+  theme(panel.background = element_rect(fill = "white"),
+        plot.background = element_rect(fill = "white"),
+        legend.background = element_rect(fill = "white", color = "black"))
+
+hct_amb_bc <-  ggplot(data = Ambient_Samples) + 
+  geom_boxplot(aes(x = Consensus_Brood_Condition, y = Hct....)) +
+  geom_point(aes(x = Consensus_Brood_Condition, y = Hct....), alpha = 0.5, colour = "black") +
+  labs(title = "Hematocrit", x = "Parturition Success", y = "Hematocrit (%)") +
+  facet_wrap(~ Ambient.Or.OAH) +
+  theme_classic() +
+  theme(panel.background = element_rect(fill = "white"),
+        plot.background = element_rect(fill = "white"),
+        legend.background = element_rect(fill = "white", color = "black"))
+        
+        
+glu_amb_bc <- ggplot(data = Ambient_Samples) + 
+  geom_boxplot(aes(x = Consensus_Brood_Condition, y = Glu..mmol.L.)) +
+  geom_point(aes(x = Consensus_Brood_Condition, y = Glu..mmol.L.), alpha = 0.5, colour = "black") +
+  labs(title = "Glucose", x = "Parturition Success", y = "Glucose (mmol/L)") +
+  facet_wrap(~ Ambient.Or.OAH) +
+  theme_classic() +
+  theme(panel.background = element_rect(fill = "white"),
+        plot.background = element_rect(fill = "white"),
+        legend.background = element_rect(fill = "white", color = "black"))
+
+na_amb_bc <- ggplot(data = Ambient_Samples) + 
+  geom_boxplot(aes(x = Fecundity_Class, y = Na...mmol.L.)) +
+  geom_point(aes(x = Fecundity_Class, y = Na...mmol.L.), alpha = 0.5, colour = "black") +
+  labs(title = "Sodium", x = "Fecundity Class", y = "Sodium (mmol/L)") +
+  facet_wrap(~ Ambient.Or.OAH) +
+  theme_classic() +
+  theme(panel.background = element_rect(fill = "white"),
+        plot.background = element_rect(fill = "white"),
+        legend.background = element_rect(fill = "white", color = "black"))
+
+cl_amb_bc <- ggplot(data = Ambient_Samples) + 
+  geom_boxplot(aes(x = Consensus_Brood_Condition, y = Cl...mmol.L.)) +
+  geom_point(aes(x = Consensus_Brood_Condition, y = Cl...mmol.L.), alpha = 0.5, colour = "black") +
+  labs(title = "Chloride", x = "Parturition Success", y = "Chloride (mmol/L)") +
+  facet_wrap(~ Ambient.Or.OAH) +
+  theme_classic() +
+  theme(panel.background = element_rect(fill = "white"),
+        plot.background = element_rect(fill = "white"),
+        legend.background = element_rect(fill = "white", color = "black"))
+
+k_amb_bc <- ggplot(data = Ambient_Samples) + 
+  geom_boxplot(aes(x = Consensus_Brood_Condition, y = K...mmol.L.)) +
+  geom_point(aes(x = Consensus_Brood_Condition, y = K...mmol.L.), alpha = 0.5, colour = "black") +
+  labs(title = "Potassium", x = "Parturition Success", y = "Potassium (mmol/L)") +
+  facet_wrap(~ Ambient.Or.OAH) +
+  theme_classic() +
+  theme(panel.background = element_rect(fill = "white"),
+        plot.background = element_rect(fill = "white"),
+        legend.background = element_rect(fill = "white", color = "black"))
+
+ca_amb_bc <- ggplot(data = Ambient_Samples) + 
+  geom_boxplot(aes(x = Consensus_Brood_Condition, y = Ca....mmol.L.)) +
+  geom_point(aes(x = Consensus_Brood_Condition, y = Ca....mmol.L.), alpha = 0.5, colour = "black") +
+  labs(title = "Calcium", x = "Parturition Success", y = "Calcium (mmol/L)") +
+  facet_wrap(~ Ambient.Or.OAH) +
+  theme_classic() +
+  theme(panel.background = element_rect(fill = "white"),
+        plot.background = element_rect(fill = "white"),
+        legend.background = element_rect(fill = "white", color = "black"))
+
+brood_condition_boxplots <- ph_amb_bc + hct_amb_bc + glu_amb_bc + na_amb_bc + cl_amb_bc + k_amb_bc + ca_amb_bc + plot_layout(ncol = 3, guides = "collect") 
+
+brood_condition_boxplots
+
+```
+
+
+```{r}
+# Fecundity class boxplots 
+
+ph_fec_class <- ggplot(data = Ambient_Samples) + 
+  geom_boxplot(aes(x = Fecundity_Class, y = pH)) +
+  geom_point(aes(x = Fecundity_Class, y = pH), alpha = 0.5, colour = "black") +
+  labs(title = "pH", x = "Fecundity Class", y = "pH") +
+  facet_wrap(~ Ambient.Or.OAH) +
+  theme_classic() +
+  theme(panel.background = element_rect(fill = "white"),
+        plot.background = element_rect(fill = "white"),
+        legend.background = element_rect(fill = "white", color = "black"))
+
+hct_fec_class <- ggplot(data = Ambient_Samples) + 
+  geom_boxplot(aes(x = Fecundity_Class, y = Hct....)) +
+  geom_point(aes(x = Fecundity_Class, y = Hct....), alpha = 0.5, colour = "black") +
+  labs(title = "Hematocrit", x = "Fecundity Class", y = "Hematocrit (%)") +
+  facet_wrap(~ Ambient.Or.OAH) +
+  theme_classic() +
+  theme(panel.background = element_rect(fill = "white"),
+        plot.background = element_rect(fill = "white"),
+        legend.background = element_rect(fill = "white", color = "black"))
+  
+
+glu_fec_class <- ggplot(data = Ambient_Samples) + 
+  geom_boxplot(aes(x = Fecundity_Class, y = Glu..mmol.L.)) +
+  geom_point(aes(x = Fecundity_Class, y = Glu..mmol.L.), alpha = 0.5, colour = "black") +
+  labs(title = "Glucose", x = "Fecundity Class", y = "Glucose (mmol/L)") +
+  facet_wrap(~ Ambient.Or.OAH) +
+  theme_classic() +
+  theme(panel.background = element_rect(fill = "white"),
+        plot.background = element_rect(fill = "white"),
+        legend.background = element_rect(fill = "white", color = "black"))
+  
+  
+na_fec_class <- ggplot(data = Ambient_Samples) + 
+  geom_boxplot(aes(x = Fecundity_Class, y = Na...mmol.L.)) +
+  geom_point(aes(x = Fecundity_Class, y = Na...mmol.L.), alpha = 0.5, colour = "black") +
+  labs(title = "Sodium", x = "Fecundity Class", y = "Sodium (mmol/L)") +
+  facet_wrap(~ Ambient.Or.OAH) +
+  theme_classic() +
+  theme(panel.background = element_rect(fill = "white"),
+        plot.background = element_rect(fill = "white"),
+        legend.background = element_rect(fill = "white", color = "black"))
+  
+
+cl_fec_class <- ggplot(data = Ambient_Samples) + 
+  geom_boxplot(aes(x = Fecundity_Class, y = Cl...mmol.L.)) +
+  geom_point(aes(x = Fecundity_Class, y = Cl...mmol.L.), alpha = 0.5, colour = "black") +
+  labs(title = "Chloride", x = "Fecundity Class", y = "Chloride (mmol/L)") +
+  facet_wrap(~ Ambient.Or.OAH) +
+  theme_classic() +
+  theme(panel.background = element_rect(fill = "white"),
+        plot.background = element_rect(fill = "white"),
+        legend.background = element_rect(fill = "white", color = "black"))
+  
+
+k_fec_class <- ggplot(data = Ambient_Samples) + 
+  geom_boxplot(aes(x = Fecundity_Class, y = K...mmol.L.)) +
+  geom_point(aes(x = Fecundity_Class, y = K...mmol.L.), alpha = 0.5, colour = "black") +
+  labs(title = "Potassium", x = "Fecundity Class", y = "Potassium (mmol/L)") +
+  facet_wrap(~ Ambient.Or.OAH) +
+  theme_classic() +
+  theme(panel.background = element_rect(fill = "white"),
+        plot.background = element_rect(fill = "white"),
+        legend.background = element_rect(fill = "white", color = "black"))
+  
+  
+ca_fec_class <- ggplot(data = Ambient_Samples) + 
+  geom_boxplot(aes(x = Fecundity_Class, y = Ca....mmol.L.)) +
+  geom_point(aes(x = Fecundity_Class, y = Ca....mmol.L.), alpha = 0.5, colour = "black") +
+  labs(title = "Calcium", x = "Fecundity Class", y = "Calcium (mmol/L)") +
+  facet_wrap(~ Ambient.Or.OAH) +
+  theme_classic() +
+  theme(panel.background = element_rect(fill = "white"),
+        plot.background = element_rect(fill = "white"),
+        legend.background = element_rect(fill = "white", color = "black"))
+  
+
+fec_class_boxplots <- ph_fec_class + hct_fec_class + glu_fec_class + na_fec_class + cl_fec_class + k_fec_class + ca_fec_class + plot_layout(guides = "collect")
+
+fec_class_boxplots
+  
+```
+
+# All lm plots
+
+```{r}
+# lm plots
+ph_am_lm <- ggplot(data = pH_ambient_sqrt, aes(x = Weight_Adjusted_Fecundity_Fecundity.Mean_Weight, y = pH)) +
+  geom_point() +
+  geom_smooth(aes(group = 1), method = "lm") +
+  labs(title = "pH", x = "Weight Adjusted Fecudnity", y = "Sqrt pH", color = "Category") +
+  scale_y_continuous() +
+  theme_classic() +
+  theme(panel.background = element_rect(fill = "white"),
+        plot.background = element_rect(fill = "white"),
+        legend.background = element_rect(fill = "white", color = "black"))
+
+hct_am_lm <- ggplot(data = hct_ambient_sqrt, aes(x = Weight_Adjusted_Fecundity_Fecundity.Mean_Weight, y = Hct....)) +
+  geom_point() +
+  geom_smooth(aes(group = 1), method = "lm") +
+  labs(title = "Hematocrit", x = "Weight Adjusted Fecudnity", y = "Sqrt Hematocrit (%)", color = "Category") +
+  scale_y_continuous() +
+  theme_classic() +
+  theme(panel.background = element_rect(fill = "white"),
+        plot.background = element_rect(fill = "white"),
+        legend.background = element_rect(fill = "white", color = "black"))
+
+glucose_am_lm <- ggplot(data = Ambient_Samples, aes(x = Weight_Adjusted_Fecundity_Fecundity.Mean_Weight, y = Glu..mmol.L.)) +
+  geom_point() +
+  geom_smooth(aes(group = 1), method = "lm") +
+  labs(title = "Glucose", x = "Weight Adjusted Fecudnity", y = "Glucose (mmol/L)", color = "Category") +
+  scale_y_continuous() +
+  theme_classic() +
+  theme(panel.background = element_rect(fill = "white"),
+        plot.background = element_rect(fill = "white"),
+        legend.background = element_rect(fill = "white", color = "black"))
+
+sodium_am_lm <- ggplot(data = Ambient_Samples, aes(x = Weight_Adjusted_Fecundity_Fecundity.Mean_Weight, y = Na...mmol.L.)) +
+  geom_point() +
+  geom_smooth(aes(group = 1), method = "lm") +
+  labs(title = "Sodium", x = "Weight Adjusted Fecudnity", y = "Sodium (mmol/L)", color = "Category") +
+  scale_y_continuous() +
+  theme_classic() +
+  theme(panel.background = element_rect(fill = "white"),
+        plot.background = element_rect(fill = "white"),
+        legend.background = element_rect(fill = "white", color = "black"))
+
+chloride_am_lm <- ggplot(data = Ambient_Samples, aes(x = Weight_Adjusted_Fecundity_Fecundity.Mean_Weight, y = Cl...mmol.L.)) +
+  geom_point() +
+  geom_smooth(aes(group = 1), method = "lm") +
+  labs(title = "Chloride", x = "Weight Adjusted Fecudnity", y = "Chloride (mmol/L)", color = "Category") +
+  scale_y_continuous() +
+  theme_classic() +
+  theme(panel.background = element_rect(fill = "white"),
+        plot.background = element_rect(fill = "white"),
+        legend.background = element_rect(fill = "white", color = "black"))
+
+potassium_am_lm <- ggplot(data = Ambient_Samples, aes(x = Weight_Adjusted_Fecundity_Fecundity.Mean_Weight, y = K...mmol.L.)) +
+  geom_point() +
+  geom_smooth(aes(group = 1), method = "lm") +
+  labs(title = "Potassium", x = "Weight Adjusted Fecudnity", y = "Potassium (mmol/L)", color = "Category") +
+  scale_y_continuous() +
+  theme_classic() +
+  theme(panel.background = element_rect(fill = "white"),
+        plot.background = element_rect(fill = "white"),
+        legend.background = element_rect(fill = "white", color = "black"))
+
+calcium_am_lm <- ggplot(data = Ambient_Samples, aes(x = Weight_Adjusted_Fecundity_Fecundity.Mean_Weight, y = Ca....mmol.L.)) +
+  geom_point() +
+  geom_smooth(aes(group = 1), method = "lm") +
+  labs(title = "Calcium", x = "Weight Adjusted Fecudnity", y = "Calcium (mmol/L)", color = "Category") +
+  scale_y_continuous() +
+  theme_classic() +
+  theme(panel.background = element_rect(fill = "white"),
+        plot.background = element_rect(fill = "white"),
+        legend.background = element_rect(fill = "white", color = "black"))
+        
+ambient_lm_plots <- ph_am_lm + hct_am_lm + glucose_am_lm + sodium_am_lm + chloride_am_lm + potassium_am_lm + calcium_am_lm + plot_layout(guides = "collect")
+
+ambient_lm_plots
+```
+
 
 

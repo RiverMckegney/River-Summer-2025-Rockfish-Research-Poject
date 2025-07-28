@@ -1,0 +1,125 @@
+"0","# All regression graphs"
+"0","# sqrt transformed"
+"0",""
+"0","pH_lm_sqrt <- ggplot(data = pH_fec_na_sqrt, aes(x = Weight_Adjusted_Fecundity_Fecundity.Mean_Weight, y = pH)) +"
+"0","  geom_point(aes(col = Ambient.Or.OAH)) +"
+"0","  geom_smooth(aes(group = 1), method = ""lm"") +"
+"0","  labs(title = ""pH"", x = ""Weight Adjusted Fecudnity"", y = ""Sqrt pH"", color = ""Category"") +"
+"0","  guides(color = guide_legend((title = ""Treatment Type""))) + "
+"0","  scale_color_manual(values = c(""Ambient"" = ""#189bff"", ""OAH"" = ""#598c78"")) +"
+"0","  scale_y_continuous() +"
+"0","  theme_classic() +"
+"0","  theme(panel.background = element_rect(fill = ""white""),"
+"0","        plot.background = element_rect(fill = ""white""),"
+"0","        legend.background = element_rect(fill = ""white"", color = ""black""))"
+"2","G1;H1;Errorh: object 'pH_fec_na_sqrt' not found
+Error during wrapup: not that many frames on the stack
+Error: no more error handlers available (recursive errors?); invoking 'abort' restart
+g"
+"0","  "
+"0",""
+"0","hct_lm_sqrt <- ggplot(data = hct_fec_na_sqrt, aes(x = Weight_Adjusted_Fecundity_Fecundity.Mean_Weight, y = Hct....)) +"
+"0","  geom_point(aes(col = Ambient.Or.OAH)) +"
+"0","  geom_smooth(aes(group = 1), method = ""lm"") +"
+"0","  labs(title = ""Hematocrit"", x = ""Weight Adjusted Fecudnity"", y = ""Sqrt Hematocrit"", color = ""Category"") +"
+"0","  guides(color = guide_legend((title = ""Treatment Type""))) + "
+"0","  scale_color_manual(values = c(""Ambient"" = ""#189bff"", ""OAH"" = ""#598c78"")) +"
+"0","  scale_y_continuous() +"
+"0","  theme_classic() +"
+"0","  theme(panel.background = element_rect(fill = ""white""),"
+"0","        plot.background = element_rect(fill = ""white""),"
+"0","        legend.background = element_rect(fill = ""white"", color = ""black""))"
+"2","G1;H1;Errorh: object 'hct_fec_na_sqrt' not found
+Error during wrapup: not that many frames on the stack
+Error: no more error handlers available (recursive errors?); invoking 'abort' restart
+g"
+"0","glucose_lm_sqrt <- ggplot(data = glucose_fec_na_sqrt, aes(x = Weight_Adjusted_Fecundity_Fecundity.Mean_Weight, y = Glu..mmol.L.)) +"
+"0","  geom_point(aes(col = Ambient.Or.OAH)) +"
+"0","  geom_smooth(aes(group = 1), method = ""lm"") +"
+"0","  labs(title = ""Glucose"", x = ""Weight Adjusted Fecudnity"", y = ""Sqrt Glucose"", color = ""Category"") +"
+"0","  guides(color = guide_legend((title = ""Treatment Type""))) + "
+"0","  scale_color_manual(values = c(""Ambient"" = ""#189bff"", ""OAH"" = ""#598c78"")) +"
+"0","  scale_y_continuous() +"
+"0","  theme_classic() +"
+"0","  theme(panel.background = element_rect(fill = ""white""),"
+"0","        plot.background = element_rect(fill = ""white""),"
+"0","        legend.background = element_rect(fill = ""white"", color = ""black""))"
+"2","G1;H1;Errorh: object 'glucose_fec_na_sqrt' not found
+Error during wrapup: not that many frames on the stack
+Error: no more error handlers available (recursive errors?); invoking 'abort' restart
+g"
+"0","  "
+"0","Na_lm_sqrt <- ggplot(data = sodium_fec_na_sqrt, aes(x = Weight_Adjusted_Fecundity_Fecundity.Mean_Weight, y = Na...mmol.L.)) +"
+"0","  geom_point(aes(col = Ambient.Or.OAH)) +"
+"0","  geom_smooth(aes(group = 1), method = ""lm"") +"
+"0","  labs(title = ""Sodium"", x = ""Weight Adjusted Fecudnity"", y = ""Sqrt Sodium"", color = ""Category"") +"
+"0","  guides(color = guide_legend((title = ""Treatment Type""))) + "
+"0","  scale_color_manual(values = c(""Ambient"" = ""#189bff"", ""OAH"" = ""#598c78"")) +"
+"0","  scale_y_continuous() +"
+"0","  theme_classic() +"
+"0","  theme(panel.background = element_rect(fill = ""white""),"
+"0","        plot.background = element_rect(fill = ""white""),"
+"0","        legend.background = element_rect(fill = ""white"", color = ""black""))"
+"2","G1;H1;Errorh: object 'sodium_fec_na_sqrt' not found
+Error during wrapup: not that many frames on the stack
+Error: no more error handlers available (recursive errors?); invoking 'abort' restart
+g"
+"0","Cl_lm_sqrt <- ggplot(data = chloride_fec_na_sqrt, aes(x = Weight_Adjusted_Fecundity_Fecundity.Mean_Weight, y = Cl...mmol.L.)) +"
+"0","  geom_point(aes(col = Ambient.Or.OAH)) +"
+"0","  geom_smooth(aes(group = 1), method = ""lm"") +"
+"0","  labs(title = ""Chloride"", x = ""Weight Adjusted Fecudnity"", y = ""Sqrt Chloride"", color = ""Category"") +"
+"0","  guides(color = guide_legend((title = ""Treatment Type""))) + "
+"0","  scale_color_manual(values = c(""Ambient"" = ""#189bff"", ""OAH"" = ""#598c78"")) +"
+"0","  scale_y_continuous() +"
+"0","  theme_classic() +"
+"0","  theme(panel.background = element_rect(fill = ""white""),"
+"0","        plot.background = element_rect(fill = ""white""),"
+"0","        legend.background = element_rect(fill = ""white"", color = ""black""))"
+"2","G1;H1;Errorh: object 'chloride_fec_na_sqrt' not found
+Error during wrapup: not that many frames on the stack
+Error: no more error handlers available (recursive errors?); invoking 'abort' restart
+g"
+"0","K_lm_sqrt <- ggplot(data = potassium_fec_na_sqrt, aes(x = Weight_Adjusted_Fecundity_Fecundity.Mean_Weight, y = K...mmol.L.)) +"
+"0","  geom_point(aes(col = Ambient.Or.OAH)) +"
+"0","  geom_smooth(aes(group = 1), method = ""lm"") +"
+"0","  labs(title = ""Potassium"", x = ""Weight Adjusted Fecudnity"", y = ""Sqrt Potassium"", color = ""Category"") +"
+"0","  guides(color = guide_legend((title = ""Treatment Type""))) + "
+"0","  scale_color_manual(values = c(""Ambient"" = ""#189bff"", ""OAH"" = ""#598c78"")) +"
+"0","  scale_y_continuous() +"
+"0","  theme_classic() +"
+"0","  theme(panel.background = element_rect(fill = ""white""),"
+"0","        plot.background = element_rect(fill = ""white""),"
+"0","        legend.background = element_rect(fill = ""white"", color = ""black""))"
+"2","G1;H1;Errorh: object 'potassium_fec_na_sqrt' not found
+Error during wrapup: not that many frames on the stack
+Error: no more error handlers available (recursive errors?); invoking 'abort' restart
+g"
+"0","Ca_lm_sqrt <- ggplot(data = calcium_fec_na_sqrt, aes(x = Weight_Adjusted_Fecundity_Fecundity.Mean_Weight, y = Ca....mmol.L.)) +"
+"0","  geom_point(aes(col = Ambient.Or.OAH)) +"
+"0","  geom_smooth(aes(group = 1), method = ""lm"") +"
+"0","  labs(title = ""Calcium"", x = ""Weight Adjusted Fecudnity"", y = ""Sqrt Calcium"", color = ""Category"") +"
+"0","  guides(color = guide_legend((title = ""Treatment Type""))) + "
+"0","  scale_color_manual(values = c(""Ambient"" = ""#189bff"", ""OAH"" = ""#598c78"")) +"
+"0","  scale_y_continuous() +"
+"0","  theme_classic() +"
+"0","  theme(panel.background = element_rect(fill = ""white""),"
+"0","        plot.background = element_rect(fill = ""white""),"
+"0","        legend.background = element_rect(fill = ""white"", color = ""black""))"
+"2","G1;H1;Errorh: object 'calcium_fec_na_sqrt' not found
+Error during wrapup: not that many frames on the stack
+Error: no more error handlers available (recursive errors?); invoking 'abort' restart
+g"
+"0","        "
+"0","# Merge lm regression plots"
+"0",""
+"0","param_regress_sqrt_plots <- pH_lm_sqrt + hct_lm_sqrt + glucose_lm_sqrt + Na_lm_sqrt + Cl_lm_sqrt + K_lm_sqrt + Ca_lm_sqrt + plot_layout(ncol = 3, guides = ""collect"") "
+"2","G1;H1;Errorh: object 'pH_lm_sqrt' not found
+Error during wrapup: not that many frames on the stack
+Error: no more error handlers available (recursive errors?); invoking 'abort' restart
+g"
+"0","param_regress_sqrt_plots"
+"2","G1;H1;Errorh: object 'param_regress_sqrt_plots' not found
+Error during wrapup: not that many frames on the stack
+Error: no more error handlers available (recursive errors?); invoking 'abort' restart
+g"
+"0","  "

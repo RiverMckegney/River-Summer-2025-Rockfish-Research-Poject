@@ -1,0 +1,37 @@
+"0",""
+"0",""
+"0","# Parametric Variance test (Bartlett's test): require at least 2 obs for each group"
+"0","# bartlett.test(Glu..mmol.L. ~ Consensus_Brood_Condition, data = Ambient_Samples)"
+"0",""
+"0","# Nonparametric variance test (Levene's test):"
+"0","leveneTest(Glu..mmol.L. ~ Consensus_Brood_Condition, data = Ambient_Samples)"
+"1","Levene's Test for Homogeneity of Variance (center = median)
+      Df F value Pr(>F)
+group  3  0.4505 0.7202
+      17               
+"
+"0","# Nonparametric stat test: Kruskall Wallis"
+"0","kruskal.test(Glu..mmol.L. ~ Consensus_Brood_Condition, data = Ambient_Samples)"
+"1","
+	Kruskal-Wallis rank sum test
+
+data:  Glu..mmol.L. by Consensus_Brood_Condition
+Kruskal-Wallis chi-squared = 3.9713, df = 3, p-value = 0.2646
+
+"
+"0","# Nonparametric Post Hoc: Dunn's test"
+"0","DunnTest(Glu..mmol.L. ~ Consensus_Brood_Condition, data = Ambient_Samples)"
+"1","
+ Dunn's test of multiple comparisons using rank sums : holm  
+
+                  mean.rank.diff   pval    
+Normal-Excellent      -3.5000000 1.0000    
+Low-Excellent         -2.8333333 1.0000    
+Atresia-Excellent      2.5384615 1.0000    
+Low-Normal             0.6666667 1.0000    
+Atresia-Normal         6.0384615 0.5244    
+Atresia-Low            5.3717949 0.8733    
+---
+Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1
+
+"

@@ -1,0 +1,42 @@
+"0","# Shapiro Test"
+"0","shapiro.test(residuals(chloride_amb_fec_no_atresia_lm))"
+"1","
+	Shapiro-Wilk normality test
+
+data:  residuals(chloride_amb_fec_no_atresia_lm)
+W = 0.95118, p-value = 0.6824
+
+"
+"0","# Transform data: square root "
+"0","chloride_ambient_sqrt <- Amb_Fec_No_Atresia_Samples %>%"
+"0","  mutate(Cl...mmol.L. = sqrt(Cl...mmol.L.))"
+"0",""
+"0","# Rerun lm model with square root transformed data"
+"0","chloride_amb_fec_no_atresia_lm_sqrt <- lm(Cl...mmol.L. ~ Weight_Adjusted_Fecundity_Fecundity.Mean_Weight, data = chloride_ambient_sqrt)"
+"0","summary(chloride_amb_fec_no_atresia_lm_sqrt)"
+"1","
+Call:
+lm(formula = Cl...mmol.L. ~ Weight_Adjusted_Fecundity_Fecundity.Mean_Weight, 
+    data = chloride_ambient_sqrt)
+
+Residuals:
+     Min       1Q   Median       3Q      Max 
+-0.14856 -0.08721 -0.02279  0.07258  0.20200 
+
+Coefficients:
+                                                  Estimate Std. Error t value
+(Intercept)                                      1.257e+01  8.518e-02 147.566
+Weight_Adjusted_Fecundity_Fecundity.Mean_Weight -7.493e-05  4.852e-04  -0.154
+                                                Pr(>|t|)    
+(Intercept)                                     6.53e-12 ***
+Weight_Adjusted_Fecundity_Fecundity.Mean_Weight    0.882    
+---
+Signif. codes:  0 ‘***’ 0.001 ‘**’ 0.01 ‘*’ 0.05 ‘.’ 0.1 ‘ ’ 1
+
+Residual standard error: 0.133 on 6 degrees of freedom
+Multiple R-squared:  0.003959,	Adjusted R-squared:  -0.162 
+F-statistic: 0.02385 on 1 and 6 DF,  p-value: 0.8823
+
+"
+"0","chloride_amb_fec_sqrt_sim <- simulateResiduals(fittedModel = chloride_amb_fec_no_atresia_lm_sqrt) "
+"0","plot(chloride_amb_fec_sqrt_sim)"
