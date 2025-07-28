@@ -1,0 +1,47 @@
+"0",""
+"0","# Transform data: square root "
+"0","potassium_fec_na_sqrt <- Fecundity_No_Atresia_Samples %>%"
+"0","  mutate(K...mmol.L. = sqrt(K...mmol.L.))"
+"0",""
+"0","potassium_fec_na_lm_sqrt <- lm(K...mmol.L. ~ Ambient.Or.OAH * Weight_Adjusted_Fecundity_Fecundity.Mean_Weight, data = potassium_fec_na_sqrt)"
+"0","summary(potassium_fec_na_lm_sqrt)"
+"1","
+Call:
+lm(formula = K...mmol.L. ~ Ambient.Or.OAH * Weight_Adjusted_Fecundity_Fecundity.Mean_Weight, 
+    data = potassium_fec_na_sqrt)
+
+Residuals:
+      Min        1Q    Median        3Q       Max 
+-0.043790 -0.023136  0.000000  0.006888  0.085420 
+
+Coefficients:
+                                                                   Estimate
+(Intercept)                                                       1.8960399
+Ambient.Or.OAH.L                                                  0.3847584
+Weight_Adjusted_Fecundity_Fecundity.Mean_Weight                  -0.0008342
+Ambient.Or.OAH.L:Weight_Adjusted_Fecundity_Fecundity.Mean_Weight -0.0013969
+                                                                 Std. Error
+(Intercept)                                                       0.1201980
+Ambient.Or.OAH.L                                                  0.1699857
+Weight_Adjusted_Fecundity_Fecundity.Mean_Weight                   0.0004999
+Ambient.Or.OAH.L:Weight_Adjusted_Fecundity_Fecundity.Mean_Weight  0.0007070
+                                                                 t value
+(Intercept)                                                       15.774
+Ambient.Or.OAH.L                                                   2.263
+Weight_Adjusted_Fecundity_Fecundity.Mean_Weight                   -1.669
+Ambient.Or.OAH.L:Weight_Adjusted_Fecundity_Fecundity.Mean_Weight  -1.976
+                                                                 Pr(>|t|)    
+(Intercept)                                                      4.12e-06 ***
+Ambient.Or.OAH.L                                                   0.0642 .  
+Weight_Adjusted_Fecundity_Fecundity.Mean_Weight                    0.1462    
+Ambient.Or.OAH.L:Weight_Adjusted_Fecundity_Fecundity.Mean_Weight   0.0956 .  
+---
+Signif. codes:  0 ‘***’ 0.001 ‘**’ 0.01 ‘*’ 0.05 ‘.’ 0.1 ‘ ’ 1
+
+Residual standard error: 0.04424 on 6 degrees of freedom
+Multiple R-squared:  0.6289,	Adjusted R-squared:  0.4434 
+F-statistic:  3.39 on 3 and 6 DF,  p-value: 0.09483
+
+"
+"0","potassium_fec_na_sqrt_sim <- simulateResiduals(fittedModel = potassium_fec_na_lm_sqrt) "
+"0","plot(potassium_fec_na_sqrt_sim)"

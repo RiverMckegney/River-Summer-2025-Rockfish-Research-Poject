@@ -1,0 +1,19 @@
+"0",""
+"0",""
+"0","# Normality"
+"0","shapiro.test(residuals(lm(Cl...mmol.L. ~ Ambient.Or.OAH * Weight_Adjusted_Fecundity_Fecundity.Mean_Weight, data = Fecundity_No_Atresia_Samples)))"
+"1","
+	Shapiro-Wilk normality test
+
+data:  residuals(lm(Cl...mmol.L. ~ Ambient.Or.OAH * Weight_Adjusted_Fecundity_Fecundity.Mean_Weight, data = Fecundity_No_Atresia_Samples))
+W = 0.962, p-value = 0.8085
+
+"
+"0","# QQ plot"
+"0","ggqqplot(residuals(lm(Cl...mmol.L. ~ Ambient.Or.OAH * Weight_Adjusted_Fecundity_Fecundity.Mean_Weight, data = Fecundity_No_Atresia_Samples))) +"
+"0","labs(title = ""Chloride Fecundity No Atresia Residual QQplot"","
+"0","     subtitle = ""residuals(lm(Cl...mmol.L. ~ Ambient.Or.OAH * Weight_Adjusted_Fecundity_Fecundity.Mean_Weight, data = Fecundity_No_Atresia_Samples))"","
+"0","                               x = ""Chloride Theoretical Quantiles (Predicted values)"","
+"0","                               y = ""Chloride Sample Quantiles"") +"
+"0","  theme(plot.title = element_text(hjust = 0.5),"
+"0","        plot.subtitle = element_text(hjust = 0.5, size = 6))"

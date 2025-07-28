@@ -1725,4 +1725,286 @@ ggplot(data = calcium_fec_na_sqrt, aes(x = Weight_Adjusted_Fecundity_Fecundity.M
 
 
 
+# Summary Graphs:
+
+```{r}
+# Merged Scatterplots
+pH_fec_na_scatterplot + hct_fec_na_scatterplot + glucose_fec_na_scatterplot + sodium_fec_na_scatterplot + chloride_fec_na_scatterplot + potassium_fec_na_scatterplot + calcium_fec_na_scatterplot + plot_layout(ncol = 3, guides = "collect") +
+  theme(plot.title = element_text(size = 10),
+    axis.title.y = element_text(size = 5))
+
+```
+
+```{r}
+pH <- Fecundity_No_Atresia_Samples %>%
+  ggplot() + 
+  geom_point(aes(x = Weight_Adjusted_Fecundity_Fecundity.Mean_Weight, y = pH), colour = "black") +
+  labs(title = "pH", x = "Weight Adjusted Fecundity", y = "pH") +
+  theme_classic() +
+  theme(panel.background = element_rect(fill = "white"),
+        plot.background = element_rect(fill = "white"),
+        legend.background = element_rect(fill = "white", color = "black"))
+
+hct <- Fecundity_No_Atresia_Samples %>%
+  ggplot() + 
+  geom_point(aes(x = Weight_Adjusted_Fecundity_Fecundity.Mean_Weight, y = Hct....), colour = "black") +
+  labs(title = "Hematocrit", x = "Weight Adjusted Fecundity", y = "Hematocrit (%)") +
+  theme_classic() +
+  theme(panel.background = element_rect(fill = "white"),
+        plot.background = element_rect(fill = "white"),
+        legend.background = element_rect(fill = "white", color = "black"))
+
+glucose <- Fecundity_No_Atresia_Samples %>%
+  ggplot() + 
+  geom_point(aes(x = Weight_Adjusted_Fecundity_Fecundity.Mean_Weight, y = Glu..mmol.L.), colour = "black") +
+  labs(title = "Glucose", x = "Weight Adjusted Fecundity", y = "Glucose (mmol/L)") +
+  theme_classic() +
+  theme(panel.background = element_rect(fill = "white"),
+        plot.background = element_rect(fill = "white"),
+        legend.background = element_rect(fill = "white", color = "black"))
+        
+Na <- Fecundity_No_Atresia_Samples %>%
+  ggplot() + 
+  geom_point(aes(x = Weight_Adjusted_Fecundity_Fecundity.Mean_Weight, y = Na...mmol.L.), colour = "black") +
+  labs(title = "Sodium", x = "Weight Adjusted Fecundity", y = "Sodium (mmol/L)") +
+  theme_classic() +
+  theme(panel.background = element_rect(fill = "white"),
+        plot.background = element_rect(fill = "white"),
+        legend.background = element_rect(fill = "white", color = "black"))
+
+Cl <- Fecundity_No_Atresia_Samples %>%
+  ggplot() + 
+  geom_point(aes(x = Weight_Adjusted_Fecundity_Fecundity.Mean_Weight, y = Cl...mmol.L.), colour = "black") +
+  labs(title = "Chloride", x = "Weight Adjusted Fecundity", y = "Chloride (mmol/L)") +
+  theme_classic() +
+  theme(panel.background = element_rect(fill = "white"),
+        plot.background = element_rect(fill = "white"),
+        legend.background = element_rect(fill = "white", color = "black"))
+
+K <- Fecundity_No_Atresia_Samples %>%
+  ggplot() + 
+  geom_point(aes(x = Weight_Adjusted_Fecundity_Fecundity.Mean_Weight, y = K...mmol.L.), colour = "black") +
+  labs(title = "Potassium", x = "Weight Adjusted Fecundity", y = "Potassium (mmol/L)") +
+  theme_classic() +
+  theme(panel.background = element_rect(fill = "white"),
+        plot.background = element_rect(fill = "white"),
+        legend.background = element_rect(fill = "white", color = "black"))
+
+Ca <- Fecundity_No_Atresia_Samples %>%
+  ggplot() + 
+  geom_point(aes(x = Weight_Adjusted_Fecundity_Fecundity.Mean_Weight, y = Ca....mmol.L.), colour = "black") +
+  labs(title = "Calcium", x = "Weight Adjusted Fecundity", y = "Calcium (mmol/L)") +
+  theme_classic() +
+  theme(panel.background = element_rect(fill = "white"),
+        plot.background = element_rect(fill = "white"),
+        legend.background = element_rect(fill = "white", color = "black"))
+        
+# Combine 
+all_params_plot <- pH + hct + glucose + Na + Cl + K + Ca + plot_layout(ncol = 3, guides = "collect") 
+all_params_plot
+```
+
+
+```{r}
+# All regression graphs
+
+pH_lm <- ggplot(data = Fecundity_No_Atresia_Samples, aes(x = Weight_Adjusted_Fecundity_Fecundity.Mean_Weight, y = pH)) +
+  geom_point(aes(col = Ambient.Or.OAH)) +
+  geom_smooth(aes(group = 1), method = "lm") +
+  labs(title = "pH", x = "Weight Adjusted Fecudnity", y = "pH", color = "Category") +
+  guides(color = guide_legend((title = "Treatment Type"))) + 
+  scale_color_manual(values = c("Ambient" = "#189bff", "OAH" = "#598c78")) +
+  scale_y_continuous() +
+  theme_classic() +
+  theme(panel.background = element_rect(fill = "white"),
+        plot.background = element_rect(fill = "white"),
+        legend.background = element_rect(fill = "white", color = "black"))
+  
+
+hct_lm <- ggplot(data = Fecundity_No_Atresia_Samples, aes(x = Weight_Adjusted_Fecundity_Fecundity.Mean_Weight, y = Hct....)) +
+  geom_point(aes(col = Ambient.Or.OAH)) +
+  geom_smooth(aes(group = 1), method = "lm") +
+  labs(title = "Hematocrit", x = "Weight Adjusted Fecudnity", y = "Hematocrit (%)", color = "Category") +
+  guides(color = guide_legend((title = "Treatment Type"))) + 
+  scale_color_manual(values = c("Ambient" = "#189bff", "OAH" = "#598c78")) +
+  scale_y_continuous() +
+  theme_classic() +
+  theme(panel.background = element_rect(fill = "white"),
+        plot.background = element_rect(fill = "white"),
+        legend.background = element_rect(fill = "white", color = "black"))
+
+
+glucose_lm <- ggplot(data = Fecundity_No_Atresia_Samples, aes(x = Weight_Adjusted_Fecundity_Fecundity.Mean_Weight, y = Glu..mmol.L.)) +
+  geom_point(aes(col = Ambient.Or.OAH)) +
+  geom_smooth(aes(group = 1), method = "lm") +
+  labs(title = "Glucose", x = "Weight Adjusted Fecudnity", y = "Glucose (mmol/L)", color = "Category") +
+  guides(color = guide_legend((title = "Treatment Type"))) + 
+  scale_color_manual(values = c("Ambient" = "#189bff", "OAH" = "#598c78")) +
+  scale_y_continuous() +
+  theme_classic() +
+  theme(panel.background = element_rect(fill = "white"),
+        plot.background = element_rect(fill = "white"),
+        legend.background = element_rect(fill = "white", color = "black"))
+
+  
+Na_lm <- ggplot(data = Fecundity_No_Atresia_Samples, aes(x = Weight_Adjusted_Fecundity_Fecundity.Mean_Weight, y = Na...mmol.L.)) +
+  geom_point(aes(col = Ambient.Or.OAH)) +
+  geom_smooth(aes(group = 1), method = "lm") +
+  labs(title = "Sodium", x = "Weight Adjusted Fecudnity", y = "Sodium (mmol/L)", color = "Category") +
+  guides(color = guide_legend((title = "Treatment Type"))) + 
+  scale_color_manual(values = c("Ambient" = "#189bff", "OAH" = "#598c78")) +
+  scale_y_continuous() +
+  theme_classic() +
+  theme(panel.background = element_rect(fill = "white"),
+        plot.background = element_rect(fill = "white"),
+        legend.background = element_rect(fill = "white", color = "black"))
+
+
+Cl_lm <- ggplot(data = Fecundity_No_Atresia_Samples, aes(x = Weight_Adjusted_Fecundity_Fecundity.Mean_Weight, y = Cl...mmol.L.)) +
+  geom_point(aes(col = Ambient.Or.OAH)) +
+  geom_smooth(aes(group = 1), method = "lm") +
+  labs(title = "Chloride", x = "Weight Adjusted Fecudnity", y = "Chloride (mmol/L)", color = "Category") +
+  guides(color = guide_legend((title = "Treatment Type"))) + 
+  scale_color_manual(values = c("Ambient" = "#189bff", "OAH" = "#598c78")) +
+  scale_y_continuous() +
+  theme_classic() +
+  theme(panel.background = element_rect(fill = "white"),
+        plot.background = element_rect(fill = "white"),
+        legend.background = element_rect(fill = "white", color = "black"))
+
+
+K_lm <- ggplot(data = Fecundity_No_Atresia_Samples, aes(x = Weight_Adjusted_Fecundity_Fecundity.Mean_Weight, y = K...mmol.L.)) +
+  geom_point(aes(col = Ambient.Or.OAH)) +
+  geom_smooth(aes(group = 1), method = "lm") +
+  labs(title = "Potassium", x = "Weight Adjusted Fecudnity", y = "Potassium (mmol/L)", color = "Category") +
+  guides(color = guide_legend((title = "Treatment Type"))) + 
+  scale_color_manual(values = c("Ambient" = "#189bff", "OAH" = "#598c78")) +
+  scale_y_continuous() +
+  theme_classic() +
+  theme(panel.background = element_rect(fill = "white"),
+        plot.background = element_rect(fill = "white"),
+        legend.background = element_rect(fill = "white", color = "black"))
+
+
+Ca_lm <- ggplot(data = Fecundity_No_Atresia_Samples, aes(x = Weight_Adjusted_Fecundity_Fecundity.Mean_Weight, y = Ca....mmol.L.)) +
+  geom_point(aes(col = Ambient.Or.OAH)) +
+  geom_smooth(aes(group = 1), method = "lm") +
+  labs(title = "Calcium", x = "Weight Adjusted Fecudnity", y = "Calcium (mmol/L)", color = "Category") +
+  guides(color = guide_legend((title = "Treatment Type"))) + 
+  scale_color_manual(values = c("Ambient" = "#189bff", "OAH" = "#598c78")) +
+  scale_y_continuous() +
+  theme_classic() +
+  theme(panel.background = element_rect(fill = "white"),
+        plot.background = element_rect(fill = "white"),
+        legend.background = element_rect(fill = "white", color = "black"))
+       
+ 
+# Merge lm regression plots
+param_regress_plots <- pH_lm + hct_lm + glucose_lm + Na_lm + Cl_lm + K_lm + Ca_lm + plot_layout(ncol = 3, guides = "collect") 
+param_regress_plots
+  
+```
+
+
+
+```{r}
+# All regression graphs
+# sqrt transformed
+
+pH_lm_sqrt <- ggplot(data = pH_fec_na_sqrt, aes(x = Weight_Adjusted_Fecundity_Fecundity.Mean_Weight, y = pH)) +
+  geom_point(aes(col = Ambient.Or.OAH)) +
+  geom_smooth(aes(group = 1), method = "lm") +
+  labs(title = "pH", x = "Weight Adjusted Fecudnity", y = "Sqrt pH", color = "Category") +
+  guides(color = guide_legend((title = "Treatment Type"))) + 
+  scale_color_manual(values = c("Ambient" = "#189bff", "OAH" = "#598c78")) +
+  scale_y_continuous() +
+  theme_classic() +
+  theme(panel.background = element_rect(fill = "white"),
+        plot.background = element_rect(fill = "white"),
+        legend.background = element_rect(fill = "white", color = "black"))
+  
+
+hct_lm_sqrt <- ggplot(data = hct_fec_na_sqrt, aes(x = Weight_Adjusted_Fecundity_Fecundity.Mean_Weight, y = Hct....)) +
+  geom_point(aes(col = Ambient.Or.OAH)) +
+  geom_smooth(aes(group = 1), method = "lm") +
+  labs(title = "Hematocrit", x = "Weight Adjusted Fecudnity", y = "Sqrt Hematocrit", color = "Category") +
+  guides(color = guide_legend((title = "Treatment Type"))) + 
+  scale_color_manual(values = c("Ambient" = "#189bff", "OAH" = "#598c78")) +
+  scale_y_continuous() +
+  theme_classic() +
+  theme(panel.background = element_rect(fill = "white"),
+        plot.background = element_rect(fill = "white"),
+        legend.background = element_rect(fill = "white", color = "black"))
+
+
+glucose_lm_sqrt <- ggplot(data = glucose_fec_na_sqrt, aes(x = Weight_Adjusted_Fecundity_Fecundity.Mean_Weight, y = Glu..mmol.L.)) +
+  geom_point(aes(col = Ambient.Or.OAH)) +
+  geom_smooth(aes(group = 1), method = "lm") +
+  labs(title = "Glucose", x = "Weight Adjusted Fecudnity", y = "Sqrt Glucose", color = "Category") +
+  guides(color = guide_legend((title = "Treatment Type"))) + 
+  scale_color_manual(values = c("Ambient" = "#189bff", "OAH" = "#598c78")) +
+  scale_y_continuous() +
+  theme_classic() +
+  theme(panel.background = element_rect(fill = "white"),
+        plot.background = element_rect(fill = "white"),
+        legend.background = element_rect(fill = "white", color = "black"))
+
+  
+Na_lm_sqrt <- ggplot(data = sodium_fec_na_sqrt, aes(x = Weight_Adjusted_Fecundity_Fecundity.Mean_Weight, y = Na...mmol.L.)) +
+  geom_point(aes(col = Ambient.Or.OAH)) +
+  geom_smooth(aes(group = 1), method = "lm") +
+  labs(title = "Sodium", x = "Weight Adjusted Fecudnity", y = "Sqrt Sodium", color = "Category") +
+  guides(color = guide_legend((title = "Treatment Type"))) + 
+  scale_color_manual(values = c("Ambient" = "#189bff", "OAH" = "#598c78")) +
+  scale_y_continuous() +
+  theme_classic() +
+  theme(panel.background = element_rect(fill = "white"),
+        plot.background = element_rect(fill = "white"),
+        legend.background = element_rect(fill = "white", color = "black"))
+
+
+Cl_lm_sqrt <- ggplot(data = chloride_fec_na_sqrt, aes(x = Weight_Adjusted_Fecundity_Fecundity.Mean_Weight, y = Cl...mmol.L.)) +
+  geom_point(aes(col = Ambient.Or.OAH)) +
+  geom_smooth(aes(group = 1), method = "lm") +
+  labs(title = "Chloride", x = "Weight Adjusted Fecudnity", y = "Sqrt Chloride", color = "Category") +
+  guides(color = guide_legend((title = "Treatment Type"))) + 
+  scale_color_manual(values = c("Ambient" = "#189bff", "OAH" = "#598c78")) +
+  scale_y_continuous() +
+  theme_classic() +
+  theme(panel.background = element_rect(fill = "white"),
+        plot.background = element_rect(fill = "white"),
+        legend.background = element_rect(fill = "white", color = "black"))
+
+
+K_lm_sqrt <- ggplot(data = potassium_fec_na_sqrt, aes(x = Weight_Adjusted_Fecundity_Fecundity.Mean_Weight, y = K...mmol.L.)) +
+  geom_point(aes(col = Ambient.Or.OAH)) +
+  geom_smooth(aes(group = 1), method = "lm") +
+  labs(title = "Potassium", x = "Weight Adjusted Fecudnity", y = "Sqrt Potassium", color = "Category") +
+  guides(color = guide_legend((title = "Treatment Type"))) + 
+  scale_color_manual(values = c("Ambient" = "#189bff", "OAH" = "#598c78")) +
+  scale_y_continuous() +
+  theme_classic() +
+  theme(panel.background = element_rect(fill = "white"),
+        plot.background = element_rect(fill = "white"),
+        legend.background = element_rect(fill = "white", color = "black"))
+
+
+Ca_lm_sqrt <- ggplot(data = calcium_fec_na_sqrt, aes(x = Weight_Adjusted_Fecundity_Fecundity.Mean_Weight, y = Ca....mmol.L.)) +
+  geom_point(aes(col = Ambient.Or.OAH)) +
+  geom_smooth(aes(group = 1), method = "lm") +
+  labs(title = "Calcium", x = "Weight Adjusted Fecudnity", y = "Sqrt Calcium", color = "Category") +
+  guides(color = guide_legend((title = "Treatment Type"))) + 
+  scale_color_manual(values = c("Ambient" = "#189bff", "OAH" = "#598c78")) +
+  scale_y_continuous() +
+  theme_classic() +
+  theme(panel.background = element_rect(fill = "white"),
+        plot.background = element_rect(fill = "white"),
+        legend.background = element_rect(fill = "white", color = "black"))
+        
+# Merge lm regression plots
+
+param_regress_sqrt_plots <- pH_lm_sqrt + hct_lm_sqrt + glucose_lm_sqrt + Na_lm_sqrt + Cl_lm_sqrt + K_lm_sqrt + Ca_lm_sqrt + plot_layout(ncol = 3, guides = "collect") 
+param_regress_sqrt_plots
+  
+```
 

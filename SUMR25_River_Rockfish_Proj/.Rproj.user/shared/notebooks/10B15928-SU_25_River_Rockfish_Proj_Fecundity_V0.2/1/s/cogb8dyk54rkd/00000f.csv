@@ -1,0 +1,48 @@
+"0","# Na+"
+"0","# Weight Adjusted Fecundity, No Atresia "
+"0",""
+"0","# Fancy lm model"
+"0",""
+"0","# Interactive"
+"0","sodium_fec_na_lm <- lm(Na...mmol.L. ~ Ambient.Or.OAH * Weight_Adjusted_Fecundity_Fecundity.Mean_Weight, data = Fecundity_No_Atresia_Samples)"
+"0","summary(sodium_fec_na_lm)"
+"1","
+Call:
+lm(formula = Na...mmol.L. ~ Ambient.Or.OAH * Weight_Adjusted_Fecundity_Fecundity.Mean_Weight, 
+    data = Fecundity_No_Atresia_Samples)
+
+Residuals:
+    Min      1Q  Median      3Q     Max 
+-6.7526 -0.3219  0.1618  1.9361  3.4276 
+
+Coefficients:
+                                                                   Estimate
+(Intercept)                                                      176.707458
+Ambient.Or.OAH.L                                                   1.827930
+Weight_Adjusted_Fecundity_Fecundity.Mean_Weight                    0.001144
+Ambient.Or.OAH.L:Weight_Adjusted_Fecundity_Fecundity.Mean_Weight  -0.001618
+                                                                 Std. Error
+(Intercept)                                                        9.989105
+Ambient.Or.OAH.L                                                  14.126727
+Weight_Adjusted_Fecundity_Fecundity.Mean_Weight                    0.041545
+Ambient.Or.OAH.L:Weight_Adjusted_Fecundity_Fecundity.Mean_Weight   0.058753
+                                                                 t value
+(Intercept)                                                       17.690
+Ambient.Or.OAH.L                                                   0.129
+Weight_Adjusted_Fecundity_Fecundity.Mean_Weight                    0.028
+Ambient.Or.OAH.L:Weight_Adjusted_Fecundity_Fecundity.Mean_Weight  -0.028
+                                                                 Pr(>|t|)    
+(Intercept)                                                       2.1e-06 ***
+Ambient.Or.OAH.L                                                    0.901    
+Weight_Adjusted_Fecundity_Fecundity.Mean_Weight                     0.979    
+Ambient.Or.OAH.L:Weight_Adjusted_Fecundity_Fecundity.Mean_Weight    0.979    
+---
+Signif. codes:  0 ‘***’ 0.001 ‘**’ 0.01 ‘*’ 0.05 ‘.’ 0.1 ‘ ’ 1
+
+Residual standard error: 3.677 on 6 degrees of freedom
+Multiple R-squared:  0.09479,	Adjusted R-squared:  -0.3578 
+F-statistic: 0.2094 on 3 and 6 DF,  p-value: 0.8863
+
+"
+"0","sodium_fec_na_lm_sim_res_plot <- simulateResiduals(fittedModel = sodium_fec_na_lm)"
+"0","plot(sodium_fec_na_lm_sim_res_plot)"

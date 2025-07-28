@@ -1,0 +1,47 @@
+"0",""
+"0","# Transform data: square root "
+"0","pH_fec_na_sqrt <- Fecundity_No_Atresia_Samples %>%"
+"0","  mutate(pH = sqrt(pH))"
+"0",""
+"0","pH_fec_na_lm_sqrt <- lm(pH ~ Ambient.Or.OAH * Weight_Adjusted_Fecundity_Fecundity.Mean_Weight, data = pH_fec_na_sqrt)"
+"0","summary(pH_fec_na_lm_sqrt)"
+"1","
+Call:
+lm(formula = pH ~ Ambient.Or.OAH * Weight_Adjusted_Fecundity_Fecundity.Mean_Weight, 
+    data = pH_fec_na_sqrt)
+
+Residuals:
+      Min        1Q    Median        3Q       Max 
+-0.020889 -0.002740  0.001099  0.005978  0.010787 
+
+Coefficients:
+                                                                   Estimate
+(Intercept)                                                       2.7596209
+Ambient.Or.OAH.L                                                  0.0365920
+Weight_Adjusted_Fecundity_Fecundity.Mean_Weight                  -0.0001374
+Ambient.Or.OAH.L:Weight_Adjusted_Fecundity_Fecundity.Mean_Weight -0.0001366
+                                                                 Std. Error
+(Intercept)                                                       0.0314347
+Ambient.Or.OAH.L                                                  0.0444554
+Weight_Adjusted_Fecundity_Fecundity.Mean_Weight                   0.0001307
+Ambient.Or.OAH.L:Weight_Adjusted_Fecundity_Fecundity.Mean_Weight  0.0001849
+                                                                 t value
+(Intercept)                                                       87.789
+Ambient.Or.OAH.L                                                   0.823
+Weight_Adjusted_Fecundity_Fecundity.Mean_Weight                   -1.051
+Ambient.Or.OAH.L:Weight_Adjusted_Fecundity_Fecundity.Mean_Weight  -0.739
+                                                                 Pr(>|t|)    
+(Intercept)                                                      1.47e-10 ***
+Ambient.Or.OAH.L                                                    0.442    
+Weight_Adjusted_Fecundity_Fecundity.Mean_Weight                     0.334    
+Ambient.Or.OAH.L:Weight_Adjusted_Fecundity_Fecundity.Mean_Weight    0.488    
+---
+Signif. codes:  0 ‘***’ 0.001 ‘**’ 0.01 ‘*’ 0.05 ‘.’ 0.1 ‘ ’ 1
+
+Residual standard error: 0.01157 on 6 degrees of freedom
+Multiple R-squared:  0.2294,	Adjusted R-squared:  -0.1559 
+F-statistic: 0.5953 on 3 and 6 DF,  p-value: 0.6408
+
+"
+"0","pH_fec_na_sqrt_sim <- simulateResiduals(fittedModel = pH_fec_na_lm_sqrt) "
+"0","plot(pH_fec_na_sqrt_sim)"

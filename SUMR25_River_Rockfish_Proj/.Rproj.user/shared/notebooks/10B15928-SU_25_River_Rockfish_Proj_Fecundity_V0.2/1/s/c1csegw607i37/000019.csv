@@ -1,0 +1,47 @@
+"0",""
+"0","# Transform data: square root "
+"0","hct_fec_na_sqrt <- Fecundity_No_Atresia_Samples %>%"
+"0","  mutate(Hct.... = sqrt(Hct....))"
+"0",""
+"0","hct_fec_na_lm_sqrt <- lm(Hct.... ~ Ambient.Or.OAH * Weight_Adjusted_Fecundity_Fecundity.Mean_Weight, data = hct_fec_na_sqrt)"
+"0","summary(hct_fec_na_lm_sqrt)"
+"1","
+Call:
+lm(formula = Hct.... ~ Ambient.Or.OAH * Weight_Adjusted_Fecundity_Fecundity.Mean_Weight, 
+    data = hct_fec_na_sqrt)
+
+Residuals:
+     Min       1Q   Median       3Q      Max 
+-0.45751 -0.10588 -0.03198  0.00000  0.87682 
+
+Coefficients:
+                                                                  Estimate
+(Intercept)                                                       4.681755
+Ambient.Or.OAH.L                                                  1.600665
+Weight_Adjusted_Fecundity_Fecundity.Mean_Weight                  -0.002700
+Ambient.Or.OAH.L:Weight_Adjusted_Fecundity_Fecundity.Mean_Weight -0.006695
+                                                                 Std. Error
+(Intercept)                                                        1.238841
+Ambient.Or.OAH.L                                                   1.751985
+Weight_Adjusted_Fecundity_Fecundity.Mean_Weight                    0.005152
+Ambient.Or.OAH.L:Weight_Adjusted_Fecundity_Fecundity.Mean_Weight   0.007287
+                                                                 t value
+(Intercept)                                                        3.779
+Ambient.Or.OAH.L                                                   0.914
+Weight_Adjusted_Fecundity_Fecundity.Mean_Weight                   -0.524
+Ambient.Or.OAH.L:Weight_Adjusted_Fecundity_Fecundity.Mean_Weight  -0.919
+                                                                 Pr(>|t|)   
+(Intercept)                                                       0.00919 **
+Ambient.Or.OAH.L                                                  0.39614   
+Weight_Adjusted_Fecundity_Fecundity.Mean_Weight                   0.61904   
+Ambient.Or.OAH.L:Weight_Adjusted_Fecundity_Fecundity.Mean_Weight  0.39360   
+---
+Signif. codes:  0 ‘***’ 0.001 ‘**’ 0.01 ‘*’ 0.05 ‘.’ 0.1 ‘ ’ 1
+
+Residual standard error: 0.456 on 6 degrees of freedom
+Multiple R-squared:  0.2759,	Adjusted R-squared:  -0.08615 
+F-statistic: 0.7621 on 3 and 6 DF,  p-value: 0.5552
+
+"
+"0","hct_fec_na_sqrt_sim <- simulateResiduals(fittedModel = hct_fec_na_lm_sqrt) "
+"0","plot(hct_fec_na_sqrt_sim)"

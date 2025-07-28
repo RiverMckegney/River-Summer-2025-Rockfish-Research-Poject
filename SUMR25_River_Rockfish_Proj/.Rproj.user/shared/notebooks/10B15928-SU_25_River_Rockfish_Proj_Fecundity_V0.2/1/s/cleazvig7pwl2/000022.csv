@@ -1,1 +1,6 @@
+"0","# Sample Size"
 "0",""
+"0","Fec_NA_sample_size_table <- Fecundity_No_Atresia_Samples %>%"
+"0","  group_by(Ambient.Or.OAH) %>%"
+"0","  summarise(n_size = n_distinct(Patient.ID_edited), .groups = ""drop"")"
+"0","print(Fec_NA_sample_size_table)"

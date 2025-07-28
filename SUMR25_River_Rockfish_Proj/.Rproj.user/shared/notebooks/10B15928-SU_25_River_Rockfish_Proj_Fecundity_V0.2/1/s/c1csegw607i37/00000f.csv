@@ -1,0 +1,48 @@
+"0","# Hct"
+"0","# Weight Adjusted Fecundity, No Atresia "
+"0",""
+"0","# Fancy lm model"
+"0",""
+"0","# Interactive"
+"0","hct_fec_na_lm <- lm(Hct.... ~ Ambient.Or.OAH * Weight_Adjusted_Fecundity_Fecundity.Mean_Weight, data = Fecundity_No_Atresia_Samples)"
+"0","summary(hct_fec_na_lm)"
+"1","
+Call:
+lm(formula = Hct.... ~ Ambient.Or.OAH * Weight_Adjusted_Fecundity_Fecundity.Mean_Weight, 
+    data = Fecundity_No_Atresia_Samples)
+
+Residuals:
+    Min      1Q  Median      3Q     Max 
+-3.5587 -0.9980 -0.3094  0.0541  7.1866 
+
+Coefficients:
+                                                                 Estimate
+(Intercept)                                                      21.74296
+Ambient.Or.OAH.L                                                 12.63012
+Weight_Adjusted_Fecundity_Fecundity.Mean_Weight                  -0.02249
+Ambient.Or.OAH.L:Weight_Adjusted_Fecundity_Fecundity.Mean_Weight -0.05294
+                                                                 Std. Error
+(Intercept)                                                         9.87025
+Ambient.Or.OAH.L                                                   13.95864
+Weight_Adjusted_Fecundity_Fecundity.Mean_Weight                     0.04105
+Ambient.Or.OAH.L:Weight_Adjusted_Fecundity_Fecundity.Mean_Weight    0.05805
+                                                                 t value
+(Intercept)                                                        2.203
+Ambient.Or.OAH.L                                                   0.905
+Weight_Adjusted_Fecundity_Fecundity.Mean_Weight                   -0.548
+Ambient.Or.OAH.L:Weight_Adjusted_Fecundity_Fecundity.Mean_Weight  -0.912
+                                                                 Pr(>|t|)  
+(Intercept)                                                        0.0698 .
+Ambient.Or.OAH.L                                                   0.4004  
+Weight_Adjusted_Fecundity_Fecundity.Mean_Weight                    0.6035  
+Ambient.Or.OAH.L:Weight_Adjusted_Fecundity_Fecundity.Mean_Weight   0.3970  
+---
+Signif. codes:  0 ‘***’ 0.001 ‘**’ 0.01 ‘*’ 0.05 ‘.’ 0.1 ‘ ’ 1
+
+Residual standard error: 3.633 on 6 degrees of freedom
+Multiple R-squared:  0.2521,	Adjusted R-squared:  -0.1218 
+F-statistic: 0.6742 on 3 and 6 DF,  p-value: 0.5986
+
+"
+"0","hct_fec_na_lm_sim_res_plot <- simulateResiduals(fittedModel = hct_fec_na_lm)"
+"0","plot(hct_fec_na_lm_sim_res_plot)"

@@ -1,0 +1,48 @@
+"0","# glucose"
+"0","# Weight Adjusted Fecundity, No Atresia "
+"0",""
+"0","# Fancy lm model"
+"0",""
+"0","# Interactive"
+"0","glucose_fec_na_lm <- lm(Glu..mmol.L. ~ Ambient.Or.OAH * Weight_Adjusted_Fecundity_Fecundity.Mean_Weight, data = Fecundity_No_Atresia_Samples)"
+"0","summary(glucose_fec_na_lm)"
+"1","
+Call:
+lm(formula = Glu..mmol.L. ~ Ambient.Or.OAH * Weight_Adjusted_Fecundity_Fecundity.Mean_Weight, 
+    data = Fecundity_No_Atresia_Samples)
+
+Residuals:
+    Min      1Q  Median      3Q     Max 
+-0.7129 -0.3036  0.0000  0.1114  1.1986 
+
+Coefficients:
+                                                                  Estimate
+(Intercept)                                                      -2.193867
+Ambient.Or.OAH.L                                                 -5.311885
+Weight_Adjusted_Fecundity_Fecundity.Mean_Weight                   0.018308
+Ambient.Or.OAH.L:Weight_Adjusted_Fecundity_Fecundity.Mean_Weight  0.025405
+                                                                 Std. Error
+(Intercept)                                                        1.732540
+Ambient.Or.OAH.L                                                   2.450182
+Weight_Adjusted_Fecundity_Fecundity.Mean_Weight                    0.007206
+Ambient.Or.OAH.L:Weight_Adjusted_Fecundity_Fecundity.Mean_Weight   0.010190
+                                                                 t value
+(Intercept)                                                       -1.266
+Ambient.Or.OAH.L                                                  -2.168
+Weight_Adjusted_Fecundity_Fecundity.Mean_Weight                    2.541
+Ambient.Or.OAH.L:Weight_Adjusted_Fecundity_Fecundity.Mean_Weight   2.493
+                                                                 Pr(>|t|)  
+(Intercept)                                                        0.2524  
+Ambient.Or.OAH.L                                                   0.0733 .
+Weight_Adjusted_Fecundity_Fecundity.Mean_Weight                    0.0440 *
+Ambient.Or.OAH.L:Weight_Adjusted_Fecundity_Fecundity.Mean_Weight   0.0470 *
+---
+Signif. codes:  0 ‘***’ 0.001 ‘**’ 0.01 ‘*’ 0.05 ‘.’ 0.1 ‘ ’ 1
+
+Residual standard error: 0.6377 on 6 degrees of freedom
+Multiple R-squared:  0.6594,	Adjusted R-squared:  0.4891 
+F-statistic: 3.872 on 3 and 6 DF,  p-value: 0.0745
+
+"
+"0","glucose_fec_na_lm_sim_res_plot <- simulateResiduals(fittedModel = glucose_fec_na_lm)"
+"0","plot(glucose_fec_na_lm_sim_res_plot)"

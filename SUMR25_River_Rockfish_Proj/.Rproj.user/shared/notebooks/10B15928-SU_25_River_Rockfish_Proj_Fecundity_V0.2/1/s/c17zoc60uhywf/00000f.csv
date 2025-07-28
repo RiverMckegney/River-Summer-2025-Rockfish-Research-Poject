@@ -1,0 +1,48 @@
+"0","# Cl-"
+"0","# Weight Adjusted Fecundity, No Atresia "
+"0",""
+"0","# Fancy lm model"
+"0",""
+"0","# Interactive"
+"0","chloride_fec_na_lm <- lm(Cl...mmol.L. ~ Ambient.Or.OAH * Weight_Adjusted_Fecundity_Fecundity.Mean_Weight, data = Fecundity_No_Atresia_Samples)"
+"0","summary(chloride_fec_na_lm)"
+"1","
+Call:
+lm(formula = Cl...mmol.L. ~ Ambient.Or.OAH * Weight_Adjusted_Fecundity_Fecundity.Mean_Weight, 
+    data = Fecundity_No_Atresia_Samples)
+
+Residuals:
+   Min     1Q Median     3Q    Max 
+-3.722 -1.969  0.000  1.185  5.100 
+
+Coefficients:
+                                                                  Estimate
+(Intercept)                                                      166.58206
+Ambient.Or.OAH.L                                                  12.08908
+Weight_Adjusted_Fecundity_Fecundity.Mean_Weight                   -0.03251
+Ambient.Or.OAH.L:Weight_Adjusted_Fecundity_Fecundity.Mean_Weight  -0.04323
+                                                                 Std. Error
+(Intercept)                                                         9.09370
+Ambient.Or.OAH.L                                                   12.86044
+Weight_Adjusted_Fecundity_Fecundity.Mean_Weight                     0.03782
+Ambient.Or.OAH.L:Weight_Adjusted_Fecundity_Fecundity.Mean_Weight    0.05349
+                                                                 t value
+(Intercept)                                                       18.318
+Ambient.Or.OAH.L                                                   0.940
+Weight_Adjusted_Fecundity_Fecundity.Mean_Weight                   -0.860
+Ambient.Or.OAH.L:Weight_Adjusted_Fecundity_Fecundity.Mean_Weight  -0.808
+                                                                 Pr(>|t|)    
+(Intercept)                                                      1.71e-06 ***
+Ambient.Or.OAH.L                                                    0.383    
+Weight_Adjusted_Fecundity_Fecundity.Mean_Weight                     0.423    
+Ambient.Or.OAH.L:Weight_Adjusted_Fecundity_Fecundity.Mean_Weight    0.450    
+---
+Signif. codes:  0 ‘***’ 0.001 ‘**’ 0.01 ‘*’ 0.05 ‘.’ 0.1 ‘ ’ 1
+
+Residual standard error: 3.347 on 6 degrees of freedom
+Multiple R-squared:  0.196,	Adjusted R-squared:  -0.2061 
+F-statistic: 0.4874 on 3 and 6 DF,  p-value: 0.7035
+
+"
+"0","chloride_fec_na_lm_sim_res_plot <- simulateResiduals(fittedModel = chloride_fec_na_lm)"
+"0","plot(chloride_fec_na_lm_sim_res_plot)"

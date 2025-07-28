@@ -1,0 +1,20 @@
+"0",""
+"0",""
+"0","# Normality"
+"0","shapiro.test(residuals(lm(Hct.... ~ Ambient.Or.OAH * Weight_Adjusted_Fecundity_Fecundity.Mean_Weight, data = Fecundity_No_Atresia_Samples)))"
+"1","
+	Shapiro-Wilk normality test
+
+"
+"1","data:  residuals(lm(Hct.... ~ Ambient.Or.OAH * Weight_Adjusted_Fecundity_Fecundity.Mean_Weight, data = Fecundity_No_Atresia_Samples))
+W = 0.83796, p-value = 0.0417
+
+"
+"0","# QQ plot"
+"0","ggqqplot(residuals(lm(Hct.... ~ Ambient.Or.OAH * Weight_Adjusted_Fecundity_Fecundity.Mean_Weight, data = Fecundity_No_Atresia_Samples))) +"
+"0","labs(title = ""Hematocrit Fecundity No Atresia Residual QQplot"","
+"0","     subtitle = ""residuals(lm(Hct.... ~ Ambient.Or.OAH * Weight_Adjusted_Fecundity_Fecundity.Mean_Weight, data = Fecundity_No_Atresia_Samples))"","
+"0","                               x = ""Hct Theoretical Quantiles (Predicted values)"","
+"0","                               y = ""Hct Sample Quantiles"") +"
+"0","  theme(plot.title = element_text(hjust = 0.5),"
+"0","        plot.subtitle = element_text(hjust = 0.5, size = 6))"
