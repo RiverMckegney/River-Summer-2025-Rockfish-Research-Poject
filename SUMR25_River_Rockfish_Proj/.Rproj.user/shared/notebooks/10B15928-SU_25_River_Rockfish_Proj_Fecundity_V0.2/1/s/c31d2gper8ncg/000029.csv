@@ -1,0 +1,47 @@
+"0",""
+"0","# Transform data: square root "
+"0","calcium_fec_na_sqrt <- Fecundity_No_Atresia_Samples %>%"
+"0","  mutate(Ca....mmol.L. = sqrt(Ca....mmol.L.))"
+"0",""
+"0","calcium_fec_na_lm_sqrt <- lm(Ca....mmol.L. ~ Ambient.Or.OAH * Weight_Adjusted_Fecundity_Fecundity.Mean_Weight, data = calcium_fec_na_sqrt)"
+"0","summary(calcium_fec_na_lm_sqrt)"
+"1","
+Call:
+lm(formula = Ca....mmol.L. ~ Ambient.Or.OAH * Weight_Adjusted_Fecundity_Fecundity.Mean_Weight, 
+    data = calcium_fec_na_sqrt)
+
+Residuals:
+      Min        1Q    Median        3Q       Max 
+-0.009302 -0.007543 -0.002741  0.002449  0.026830 
+
+Coefficients:
+                                                                   Estimate
+(Intercept)                                                       1.0640600
+Ambient.Or.OAH.L                                                 -0.1632650
+Weight_Adjusted_Fecundity_Fecundity.Mean_Weight                   0.0004099
+Ambient.Or.OAH.L:Weight_Adjusted_Fecundity_Fecundity.Mean_Weight  0.0004180
+                                                                 Std. Error
+(Intercept)                                                       0.0365621
+Ambient.Or.OAH.L                                                  0.0517067
+Weight_Adjusted_Fecundity_Fecundity.Mean_Weight                   0.0001521
+Ambient.Or.OAH.L:Weight_Adjusted_Fecundity_Fecundity.Mean_Weight  0.0002150
+                                                                 t value
+(Intercept)                                                       29.103
+Ambient.Or.OAH.L                                                  -3.158
+Weight_Adjusted_Fecundity_Fecundity.Mean_Weight                    2.695
+Ambient.Or.OAH.L:Weight_Adjusted_Fecundity_Fecundity.Mean_Weight   1.944
+                                                                 Pr(>|t|)    
+(Intercept)                                                      1.09e-07 ***
+Ambient.Or.OAH.L                                                   0.0196 *  
+Weight_Adjusted_Fecundity_Fecundity.Mean_Weight                    0.0358 *  
+Ambient.Or.OAH.L:Weight_Adjusted_Fecundity_Fecundity.Mean_Weight   0.0999 .  
+---
+Signif. codes:  0 ‘***’ 0.001 ‘**’ 0.01 ‘*’ 0.05 ‘.’ 0.1 ‘ ’ 1
+
+Residual standard error: 0.01346 on 6 degrees of freedom
+Multiple R-squared:  0.9158,	Adjusted R-squared:  0.8738 
+F-statistic: 21.76 on 3 and 6 DF,  p-value: 0.001262
+
+"
+"0","calcium_fec_na_sqrt_sim <- simulateResiduals(fittedModel = calcium_fec_na_lm_sqrt) "
+"0","plot(calcium_fec_na_sqrt_sim)"
