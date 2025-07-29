@@ -1,0 +1,17 @@
+"0",""
+"0","testOutliers(glucose_primary_aov_plot)"
+"1","
+	DHARMa outlier test based on exact binomial test with
+	approximate expectations
+
+data:  glucose_primary_aov_plot
+outliers at both margin(s) = 1, observations = 28, p-value =
+0.2007
+alternative hypothesis: true probability of success is not equal to 0.007968127
+95 percent confidence interval:
+ 0.0009037988 0.1834775975
+sample estimates:
+frequency of outliers (expected: 0.00796812749003984 ) 
+                                            0.03571429 
+
+"

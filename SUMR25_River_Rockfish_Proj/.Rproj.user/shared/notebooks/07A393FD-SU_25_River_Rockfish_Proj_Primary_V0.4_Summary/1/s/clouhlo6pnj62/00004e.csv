@@ -1,0 +1,32 @@
+"0","# Remove Outlier"
+"0","pH_outlier_removed <- Primary_Samples %>%"
+"0","  filter(pH != 7.599)"
+"0",""
+"0","# Test again"
+"0",""
+"0","# Interactive aov model"
+"0","pH_primary_aov_int2 <- aov(pH ~ Pregnant.Or.Atresia * Ambient.Or.OAH, data = pH_outlier_removed)"
+"0","summary(pH_primary_aov_int2) "
+"1","                                   Df  Sum Sq Mean Sq F value
+Pregnant.Or.Atresia                 1 0.08577 0.08577  17.691
+Ambient.Or.OAH                      1 0.02721 0.02721   5.613
+Pregnant.Or.Atresia:Ambient.Or.OAH  1 0.01543 0.01543   3.183
+Residuals                          23 0.11152 0.00485        
+                                     Pr(>F)    
+Pregnant.Or.Atresia                0.000337 ***
+Ambient.Or.OAH                     0.026607 *  
+Pregnant.Or.Atresia:Ambient.Or.OAH 0.087625 .  
+Residuals                                      
+---
+Signif. codes:  0 ‘***’ 0.001 ‘**’ 0.01 ‘*’ 0.05 ‘.’ 0.1 ‘ ’ 1
+"
+"0","pH_primary_aov_plot2 <- simulateResiduals(fittedModel = pH_primary_aov_int2)"
+"2","G2;H2;Warningh in checkModel(fittedModel) :
+  DHARMa: fittedModel not in class of supported models. Absolutely no guarantee that this will work!g
+"
+"0","plot(pH_primary_aov_plot2) "
+"2","Warning in gzfile(file, ""wb"") :
+  cannot open compressed file 'C:/Users/rmcke/OneDrive/Documents/Summer_2025_Rockfish_Research_Project/SUMR25_River_Rockfish_Proj/.Rproj.user/shared/notebooks/07A393FD-SU_25_River_Rockfish_Proj_Primary_V0.4_Summary/1/0DAB469D3d3176e6/clouhlo6pnj62_t/78649236e6d74789995b89d558d091df.snapshot', probable reason 'No such file or directory'
+"
+"2","G1;H1;Errorh in gzfile(file, ""wb"") : cannot open the connection
+g"

@@ -1,0 +1,2 @@
+"0","# Find Outlier "
+"0","boxplot(Primary_Samples$Glu..mmol.L., horizontal = TRUE)"

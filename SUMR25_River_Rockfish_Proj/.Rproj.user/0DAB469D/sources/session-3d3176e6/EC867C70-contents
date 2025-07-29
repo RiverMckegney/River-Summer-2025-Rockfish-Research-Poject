@@ -1,0 +1,2010 @@
+---
+title: "SU_25_River_Rockfish_Proj_Fecundity_V0.2"
+author: "River Mckegney"
+date: "`r Sys.Date()`"
+output: html_document
+---
+
+
+
+
+
+
+## Setup, and Packages
+
+```{r setup, include=FALSE}
+# Setup
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+Code Packages:
+```{r packages}
+# Load packages
+library(gridExtra) # For using grid.table to save tables as images
+library(flextable) # Alternative method to save df as image
+library(tidyverse)
+library(zoo)
+library(lme4)
+library(lmerTest)
+library(rlang)
+library(nortest) # For ad.test
+library(car) # For homogeneity of variance with leveneTest
+library(rcompanion) # For scheirerRayHare test
+library(pastecs) # For stat.desc
+library(ggpubr) # For assumption plots
+library(conover.test) # For the conover.Iman() test function
+library(DescTools) # Contain alternative ConoverTest function
+library(rstatix) # tidyverse adapted stat tests and mshapiro_test() functions
+library(DHARMa) # For multi-level lm models and shapiro test
+library(patchwork) # For combining ggplots
+```
+
+
+
+## Data Entry: Read-in data
+
+```{r}
+# Read and call data into df
+
+# Primary samples df
+ABL90 <- read.csv("Raw_Data/ABL90_Raw.csv")
+
+# River's Parturition metadata
+partuition_subcat <- read.csv("Raw_Data/River's_Rockfish_Metadata_Parturition_V7.csv")
+
+```
+
+
+## Data Filtering
+
+```{r}
+# Data sifting: ABL90 dataset
+
+# Step 1: Remove missing info
+ABL_set1 <- ABL90 %>%
+  filter(Patient.ID_edited != "") 
+  
+
+# Step 2: Separate Patient.ID into columns of sample types: blood plasma and instant freeze plasma 
+ABL_set2 <- separate(ABL_set1, 'Patient.ID_edited', into = c("Patient.ID_edited", "Sample_Type"), sep = ",")  
+
+
+# Step 3:
+# Convert Patient.ID_edited column data to character type
+ABL_set2$Patient.ID_edited <- as.character(ABL_set2$Patient.ID_edited) 
+
+```
+
+
+```{r}
+# Step 4 & 5: Sussing out specific sample errors  
+
+# Remove insufficient samples
+ABL_set3 <- ABL_set2 %>%
+  filter(!is.na("Type")) %>%
+  filter(!str_detect(Errors.detected.during.measurement, "Insufficient sample"))
+
+# Remove inhomogeneous samples
+ABL_set3 <- ABL_set3 %>%
+  filter(!is.na("Type")) %>%
+  filter(!str_detect(Errors.detected.during.measurement, "Inhomogeneous sample"))
+
+# Step 6: Filter for only blood samples
+ABL_b_samp <- ABL_set3 %>%
+  filter(Sample_Type == "b")
+
+```
+
+
+## Merge Datasets:
+
+Join ABL90 df with parturition_subcat df: Making ABL_merged
+```{r}
+# Rename columns to match: Change 'ID' in parturition_subcat to 'Patient.ID_edited' so it is ready to join with ABL90 df
+
+# Please note the 'Treatment' col in parturition_subcat does not match with the finalized 'Ambient.Or.OAH' col in metadata_atresia_guide or ABL90_merged df
+
+# Rename 'ID' col to 'patient.ID_edited'
+partuition_subcat <- partuition_subcat %>%
+  rename(Patient.ID_edited = ID)
+
+```
+
+```{r}
+# Connect main ABL90 dataset with my (River's) sub categorized parturition metadata 
+# ABL_merged <- partuition_subcat %>%
+# left_join(ABL_b_samp, by = "Patient.ID_edited")
+
+ABL_merged <- ABL_b_samp %>%
+inner_join(partuition_subcat, by = "Patient.ID_edited")
+```
+
+Rename Columns Neatly:
+```{r}
+# Rename Treatment & Parturition Outcome
+ABL_merged <- ABL_merged %>%
+  rename(Ambient.Or.OAH = Consensus_General_Treatment,
+         Pregnant.Or.Atresia = Consensus_Atresia_Or_Pregnant)
+         
+```
+
+
+## Remove Samples: Mortalities, NA's, or Missing Info, and Replicates
+
+Remove Replicate ID's
+```{r}
+# Cross Check all Columns: Cross validation to suss correct replicate row
+check_params <- ABL_merged %>%
+  select(Patient.ID_edited, Time, Sample.., Measuring.Mode, Ambient.Or.OAH, Pregnant.Or.Atresia, pH, Glu..mmol.L., Hct...., Na...mmol.L., Cl...mmol.L., K...mmol.L., Ca....mmol.L., pCO2..mmHg.) %>%
+  filter(Patient.ID_edited == "9782D")
+print(check_params)
+
+check_params <- ABL_merged %>%
+  select(Patient.ID_edited, Time, Sample.., Measuring.Mode, Ambient.Or.OAH, Pregnant.Or.Atresia, pH, Glu..mmol.L., Hct...., Na...mmol.L., Cl...mmol.L., K...mmol.L., Ca....mmol.L., pCO2..mmHg.) %>%
+  filter(Patient.ID_edited == "9783D")
+print(check_params)
+
+# Removed replicates: 9782D (2x) and 9783D (2x)
+ABL_merged <- ABL_merged %>%
+  filter(Sample.. != "863",
+         Sample.. != "934")
+
+```
+
+Review Replicates: 
+
+| Row | ID | Time | Sample.. | Measuring.Mode | pH | Glu.mmol.L. | Hct.... | Na...mmol.L. | Cl...mmol.L. | K...mmol.L. | Ca.mmol.L. |
+|:------:| :-----: | :-----: | :-----:| :------:|:------:|:------:|:------:|:------:|:------:|:------:|:------:|
+| 32 | 9782D | 12/28/2023 10:04 | 1016 | C 65uL | 7.348 | 0.5 | 9.8 | 184 | 149 | 2.8 | 1.32 |
+| 39 | 9782D | 1/9/2024 17:21 | 863 | S 65uL | 7.446 | 0.7 | 13.3 | 181 | 161 | 2.9 | 1.31 |  
+| 36 | 9783D | 1/19/2024 10:37 | 934 | S 65uL | 7.484 | 1.7 | **0.2** | 175 | 193 | **34.5** | 1.29 |
+| 41 | 9783D | 1/7/2024 12:32 | 860 | S 65uL | 7.450 | 1.3 | **14.7** | 179 | 164 | **2.5** | 1.30 |
+
+Methods for replicate sample removal:
+Check processing date of IDs, and remove samples that do not match that date.
+
+Case ID_9782D:
+
+- Origianl ABL90 set contains:
+- 9782D,b (Sample.. 1016, Time = 12/28/2023  10:04:00 AM) 
+- 9782D,p (Sample.. 1020, Time = 12/28/2023  10:25:00 AM)
+- 9782D,p (Sample.. 865, Time = 1/9/2024  5:29:00 PM)
+- 9782D,b (Sample.. 863, Time = 1/9/2024  5:21:00 PM)
+
+- 2024_Fish_Metadata.csv says ID_9782D was processed 3/29/2024
+
+
+- Note Processing date in metadata will not match time date stamp in ABL90 data due to the machine being reset, and innacurrate dates being automatically recorded.
+
+Deciding info:
+- For ID-9782D, refer to metadata sheet and look for other samples with that same processing date, then view thoes samples ABL90 'Time'. Try to find a matching 'Time' with other IDs and 9782D that were processed together during the same time recorded by the machine. 
+
+- ID_97838,b (single obs, Sample.. 1024) Time = 12/28/2023  11:49:00 AM
+
+- Since 9782D,b Sample.. 1016 and 97838,b Sample.. 1024 both have a date timestamp occurrence on 12/28/2023, I have decided to keep 9782D,b Sample.. 1016 and drop 9783D,b Sample.. 863
+
+
+Case ID_9783D
+
+- Original ABL90 dataset contains:
+- 9783D,b (Sample.. 934, Time = 1/19/2024  10:37:00 AM)
+- 9783D,c (Sample.. 861, Time = 1/7/2024  12:38:00 PM)
+- 9783D,b (Sample.. 860, Time = 1/7/2024  12:32:00 PM)
+
+- 2024_Fish_Metadata.csv says ID_9783D was processed 3/20/2024
+
+- Informed that ID_9783D: Sample.. 934 is a plasma sample (on account of its low hct value), remove this and **keep Sample.. 860 (parameter values appear correct)**.
+
+
+# Samples: Data subsets
+
+Remove Motalities and No info IDs and assign analysis ready data-frames:
+```{r}
+
+# New df with Moralities removed: Note none of these samples made it into ABL90 df anyway, so looks like they are already filtered out.
+ Live_Samples <- ABL_merged %>%
+  filter(Patient.ID_edited != "9780C", # Mortality
+         Patient.ID_edited != "777AE", # Mortality
+         Patient.ID_edited != "777CA") # Mortality after parturition
+
+
+# New df with mortality and 'No info' Id's removed
+ Primary_Samples <- Live_Samples %>%
+   filter(Patient.ID_edited != "777A0", # No info
+           Patient.ID_edited != "9782F", # No info
+           Patient.ID_edited != "777B3", # No info
+           Patient.ID_edited != "777AA", # No info
+           Patient.ID_edited != "777DE", # No info
+           Patient.ID_edited != "777CE", # No info
+           Patient.ID_edited != "777A6") # No info
+ 
+ 
+# New df of Only Ambient Treatment: For testing parturition success
+ Ambient_Samples <- Primary_Samples %>%
+   filter(Ambient.Or.OAH == "Ambient")
+ 
+# New df of Fecundity Samples:
+ Fecundity_Samples <- Primary_Samples %>%
+   filter(Fecundity_Or_Brood_Count != "NA",
+     Fecundity_Class != "NA") # removes 97706
+
+# Fecundity samples without atresia Ids
+ Fecundity_No_Atresia_Samples <- Primary_Samples %>%
+   filter(Fecundity_Class != "NA",
+          Fecundity_Class != "Atresia",
+          All_Fecundity != "Na",
+          All_Fecundity != 0)  # removes atresia IDs
+
+# Fecundity Ambient Samples
+ Amb_Fec_Samples <- Primary_Samples %>%
+   filter(Ambient.Or.OAH == "Ambient",
+          All_Fecundity != "NA") # removes OAH treatment samples and ID 97706
+ 
+# Fecundity Ambient Samples without atresia Ids
+ Amb_Fec_No_Atresia_Samples <- Primary_Samples %>%
+   filter(Ambient.Or.OAH == "Ambient", # removes OAH treatment 
+          All_Fecundity != "NA", # removes all missing info IDs
+          All_Fecundity != 0) # removes atresia IDs
+ 
+```
+
+
+Change Data Types:
+```{r}
+# Change Continuous Data to type to numeric, double, or factor
+
+# Change data type of ions to factor or numeric
+#glimpse(General_Samples)
+#glimpse(Ambient_Samples)
+ 
+Primary_Samples <- Primary_Samples %>%
+  mutate(across(c(All_Fecundity, pH, Hct...., Glu..mmol.L., Na...mmol.L., Cl...mmol.L., K...mmol.L., Ca....mmol.L.), as.numeric))
+
+Ambient_Samples <- Ambient_Samples %>%
+  mutate(across(c(All_Fecundity, pH, Hct...., Glu..mmol.L., Na...mmol.L., Cl...mmol.L., K...mmol.L., Ca....mmol.L.), as.numeric))
+
+Fecundity_Samples <- Fecundity_Samples %>%
+  mutate(across(c(All_Fecundity, pH, Hct...., Glu..mmol.L., Na...mmol.L., Cl...mmol.L., K...mmol.L., Ca....mmol.L.), as.numeric))
+
+Fecundity_No_Atresia_Samples <- Fecundity_Samples %>%
+  mutate(across(c(All_Fecundity, pH, Hct...., Glu..mmol.L., Na...mmol.L., Cl...mmol.L., K...mmol.L., Ca....mmol.L.), as.numeric))
+
+Amb_Fec_Samples <- Amb_Fec_Samples %>%
+  mutate(across(c(All_Fecundity, pH, Hct...., Glu..mmol.L., Na...mmol.L., Cl...mmol.L., K...mmol.L., Ca....mmol.L.), as.numeric))
+  
+Amb_Fec_No_Atresia_Samples <- Amb_Fec_No_Atresia_Samples %>%
+  mutate(across(c(All_Fecundity, pH, Hct...., Glu..mmol.L., Na...mmol.L., Cl...mmol.L., K...mmol.L., Ca....mmol.L.), as.numeric))
+
+# glimpse(Primary_Samples)
+# glimpse(Ambient_Samples)
+# glimpse(Fecundity_Samples)
+# glimpse(Amb_Fec_Samples)
+
+```
+
+
+
+## Order Factor Levels
+```{r}
+# Fecundity data 
+
+#unique(Fecundity_Samples$Fecundity_Class)
+
+# Arrange the order of parturition categories for visualizations & tests
+
+# Primary Samples
+
+# Arrange Treatment
+Primary_Samples$Ambient.Or.OAH <- ordered(Primary_Samples$Ambient.Or.OAH, levels = c("Ambient", "OAH"))
+
+# Arrange Parturition outcome
+Primary_Samples$Pregnant.Or.Atresia <- ordered(Primary_Samples$Pregnant.Or.Atresia, levels = c("Post Parturition", "Atresia"))
+
+# Arrange Brood Condition
+Primary_Samples$Consensus_Brood_Condition <- ordered(Primary_Samples$Consensus_Brood_Condition, levels = c("Excellent", "Normal", "Low", "Very Low", "Atresia"))
+
+# Arrange Fecundity Class
+Primary_Samples$Fecundity_Class <- ordered(Primary_Samples$Fecundity_Class, levels = c("High (>50,000)", "Low (~1,000s)", "Atresia"))
+
+# Remove NAs from ordered character factors
+Primary_Samples <- Primary_Samples %>%
+  filter(Fecundity_Class != is.na(Fecundity_Class)) %>%
+  filter(Consensus_Brood_Condition != is.na(Consensus_Brood_Condition))
+ 
+ 
+# Ambient data
+Ambient_Samples$Ambient.Or.OAH <- ordered(Ambient_Samples$Ambient.Or.OAH, levels = c("Ambient", "OAH"))
+
+Ambient_Samples$Pregnant.Or.Atresia <- ordered(Ambient_Samples$Pregnant.Or.Atresia, levels = c("Post Parturition", "Atresia"))
+
+Ambient_Samples$Consensus_Brood_Condition <- ordered(Ambient_Samples$Consensus_Brood_Condition, levels = c("Excellent", "Normal", "Low", "Atresia"))
+
+Ambient_Samples$Fecundity_Class <- ordered(Ambient_Samples$Fecundity_Class, levels = c("High (>50,000)", "Low (~1,000s)", "Atresia"))
+
+# Remove NAs from ordered character factors
+Ambient_Samples <- Ambient_Samples %>%
+  filter(Fecundity_Class != is.na(Fecundity_Class)) %>%
+  filter(Consensus_Brood_Condition != is.na(Consensus_Brood_Condition))
+
+# Ambient Fecundity data
+Amb_Fec_No_Atresia_Samples$Ambient.Or.OAH <- ordered(Amb_Fec_No_Atresia_Samples$Ambient.Or.OAH, levels = c("Ambient", "OAH"))
+
+Amb_Fec_No_Atresia_Samples$Pregnant.Or.Atresia <- ordered(Amb_Fec_No_Atresia_Samples$Pregnant.Or.Atresia, levels = c("Post Parturition", "Atresia"))
+
+Amb_Fec_No_Atresia_Samples$Consensus_Brood_Condition <- ordered(Amb_Fec_No_Atresia_Samples$Consensus_Brood_Condition, levels = c("Excellent", "Normal", "Low", "Atresia"))
+
+Amb_Fec_No_Atresia_Samples$Fecundity_Class <- ordered(Amb_Fec_No_Atresia_Samples$Fecundity_Class, levels = c("High (>50,000)", "Low (~1,000s)", "Atresia"))
+
+# Remove NAs from ordered character factors
+Amb_Fec_No_Atresia_Samples <- Amb_Fec_No_Atresia_Samples %>%
+  filter(Fecundity_Class != is.na(Fecundity_Class)) %>%
+  filter(Consensus_Brood_Condition != is.na(Consensus_Brood_Condition))
+
+
+# Fecundity No Atresia data
+
+Fecundity_No_Atresia_Samples$Ambient.Or.OAH <- ordered(Fecundity_No_Atresia_Samples$Ambient.Or.OAH, levels = c("Ambient", "OAH"))
+
+Fecundity_No_Atresia_Samples$Pregnant.Or.Atresia <- ordered(Fecundity_No_Atresia_Samples$Pregnant.Or.Atresia, levels = c("Post Parturition", "Atresia"))
+
+Fecundity_No_Atresia_Samples$Fecundity_Class <- ordered(Fecundity_No_Atresia_Samples$Fecundity_Class, levels = c("High (>50,000)", "Low (~1,000s)"))
+
+Fecundity_No_Atresia_Samples$Fecundity_Class <- 
+  ordered(Fecundity_No_Atresia_Samples$Fecundity_Class, levels = c("High (>50,000)", "Low (~1,000s)"))
+
+Fecundity_No_Atresia_Samples <- Fecundity_No_Atresia_Samples %>%
+  filter(Fecundity_Class != is.na(Fecundity_Class)) %>%
+  filter(Consensus_Brood_Condition != is.na(Consensus_Brood_Condition))
+
+```
+
+
+
+# Save filtered dataset into data-worked folder
+```{r}
+# Save merged dataset in a worked folder
+
+write.csv(x = Primary_Samples, file = "Worked-Data/Primary_Samples")
+
+write.csv(x = Ambient_Samples, file = "Worked-Data/Ambient_Samples")
+
+write.csv(x = Fecundity_Samples, file = "Worked-Data/Fecundity_Samples")
+
+write.csv(x = Fecundity_No_Atresia_Samples, file = "Worked-Data/Fecundity_No_Atresia_Samples")
+
+write.csv(x = Amb_Fec_Samples, file = "Worked-Data/Amb-Fec_Samples")
+
+write.csv(x = Amb_Fec_No_Atresia_Samples, file = "Worked-Data/Amb_Fec_No_Atresia_Samples")
+```
+
+
+## Sample Size: n
+```{r}
+# Sample Size
+
+Fec_NA_sample_size_table <- Fecundity_No_Atresia_Samples %>%
+  group_by(Ambient.Or.OAH) %>%
+  summarise(n_size = n_distinct(Patient.ID_edited), .groups = "drop")
+print(Fec_NA_sample_size_table)
+
+ pdf("data-images/Fec_NA_sample_size_table.pdf")
+ grid.table(Fec_NA_sample_size_table)
+ dev.off()
+ 
+ png("data-images/Fec_NA_sample_size_table.png")
+ grid.table(Fec_NA_sample_size_table)
+ dev.off()
+ 
+Fecundity_No_Atresia_Samples %>%
+  group_by(Ambient.Or.OAH, Fecundity_Class) %>%
+  summarise(n_size = n_distinct(Patient.ID_edited), .groups = "drop")
+
+```
+
+
+Sample Size Barplot:
+```{r}
+# View Sample Distributions
+# Sample Size barplot
+# Fecundity Samples
+
+# Fecundity No atresia sample size
+
+# Fec_NA_barplot <- Fecundity_No_Atresia_Samples %>%
+#   group_by(Fecundity_Class, Ambient.Or.OAH) %>% 
+#   summarise(n_size = n_distinct(Patient.ID_edited), .groups = "drop") %>%
+#   ggplot(aes(x = Fecundity_Class, y = n_size)) +
+#   geom_bar(stat = "identity") +
+#   facet_grid(~ Ambient.Or.OAH) +
+#   scale_y_continuous(expand = c(0, 0), limits = c(0, 15.5), breaks = c(4, 8, 12)) +
+#   labs(title = "Fecundity No Atresia Sample Size",
+#         x = "Parturition Outcome",
+#         y = "Sample Size (n)") +
+#   theme_classic() +
+#   theme(panel.background = element_rect(fill = "white"),
+#         plot.background = element_rect(fill = "white"),
+#         legend.background = element_rect(fill = "white", color = "black"),
+#         title = element_text(size = 12),
+#         plot.title = element_text(size = 25, hjust = 0.5),
+#         axis.text.x = element_text(size = 13),
+#         axis.text.y = element_text(size = 20),
+#         axis.title.x = element_text(size = 20),
+#         axis.title.y = element_text(size = 20))
+# 
+# print(Fec_NA_barplot)
+# 
+# ggsave(filename = "data-images/.png", plot = Fec_NA_barplot, device = "png")
+# ggsave(filename = "data-images/Fec_NA_barplot.pdf", plot = Fec_NA_barplot, device = "pdf")
+
+
+Fec_NA_Scatterplot_Samples <- Fecundity_No_Atresia_Samples %>%
+  ggplot(aes(x = Weight_Adjusted_Fecundity_Fecundity.Mean_Weight, y = Ambient.Or.OAH)) +
+  geom_point() +
+  labs(title = "Fecundity No Atresia Sample Size",
+        x = "Weight Adjusted Fecundity",
+        y = "Treatment Type") +
+  theme_classic() +
+  theme(panel.background = element_rect(fill = "white"),
+        plot.background = element_rect(fill = "white"),
+        legend.background = element_rect(fill = "white", color = "black"),
+        title = element_text(size = 12),
+        plot.title = element_text(size = 25, hjust = 0.5),
+        axis.text.x = element_text(size = 15),
+        axis.text.y = element_text(size = 15),
+        axis.title.x = element_text(size = 20),
+        axis.title.y = element_text(size = 20))
+print(Fec_NA_Scatterplot_Samples)
+
+ggsave(filename = "data-images/.png", plot = Fec_NA_Scatterplot_Samples, device = "png")
+ggsave(filename = "data-images/Fec_NA_Scatterplot_Samples.pdf", plot = Fec_NA_Scatterplot_Samples, device = "pdf")
+
+Fec_NA_Scatterplot_Samples2 <- Fecundity_No_Atresia_Samples %>%
+  ggplot(aes(x = Weight_Adjusted_Fecundity_Fecundity.Mean_Weight, y = Ambient.Or.OAH)) +
+  geom_point() +
+  facet_wrap(~Ambient.Or.OAH) +
+  labs(title = "Fecundity No Atresia Sample Size",
+        x = "Weight Adjusted Fecundity",
+        y = "Treatment Type") +
+  theme_classic() +
+  theme(panel.background = element_rect(fill = "white"),
+        plot.background = element_rect(fill = "white"),
+        legend.background = element_rect(fill = "white", color = "black"),
+        title = element_text(size = 12),
+        plot.title = element_text(size = 25, hjust = 0.5),
+        axis.text.x = element_text(size = 15),
+        axis.text.y = element_text(size = 15),
+        axis.title.x = element_text(size = 20),
+        axis.title.y = element_text(size = 20))
+print(Fec_NA_Scatterplot_Samples2)
+
+```
+
+
+
+
+# pH
+
+pH Summary Stats
+```{r}
+# pH
+# Summary stats
+
+# Ambient data
+Fecundity_No_Atresia_Samples %>%
+  group_by(Ambient.Or.OAH, Weight_Adjusted_Fecundity_Fecundity.Mean_Weight) %>%
+  summarize(count = n(),
+            median = round(median(pH), 3),
+            mean = round(mean(pH), 3),
+            sd = round(sd(pH), 3),
+            cv = round(sd(pH)/mean(pH), 3)) %>%
+  ungroup()
+
+```
+
+
+
+pH scattterplot
+```{r}
+# pH
+# Fecundity No Atresia Samples
+
+# Scatterplot
+pH_fec_na_scatterplot <- Fecundity_No_Atresia_Samples %>%
+  ggplot() + 
+  geom_point(aes(x = Weight_Adjusted_Fecundity_Fecundity.Mean_Weight, y = pH), colour = "black") +
+  labs(title = "pH", x = "Weight Adjusted Fecundity", y = "pH") +
+  theme_classic() +
+  theme(panel.background = element_rect(fill = "white"),
+        plot.background = element_rect(fill = "white"),
+        legend.background = element_rect(fill = "white", color = "black"),
+        title = element_text(size = 12),
+        plot.title = element_text(size = 30, hjust = 0.5),
+        axis.text.x = element_text(size = 20),
+        axis.text.y = element_text(size = 20),
+        axis.title.x = element_text(size = 20),
+        axis.title.y = element_text(size = 20))
+
+print(pH_fec_na_scatterplot)
+
+ggsave(filename = "data-images/pH_fec_na_scatterplot.pdf", plot = pH_fec_na_scatterplot, device = "pdf")
+ggsave(filename = "data-images/pH_fec_na_scatterplot.png", plot = pH_fec_na_scatterplot, device = "png")
+
+# Color by treatment
+pH_fec_na_scatterplot2 <- Fecundity_No_Atresia_Samples %>%
+  ggplot() + 
+  geom_point(aes(x = Weight_Adjusted_Fecundity_Fecundity.Mean_Weight, y = pH, col = Ambient.Or.OAH)) +
+  labs(title = "pH", x = "Weight Adjusted Fecundity", y = "pH") +
+  theme_classic() +
+  guides(color = guide_legend((title = "Treatment Type"))) + 
+  scale_color_manual(values = c("Ambient" = "#189bff", "OAH" = "#598c78")) +
+  theme(panel.background = element_rect(fill = "white"),
+        plot.background = element_rect(fill = "white"),
+        legend.background = element_rect(fill = "white", color = "black"),
+        title = element_text(size = 12),
+        plot.title = element_text(size = 30, hjust = 0.5),
+        axis.text.x = element_text(size = 20),
+        axis.text.y = element_text(size = 20),
+        axis.title.x = element_text(size = 20),
+        axis.title.y = element_text(size = 20))
+
+print(pH_fec_na_scatterplot2)
+
+# Facet by treatment
+pH_fec_na_scatterplot3 <- Fecundity_No_Atresia_Samples %>%
+  ggplot() + 
+  geom_point(aes(x = Weight_Adjusted_Fecundity_Fecundity.Mean_Weight, y = pH), colour = "black") +
+  labs(title = "pH", x = "Weight Adjusted Fecundity", y = "pH") +
+  facet_wrap(~ Ambient.Or.OAH) +
+  theme_classic() +
+  theme(panel.background = element_rect(fill = "white"),
+        plot.background = element_rect(fill = "white"),
+        legend.background = element_rect(fill = "white", color = "black"),
+        title = element_text(size = 12),
+        plot.title = element_text(size = 30, hjust = 0.5),
+        axis.text.x = element_text(size = 20),
+        axis.text.y = element_text(size = 20),
+        axis.title.x = element_text(size = 20),
+        axis.title.y = element_text(size = 20))
+
+print(pH_fec_na_scatterplot3)
+
+```
+
+
+
+
+
+
+# pH Stat Tests
+
+Weight Adjusted Fecundity, No Atresia 
+```{r}
+# pH
+# Weight Adjusted Fecundity, No Atresia 
+
+# Install flexplot
+# devtools::install_github("dustinfife/flexplot", ref="development")
+require(flexplot)
+
+# Fancy lm model
+
+# Interactive
+pH_fec_na_lm <- lm(pH ~ Ambient.Or.OAH * Weight_Adjusted_Fecundity_Fecundity.Mean_Weight, data = Fecundity_No_Atresia_Samples)
+summary(pH_fec_na_lm)
+
+pH_fec_na_lm_sim_res_plot <- simulateResiduals(fittedModel = pH_fec_na_lm)
+plot(pH_fec_na_lm_sim_res_plot)
+
+plotResiduals(pH_fec_na_lm)
+
+testDispersion(pH_fec_na_lm)
+
+visualize(pH_fec_na_lm)
+
+
+# Normality
+shapiro.test(residuals(lm(pH ~ Ambient.Or.OAH * Weight_Adjusted_Fecundity_Fecundity.Mean_Weight, data = Fecundity_No_Atresia_Samples)))
+
+# QQ plot
+ggqqplot(residuals(lm(pH ~ Ambient.Or.OAH * Weight_Adjusted_Fecundity_Fecundity.Mean_Weight, data = Fecundity_No_Atresia_Samples))) +
+labs(title = "pH Fecundity No Atresia Residual QQplot",
+     subtitle = "residuals(lm(pH ~ Ambient.Or.OAH * Weight_Adjusted_Fecundity_Fecundity.Mean_Weight, data = Fecundity_No_Atresia_Samples))",
+                               x = "pH Theoretical Quantiles (Predicted values)",
+                               y = "pH Sample Quantiles") +
+  theme(plot.title = element_text(hjust = 0.5),
+        plot.subtitle = element_text(hjust = 0.5, size = 6))
+
+# Transform data: square root 
+pH_fec_na_sqrt <- Fecundity_No_Atresia_Samples %>%
+  mutate(pH = sqrt(pH))
+
+pH_fec_na_lm_sqrt <- lm(pH ~ Ambient.Or.OAH * Weight_Adjusted_Fecundity_Fecundity.Mean_Weight, data = pH_fec_na_sqrt)
+summary(pH_fec_na_lm_sqrt)
+
+pH_fec_na_sqrt_sim <- simulateResiduals(fittedModel = pH_fec_na_lm_sqrt) 
+plot(pH_fec_na_sqrt_sim)
+
+plotResiduals(pH_fec_na_lm_sqrt)
+
+testDispersion(pH_fec_na_lm_sqrt)
+
+```
+
+
+
+Residuals Plot (if significant)
+```{r}
+# pH
+# Ambient samples
+
+# ggplot with geom_smooth(aes(x=,y=)), method = "lm")
+
+pH_fec_na_lm_plot <- ggplot(data = Fecundity_No_Atresia_Samples, aes(x = Weight_Adjusted_Fecundity_Fecundity.Mean_Weight, y = pH)) +
+  geom_point(aes(col = Ambient.Or.OAH)) +
+  geom_smooth(aes(group = 1), method = "lm") +
+  labs(title = "pH", x = "Weight Adjusted Fecudnity", y = "pH", color = "Category") +
+  scale_y_continuous() +
+  theme_classic() +
+  theme(panel.background = element_rect(fill = "white"),
+        plot.background = element_rect(fill = "white"),
+        legend.background = element_rect(fill = "white", color = "black"),
+        plot.title = element_text(size = 25, hjust = 0.5),
+        axis.text.x = element_text(size = 15),
+        axis.text.y = element_text(size = 20),
+        axis.title.x = element_text(size = 20),
+        axis.title.y = element_text(size = 20))
+
+print(pH_fec_na_lm_plot)
+
+ggsave(filename = "data-images/pH_fec_na_lm_plot.pdf", plot = pH_fec_na_lm_plot, device = "pdf")
+ggsave(filename = "data-images/pH_fec_na_lm_plot.png", plot = pH_fec_na_lm_plot, device = "png")
+
+
+ggplot(data = pH_fec_na_sqrt, aes(x = Weight_Adjusted_Fecundity_Fecundity.Mean_Weight, y = pH)) +
+  geom_point(aes(col = Ambient.Or.OAH)) +
+  geom_smooth(aes(group = 1), method = "lm") +
+  labs(title = "pH", x = "Weight Adjusted Fecudnity", y = "Sqrt pH", color = "Category") +
+  guides(color = guide_legend((title = "Treatment Type"))) + 
+  scale_color_manual(values = c("Ambient" = "#189bff", "OAH" = "#598c78")) +
+  scale_y_continuous() +
+  theme_classic() +
+  theme(panel.background = element_rect(fill = "white"),
+        plot.background = element_rect(fill = "white"),
+        legend.background = element_rect(fill = "white", color = "black"),
+        plot.title = element_text(size = 25, hjust = 0.5),
+        axis.text.x = element_text(size = 15),
+        axis.text.y = element_text(size = 20),
+        axis.title.x = element_text(size = 20),
+        axis.title.y = element_text(size = 20))
+
+```
+
+
+# Hct : Hematocrit
+
+Hematocrit Summary Stats
+```{r}
+# hct
+# Summary stats
+
+# Ambient data
+Fecundity_No_Atresia_Samples %>%
+  group_by(Ambient.Or.OAH, Weight_Adjusted_Fecundity_Fecundity.Mean_Weight) %>%
+  summarize(count = n(),
+            median = round(median(Hct....), 3),
+            mean = round(mean(Hct....), 3),
+            sd = round(sd(Hct....), 3),
+            cv = round(sd(Hct....)/mean(Hct....), 3)) %>%
+  ungroup()
+
+```
+
+
+
+Hematocrit scattterplot
+```{r}
+# Hct
+# Fecundity No Atresia Samples
+
+# Scatterplot
+hct_fec_na_scatterplot <- Fecundity_No_Atresia_Samples %>%
+  ggplot() + 
+  geom_point(aes(x = Weight_Adjusted_Fecundity_Fecundity.Mean_Weight, y = Hct....), colour = "black") +
+  labs(title = "Hematocrit", x = "Weight Adjusted Fecundity", y = "Hematocrit (%)") +
+  theme_classic() +
+  theme(panel.background = element_rect(fill = "white"),
+        plot.background = element_rect(fill = "white"),
+        legend.background = element_rect(fill = "white", color = "black"),
+        title = element_text(size = 12),
+        plot.title = element_text(size = 30, hjust = 0.5),
+        axis.text.x = element_text(size = 20),
+        axis.text.y = element_text(size = 20),
+        axis.title.x = element_text(size = 20),
+        axis.title.y = element_text(size = 20))
+
+print(hct_fec_na_scatterplot)
+
+ggsave(filename = "data-images/hct_fec_na_scatterplot.pdf", plot = hct_fec_na_scatterplot, device = "pdf")
+ggsave(filename = "data-images/hct_fec_na_scatterplot.png", plot = hct_fec_na_scatterplot, device = "png")
+
+# Color by treatment
+hct_fec_na_scatterplot2 <- Fecundity_No_Atresia_Samples %>%
+  ggplot() + 
+  geom_point(aes(x = Weight_Adjusted_Fecundity_Fecundity.Mean_Weight, y = Hct...., col = Ambient.Or.OAH)) +
+  labs(title = "Hematocrit", x = "Weight Adjusted Fecundity", y = "Hematocrit (%)") +
+  theme_classic() +
+  guides(color = guide_legend((title = "Treatment Type"))) + 
+  scale_color_manual(values = c("Ambient" = "#189bff", "OAH" = "#598c78")) +
+  theme(panel.background = element_rect(fill = "white"),
+        plot.background = element_rect(fill = "white"),
+        legend.background = element_rect(fill = "white", color = "black"),
+        title = element_text(size = 12),
+        plot.title = element_text(size = 30, hjust = 0.5),
+        axis.text.x = element_text(size = 20),
+        axis.text.y = element_text(size = 20),
+        axis.title.x = element_text(size = 20),
+        axis.title.y = element_text(size = 20))
+
+print(hct_fec_na_scatterplot2)
+
+```
+
+
+
+# Hct Stat Tests
+
+Weight Adjusted Fecundity, No Atresia 
+```{r}
+# Hct
+# Weight Adjusted Fecundity, No Atresia 
+
+# Fancy lm model
+
+# Interactive
+hct_fec_na_lm <- lm(Hct.... ~ Ambient.Or.OAH * Weight_Adjusted_Fecundity_Fecundity.Mean_Weight, data = Fecundity_No_Atresia_Samples)
+summary(hct_fec_na_lm)
+
+hct_fec_na_lm_sim_res_plot <- simulateResiduals(fittedModel = hct_fec_na_lm)
+plot(hct_fec_na_lm_sim_res_plot)
+
+plotResiduals(hct_fec_na_lm)
+
+testDispersion(hct_fec_na_lm)
+
+visualize(hct_fec_na_lm)
+
+
+# Normality
+shapiro.test(residuals(lm(Hct.... ~ Ambient.Or.OAH * Weight_Adjusted_Fecundity_Fecundity.Mean_Weight, data = Fecundity_No_Atresia_Samples)))
+
+# QQ plot
+ggqqplot(residuals(lm(Hct.... ~ Ambient.Or.OAH * Weight_Adjusted_Fecundity_Fecundity.Mean_Weight, data = Fecundity_No_Atresia_Samples))) +
+labs(title = "Hematocrit Fecundity No Atresia Residual QQplot",
+     subtitle = "residuals(lm(Hct.... ~ Ambient.Or.OAH * Weight_Adjusted_Fecundity_Fecundity.Mean_Weight, data = Fecundity_No_Atresia_Samples))",
+                               x = "Hct Theoretical Quantiles (Predicted values)",
+                               y = "Hct Sample Quantiles") +
+  theme(plot.title = element_text(hjust = 0.5),
+        plot.subtitle = element_text(hjust = 0.5, size = 6))
+
+# Transform data: square root 
+hct_fec_na_sqrt <- Fecundity_No_Atresia_Samples %>%
+  mutate(Hct.... = sqrt(Hct....))
+
+hct_fec_na_lm_sqrt <- lm(Hct.... ~ Ambient.Or.OAH * Weight_Adjusted_Fecundity_Fecundity.Mean_Weight, data = hct_fec_na_sqrt)
+summary(hct_fec_na_lm_sqrt)
+
+hct_fec_na_sqrt_sim <- simulateResiduals(fittedModel = hct_fec_na_lm_sqrt) 
+plot(hct_fec_na_sqrt_sim)
+
+plotResiduals(hct_fec_na_lm_sqrt)
+
+testDispersion(hct_fec_na_lm_sqrt)
+
+```
+
+
+
+Residuals Plot (if significant)
+```{r}
+# pH
+# Ambient samples
+
+# ggplot with geom_smooth(aes(x=,y=)), method = "lm")
+
+hct_fec_na_lm_plot <- ggplot(data = Fecundity_No_Atresia_Samples, aes(x = Weight_Adjusted_Fecundity_Fecundity.Mean_Weight, y = Hct....)) +
+  geom_point(aes(col = Ambient.Or.OAH)) +
+  geom_smooth(aes(group = 1), method = "lm") +
+  labs(title = "Hematocrit", x = "Weight Adjusted Fecudnity", y = "Hematocrit", color = "Category") +
+  guides(color = guide_legend((title = "Treatment Type"))) + 
+  scale_color_manual(values = c("Ambient" = "#189bff", "OAH" = "#598c78")) +
+  scale_y_continuous() +
+  theme_classic() +
+  theme(panel.background = element_rect(fill = "white"),
+        plot.background = element_rect(fill = "white"),
+        legend.background = element_rect(fill = "white", color = "black"),
+        plot.title = element_text(size = 25, hjust = 0.5),
+        axis.text.x = element_text(size = 15),
+        axis.text.y = element_text(size = 20),
+        axis.title.x = element_text(size = 20),
+        axis.title.y = element_text(size = 20))
+
+print(hct_fec_na_lm_plot)
+
+ggsave(filename = "data-images/hct_fec_na_lm_plot.pdf", plot = hct_fec_na_lm_plot, device = "pdf")
+ggsave(filename = "data-images/hct_fec_na_lm_plot.png", plot = hct_fec_na_lm_plot, device = "png")
+
+
+ggplot(data = hct_fec_na_sqrt, aes(x = Weight_Adjusted_Fecundity_Fecundity.Mean_Weight, y = Hct....)) +
+  geom_point(aes(col = Ambient.Or.OAH)) +
+  geom_smooth(aes(group = 1), method = "lm") +
+  labs(title = "Hematocrit", x = "Weight Adjusted Fecudnity", y = "Sqrt Hematocrit", color = "Category") +
+  guides(color = guide_legend((title = "Treatment Type"))) + 
+  scale_color_manual(values = c("Ambient" = "#189bff", "OAH" = "#598c78")) +
+  scale_y_continuous() +
+  theme_classic() +
+  theme(panel.background = element_rect(fill = "white"),
+        plot.background = element_rect(fill = "white"),
+        legend.background = element_rect(fill = "white", color = "black"),
+        plot.title = element_text(size = 25, hjust = 0.5),
+        axis.text.x = element_text(size = 15),
+        axis.text.y = element_text(size = 20),
+        axis.title.x = element_text(size = 20),
+        axis.title.y = element_text(size = 20))
+
+```
+
+
+
+# Glucose 
+
+Glucose Summary Stats
+```{r}
+# glucose
+# Summary stats
+
+# Ambient data
+Fecundity_No_Atresia_Samples %>%
+  group_by(Ambient.Or.OAH, Weight_Adjusted_Fecundity_Fecundity.Mean_Weight) %>%
+  summarize(count = n(),
+            median = round(median(Glu..mmol.L.), 3),
+            mean = round(mean(Glu..mmol.L.), 3),
+            sd = round(sd(Glu..mmol.L.), 3),
+            cv = round(sd(Glu..mmol.L.)/mean(Glu..mmol.L.), 3)) %>%
+  ungroup()
+
+```
+
+
+
+Glucose scattterplot
+```{r}
+# Hct
+# Fecundity No Atresia Samples
+
+# Scatterplot
+glucose_fec_na_scatterplot <- Fecundity_No_Atresia_Samples %>%
+  ggplot() + 
+  geom_point(aes(x = Weight_Adjusted_Fecundity_Fecundity.Mean_Weight, y = Glu..mmol.L.), colour = "black") +
+  labs(title = "Glucose", x = "Weight Adjusted Fecundity", y = "Glucose (mmol/L)") +
+  theme_classic() +
+  theme(panel.background = element_rect(fill = "white"),
+        plot.background = element_rect(fill = "white"),
+        legend.background = element_rect(fill = "white", color = "black"),
+        title = element_text(size = 12),
+        plot.title = element_text(size = 30, hjust = 0.5),
+        axis.text.x = element_text(size = 20),
+        axis.text.y = element_text(size = 20),
+        axis.title.x = element_text(size = 20),
+        axis.title.y = element_text(size = 20))
+
+print(glucose_fec_na_scatterplot)
+
+ggsave(filename = "data-images/glucose_fec_na_scatterplot.pdf", plot = glucose_fec_na_scatterplot, device = "pdf")
+ggsave(filename = "data-images/glucose_fec_na_scatterplot.png", plot = glucose_fec_na_scatterplot, device = "png")
+
+# Color by treatment
+glucose_fec_na_scatterplot2 <- Fecundity_No_Atresia_Samples %>%
+  ggplot() + 
+  geom_point(aes(x = Weight_Adjusted_Fecundity_Fecundity.Mean_Weight, y = Glu..mmol.L., col = Ambient.Or.OAH)) +
+  labs(title = "Glucose", x = "Weight Adjusted Fecundity", y = "Glucose (mmol/L)") +
+  theme_classic() +
+  guides(color = guide_legend((title = "Treatment Type"))) + 
+  scale_color_manual(values = c("Ambient" = "#189bff", "OAH" = "#598c78")) +
+  theme(panel.background = element_rect(fill = "white"),
+        plot.background = element_rect(fill = "white"),
+        legend.background = element_rect(fill = "white", color = "black"),
+        title = element_text(size = 12),
+        plot.title = element_text(size = 30, hjust = 0.5),
+        axis.text.x = element_text(size = 20),
+        axis.text.y = element_text(size = 20),
+        axis.title.x = element_text(size = 20),
+        axis.title.y = element_text(size = 20))
+
+print(glucose_fec_na_scatterplot2)
+
+```
+
+
+# Glucose Stat Tests
+
+Weight Adjusted Fecundity, No Atresia 
+```{r}
+# glucose
+# Weight Adjusted Fecundity, No Atresia 
+
+# Fancy lm model
+
+# Interactive
+glucose_fec_na_lm <- lm(Glu..mmol.L. ~ Ambient.Or.OAH * Weight_Adjusted_Fecundity_Fecundity.Mean_Weight, data = Fecundity_No_Atresia_Samples)
+summary(glucose_fec_na_lm)
+
+glucose_fec_na_lm_sim_res_plot <- simulateResiduals(fittedModel = glucose_fec_na_lm)
+plot(glucose_fec_na_lm_sim_res_plot)
+
+plotResiduals(glucose_fec_na_lm)
+
+testDispersion(glucose_fec_na_lm)
+
+visualize(glucose_fec_na_lm)
+
+
+# Normality
+shapiro.test(residuals(lm(Glu..mmol.L. ~ Ambient.Or.OAH * Weight_Adjusted_Fecundity_Fecundity.Mean_Weight, data = Fecundity_No_Atresia_Samples)))
+
+# QQ plot
+ggqqplot(residuals(lm(Glu..mmol.L. ~ Ambient.Or.OAH * Weight_Adjusted_Fecundity_Fecundity.Mean_Weight, data = Fecundity_No_Atresia_Samples))) +
+labs(title = "Glucose Fecundity No Atresia Residual QQplot",
+     subtitle = "residuals(lm(Glu..mmol.L. ~ Ambient.Or.OAH * Weight_Adjusted_Fecundity_Fecundity.Mean_Weight, data = Fecundity_No_Atresia_Samples))",
+                               x = "Glucose Theoretical Quantiles (Predicted values)",
+                               y = "Glucose Sample Quantiles") +
+  theme(plot.title = element_text(hjust = 0.5),
+        plot.subtitle = element_text(hjust = 0.5, size = 6))
+
+# Transform data: square root 
+glucose_fec_na_sqrt <- Fecundity_No_Atresia_Samples %>%
+  mutate(Glu..mmol.L. = sqrt(Glu..mmol.L.))
+
+glucose_fec_na_lm_sqrt <- lm(Glu..mmol.L. ~ Ambient.Or.OAH * Weight_Adjusted_Fecundity_Fecundity.Mean_Weight, data = glucose_fec_na_sqrt)
+summary(glucose_fec_na_lm_sqrt)
+
+glucose_fec_na_sqrt_sim <- simulateResiduals(fittedModel = glucose_fec_na_lm_sqrt) 
+plot(glucose_fec_na_sqrt_sim)
+
+plotResiduals(glucose_fec_na_lm_sqrt)
+
+testDispersion(glucose_fec_na_lm_sqrt)
+
+```
+
+
+
+Residuals Plot (if significant)
+```{r}
+# glucose
+# Ambient samples
+
+# ggplot with geom_smooth(aes(x=,y=)), method = "lm")
+
+glucose_fec_na_lm_plot <- ggplot(data = Fecundity_No_Atresia_Samples, aes(x = Weight_Adjusted_Fecundity_Fecundity.Mean_Weight, y = Glu..mmol.L.)) +
+  geom_point(aes(col = Ambient.Or.OAH)) +
+  geom_smooth(aes(group = 1), method = "lm") +
+  labs(title = "Glucose", x = "Weight Adjusted Fecudnity", y = "Glucose (mmol/L)", color = "Category") +
+  guides(color = guide_legend((title = "Treatment Type"))) + 
+  scale_color_manual(values = c("Ambient" = "#189bff", "OAH" = "#598c78")) +
+  scale_y_continuous() +
+  theme_classic() +
+  theme(panel.background = element_rect(fill = "white"),
+        plot.background = element_rect(fill = "white"),
+        legend.background = element_rect(fill = "white", color = "black"),
+        plot.title = element_text(size = 25, hjust = 0.5),
+        axis.text.x = element_text(size = 15),
+        axis.text.y = element_text(size = 20),
+        axis.title.x = element_text(size = 20),
+        axis.title.y = element_text(size = 20))
+
+print(glucose_fec_na_lm_plot)
+
+ggsave(filename = "data-images/glucose_fec_na_lm_plot.pdf", plot = glucose_fec_na_lm_plot, device = "pdf")
+ggsave(filename = "data-images/glucose_fec_na_lm_plot.png", plot = glucose_fec_na_lm_plot, device = "png")
+
+
+ggplot(data = glucose_fec_na_sqrt, aes(x = Weight_Adjusted_Fecundity_Fecundity.Mean_Weight, y = Glu..mmol.L.)) +
+  geom_point(aes(col = Ambient.Or.OAH)) +
+  geom_smooth(aes(group = 1), method = "lm") +
+  labs(title = "Glucose", x = "Weight Adjusted Fecudnity", y = "Sqrt Glucose", color = "Category") +
+  guides(color = guide_legend((title = "Treatment Type"))) + 
+  scale_color_manual(values = c("Ambient" = "#189bff", "OAH" = "#598c78")) +
+  scale_y_continuous() +
+  theme_classic() +
+  theme(panel.background = element_rect(fill = "white"),
+        plot.background = element_rect(fill = "white"),
+        legend.background = element_rect(fill = "white", color = "black"),
+        plot.title = element_text(size = 25, hjust = 0.5),
+        axis.text.x = element_text(size = 15),
+        axis.text.y = element_text(size = 20),
+        axis.title.x = element_text(size = 20),
+        axis.title.y = element_text(size = 20))
+
+```
+
+
+# Na+ : Sodium
+
+
+Sodium Summary Stats
+```{r}
+# Na+
+# Summary stats
+
+# Ambient data
+Fecundity_No_Atresia_Samples %>%
+  group_by(Ambient.Or.OAH, Weight_Adjusted_Fecundity_Fecundity.Mean_Weight) %>%
+  summarize(count = n(),
+            median = round(median(Na...mmol.L.), 3),
+            mean = round(mean(Na...mmol.L.), 3),
+            sd = round(sd(Na...mmol.L.), 3),
+            cv = round(sd(Na...mmol.L.)/mean(Na...mmol.L.), 3)) %>%
+  ungroup()
+
+```
+
+
+
+Sodium scattterplot
+```{r}
+# Na+
+# Fecundity No Atresia Samples
+
+# Scatterplot
+sodium_fec_na_scatterplot <- Fecundity_No_Atresia_Samples %>%
+  ggplot() + 
+  geom_point(aes(x = Weight_Adjusted_Fecundity_Fecundity.Mean_Weight, y = Na...mmol.L.), colour = "black") +
+  labs(title = "Sodium", x = "Weight Adjusted Fecundity", y = "Sodium (mmol/L)") +
+  theme_classic() +
+  theme(panel.background = element_rect(fill = "white"),
+        plot.background = element_rect(fill = "white"),
+        legend.background = element_rect(fill = "white", color = "black"),
+        title = element_text(size = 12),
+        plot.title = element_text(size = 30, hjust = 0.5),
+        axis.text.x = element_text(size = 20),
+        axis.text.y = element_text(size = 20),
+        axis.title.x = element_text(size = 20),
+        axis.title.y = element_text(size = 20))
+
+print(sodium_fec_na_scatterplot)
+
+ggsave(filename = "data-images/sodium_fec_na_scatterplot.pdf", plot = sodium_fec_na_scatterplot, device = "pdf")
+ggsave(filename = "data-images/sodium_fec_na_scatterplot.png", plot = sodium_fec_na_scatterplot, device = "png")
+
+# Color by treatment
+sodium_fec_na_scatterplot2 <- Fecundity_No_Atresia_Samples %>%
+  ggplot() + 
+  geom_point(aes(x = Weight_Adjusted_Fecundity_Fecundity.Mean_Weight, y = Na...mmol.L., col = Ambient.Or.OAH)) +
+  labs(title = "Sodium", x = "Weight Adjusted Fecundity", y = "Sodium (mmol/L)") +
+  theme_classic() +
+  guides(color = guide_legend((title = "Treatment Type"))) + 
+  scale_color_manual(values = c("Ambient" = "#189bff", "OAH" = "#598c78")) +
+  theme(panel.background = element_rect(fill = "white"),
+        plot.background = element_rect(fill = "white"),
+        legend.background = element_rect(fill = "white", color = "black"),
+        title = element_text(size = 12),
+        plot.title = element_text(size = 30, hjust = 0.5),
+        axis.text.x = element_text(size = 20),
+        axis.text.y = element_text(size = 20),
+        axis.title.x = element_text(size = 20),
+        axis.title.y = element_text(size = 20))
+
+print(sodium_fec_na_scatterplot2)
+
+```
+
+
+
+# Na+ Stat Tests
+
+Weight Adjusted Fecundity, No Atresia 
+```{r}
+# Na+
+# Weight Adjusted Fecundity, No Atresia 
+
+# Fancy lm model
+
+# Interactive
+sodium_fec_na_lm <- lm(Na...mmol.L. ~ Ambient.Or.OAH * Weight_Adjusted_Fecundity_Fecundity.Mean_Weight, data = Fecundity_No_Atresia_Samples)
+summary(sodium_fec_na_lm)
+
+sodium_fec_na_lm_sim_res_plot <- simulateResiduals(fittedModel = sodium_fec_na_lm)
+plot(sodium_fec_na_lm_sim_res_plot)
+
+plotResiduals(sodium_fec_na_lm)
+
+testDispersion(sodium_fec_na_lm)
+
+visualize(sodium_fec_na_lm)
+
+
+# Normality
+shapiro.test(residuals(lm(Na...mmol.L. ~ Ambient.Or.OAH * Weight_Adjusted_Fecundity_Fecundity.Mean_Weight, data = Fecundity_No_Atresia_Samples)))
+
+# QQ plot
+ggqqplot(residuals(lm(Na...mmol.L. ~ Ambient.Or.OAH * Weight_Adjusted_Fecundity_Fecundity.Mean_Weight, data = Fecundity_No_Atresia_Samples))) +
+labs(title = "Sodium Fecundity No Atresia Residual QQplot",
+     subtitle = "residuals(lm(Na...mmol.L. ~ Ambient.Or.OAH * Weight_Adjusted_Fecundity_Fecundity.Mean_Weight, data = Fecundity_No_Atresia_Samples))",
+                               x = "Sodium Theoretical Quantiles (Predicted values)",
+                               y = "Sodium Sample Quantiles") +
+  theme(plot.title = element_text(hjust = 0.5),
+        plot.subtitle = element_text(hjust = 0.5, size = 6))
+
+# Transform data: square root 
+sodium_fec_na_sqrt <- Fecundity_No_Atresia_Samples %>%
+  mutate(Na...mmol.L. = sqrt(Na...mmol.L.))
+
+sodium_fec_na_lm_sqrt <- lm(Na...mmol.L. ~ Ambient.Or.OAH * Weight_Adjusted_Fecundity_Fecundity.Mean_Weight, data = sodium_fec_na_sqrt)
+summary(sodium_fec_na_lm_sqrt)
+
+sodium_fec_na_sqrt_sim <- simulateResiduals(fittedModel = sodium_fec_na_lm_sqrt) 
+plot(sodium_fec_na_sqrt_sim)
+
+plotResiduals(sodium_fec_na_lm_sqrt)
+
+testDispersion(sodium_fec_na_lm_sqrt)
+
+```
+
+
+
+Residuals Plot (if significant)
+```{r}
+# Na+
+# Ambient samples
+
+# ggplot with geom_smooth(aes(x=,y=)), method = "lm")
+
+sodium_fec_na_lm_plot <- ggplot(data = Fecundity_No_Atresia_Samples, aes(x = Weight_Adjusted_Fecundity_Fecundity.Mean_Weight, y = Na...mmol.L.)) +
+  geom_point(aes(col = Ambient.Or.OAH)) +
+  geom_smooth(aes(group = 1), method = "lm") +
+  labs(title = "Sodium", x = "Weight Adjusted Fecudnity", y = "Sodium (mmol/L)", color = "Category") +
+  guides(color = guide_legend((title = "Treatment Type"))) + 
+  scale_color_manual(values = c("Ambient" = "#189bff", "OAH" = "#598c78")) +
+  scale_y_continuous() +
+  theme_classic() +
+  theme(panel.background = element_rect(fill = "white"),
+        plot.background = element_rect(fill = "white"),
+        legend.background = element_rect(fill = "white", color = "black"),
+        plot.title = element_text(size = 25, hjust = 0.5),
+        axis.text.x = element_text(size = 15),
+        axis.text.y = element_text(size = 20),
+        axis.title.x = element_text(size = 20),
+        axis.title.y = element_text(size = 20))
+
+print(sodium_fec_na_lm_plot)
+
+ggsave(filename = "data-images/sodium_fec_na_lm_plot.pdf", plot = sodium_fec_na_lm_plot, device = "pdf")
+ggsave(filename = "data-images/sodium_fec_na_lm_plot.png", plot = sodium_fec_na_lm_plot, device = "png")
+
+
+ggplot(data = sodium_fec_na_sqrt, aes(x = Weight_Adjusted_Fecundity_Fecundity.Mean_Weight, y = Na...mmol.L.)) +
+  geom_point(aes(col = Ambient.Or.OAH)) +
+  geom_smooth(aes(group = 1), method = "lm") +
+  labs(title = "Sodium", x = "Weight Adjusted Fecudnity", y = "Sqrt Sodium", color = "Category") +
+  guides(color = guide_legend((title = "Treatment Type"))) + 
+  scale_color_manual(values = c("Ambient" = "#189bff", "OAH" = "#598c78")) +
+  scale_y_continuous() +
+  theme_classic() +
+  theme(panel.background = element_rect(fill = "white"),
+        plot.background = element_rect(fill = "white"),
+        legend.background = element_rect(fill = "white", color = "black"),
+        plot.title = element_text(size = 25, hjust = 0.5),
+        axis.text.x = element_text(size = 15),
+        axis.text.y = element_text(size = 20),
+        axis.title.x = element_text(size = 20),
+        axis.title.y = element_text(size = 20))
+
+```
+
+
+# Cl- : Chloride
+
+Chloride Summary Stats
+```{r}
+# Cl-
+# Summary stats
+
+# Ambient data
+Fecundity_No_Atresia_Samples %>%
+  group_by(Ambient.Or.OAH, Weight_Adjusted_Fecundity_Fecundity.Mean_Weight) %>%
+  summarize(count = n(),
+            median = round(median(Cl...mmol.L.), 3),
+            mean = round(mean(Cl...mmol.L.), 3),
+            sd = round(sd(Cl...mmol.L.), 3),
+            cv = round(sd(Cl...mmol.L.)/mean(Cl...mmol.L.), 3)) %>%
+  ungroup()
+
+```
+
+
+
+Sodium scattterplot
+```{r}
+# Na+
+# Fecundity No Atresia Samples
+
+# Scatterplot
+chloride_fec_na_scatterplot <- Fecundity_No_Atresia_Samples %>%
+  ggplot() + 
+  geom_point(aes(x = Weight_Adjusted_Fecundity_Fecundity.Mean_Weight, y = Cl...mmol.L.), colour = "black") +
+  labs(title = "Chloride", x = "Weight Adjusted Fecundity", y = "Chloride (mmol/L)") +
+  theme_classic() +
+  theme(panel.background = element_rect(fill = "white"),
+        plot.background = element_rect(fill = "white"),
+        legend.background = element_rect(fill = "white", color = "black"),
+        title = element_text(size = 12),
+        plot.title = element_text(size = 30, hjust = 0.5),
+        axis.text.x = element_text(size = 20),
+        axis.text.y = element_text(size = 20),
+        axis.title.x = element_text(size = 20),
+        axis.title.y = element_text(size = 20))
+
+print(chloride_fec_na_scatterplot)
+
+ggsave(filename = "data-images/chloride_fec_na_scatterplot.pdf", plot = chloride_fec_na_scatterplot, device = "pdf")
+ggsave(filename = "data-images/chloride_fec_na_scatterplot.png", plot = chloride_fec_na_scatterplot, device = "png")
+
+# Color by treatment
+chloride_fec_na_scatterplot2 <- Fecundity_No_Atresia_Samples %>%
+  ggplot() + 
+  geom_point(aes(x = Weight_Adjusted_Fecundity_Fecundity.Mean_Weight, y = Cl...mmol.L., col = Ambient.Or.OAH)) +
+  labs(title = "Chloride", x = "Weight Adjusted Fecundity", y = "Chloride (mmol/L)") +
+  theme_classic() +
+  guides(color = guide_legend((title = "Treatment Type"))) + 
+  scale_color_manual(values = c("Ambient" = "#189bff", "OAH" = "#598c78")) +
+  theme(panel.background = element_rect(fill = "white"),
+        plot.background = element_rect(fill = "white"),
+        legend.background = element_rect(fill = "white", color = "black"),
+        title = element_text(size = 12),
+        plot.title = element_text(size = 30, hjust = 0.5),
+        axis.text.x = element_text(size = 20),
+        axis.text.y = element_text(size = 20),
+        axis.title.x = element_text(size = 20),
+        axis.title.y = element_text(size = 20))
+
+print(chloride_fec_na_scatterplot2)
+
+```
+
+
+
+# Cl- Stat Tests 
+
+Weight Adjusted Fecundity, No Atresia 
+```{r}
+# Cl-
+# Weight Adjusted Fecundity, No Atresia 
+
+# Fancy lm model
+
+# Interactive
+chloride_fec_na_lm <- lm(Cl...mmol.L. ~ Ambient.Or.OAH * Weight_Adjusted_Fecundity_Fecundity.Mean_Weight, data = Fecundity_No_Atresia_Samples)
+summary(chloride_fec_na_lm)
+
+chloride_fec_na_lm_sim_res_plot <- simulateResiduals(fittedModel = chloride_fec_na_lm)
+plot(chloride_fec_na_lm_sim_res_plot)
+
+plotResiduals(chloride_fec_na_lm)
+
+testDispersion(chloride_fec_na_lm)
+
+visualize(chloride_fec_na_lm)
+
+
+# Normality
+shapiro.test(residuals(lm(Cl...mmol.L. ~ Ambient.Or.OAH * Weight_Adjusted_Fecundity_Fecundity.Mean_Weight, data = Fecundity_No_Atresia_Samples)))
+
+# QQ plot
+ggqqplot(residuals(lm(Cl...mmol.L. ~ Ambient.Or.OAH * Weight_Adjusted_Fecundity_Fecundity.Mean_Weight, data = Fecundity_No_Atresia_Samples))) +
+labs(title = "Chloride Fecundity No Atresia Residual QQplot",
+     subtitle = "residuals(lm(Cl...mmol.L. ~ Ambient.Or.OAH * Weight_Adjusted_Fecundity_Fecundity.Mean_Weight, data = Fecundity_No_Atresia_Samples))",
+                               x = "Chloride Theoretical Quantiles (Predicted values)",
+                               y = "Chloride Sample Quantiles") +
+  theme(plot.title = element_text(hjust = 0.5),
+        plot.subtitle = element_text(hjust = 0.5, size = 6))
+
+# Transform data: square root 
+chloride_fec_na_sqrt <- Fecundity_No_Atresia_Samples %>%
+  mutate(Cl...mmol.L. = sqrt(Cl...mmol.L.))
+
+chloride_fec_na_lm_sqrt <- lm(Cl...mmol.L. ~ Ambient.Or.OAH * Weight_Adjusted_Fecundity_Fecundity.Mean_Weight, data = chloride_fec_na_sqrt)
+summary(chloride_fec_na_lm_sqrt)
+
+chloride_fec_na_sqrt_sim <- simulateResiduals(fittedModel = chloride_fec_na_lm_sqrt) 
+plot(chloride_fec_na_sqrt_sim)
+
+plotResiduals(chloride_fec_na_lm_sqrt)
+
+testDispersion(chloride_fec_na_lm_sqrt)
+
+```
+
+
+
+Residuals Plot (if significant)
+```{r}
+# Cl-
+# Ambient samples
+
+# ggplot with geom_smooth(aes(x=,y=)), method = "lm")
+
+chloride_fec_na_lm_plot <- ggplot(data = Fecundity_No_Atresia_Samples, aes(x = Weight_Adjusted_Fecundity_Fecundity.Mean_Weight, y = Cl...mmol.L.)) +
+  geom_point(aes(col = Ambient.Or.OAH)) +
+  geom_smooth(aes(group = 1), method = "lm") +
+  labs(title = "Chloride", x = "Weight Adjusted Fecudnity", y = "Chloride (mmol/L)", color = "Category") +
+  guides(color = guide_legend((title = "Treatment Type"))) + 
+  scale_color_manual(values = c("Ambient" = "#189bff", "OAH" = "#598c78")) +
+  scale_y_continuous() +
+  theme_classic() +
+  theme(panel.background = element_rect(fill = "white"),
+        plot.background = element_rect(fill = "white"),
+        legend.background = element_rect(fill = "white", color = "black"),
+        plot.title = element_text(size = 25, hjust = 0.5),
+        axis.text.x = element_text(size = 15),
+        axis.text.y = element_text(size = 20),
+        axis.title.x = element_text(size = 20),
+        axis.title.y = element_text(size = 20))
+
+print(chloride_fec_na_lm_plot)
+
+ggsave(filename = "data-images/chloride_fec_na_lm_plot.pdf", plot = chloride_fec_na_lm_plot, device = "pdf")
+ggsave(filename = "data-images/chloride_fec_na_lm_plot.png", plot = chloride_fec_na_lm_plot, device = "png")
+
+
+ggplot(data = chloride_fec_na_sqrt, aes(x = Weight_Adjusted_Fecundity_Fecundity.Mean_Weight, y = Cl...mmol.L.)) +
+  geom_point(aes(col = Ambient.Or.OAH)) +
+  geom_smooth(aes(group = 1), method = "lm") +
+  labs(title = "Chloride", x = "Weight Adjusted Fecudnity", y = "Sqrt Chloride", color = "Category") +
+  guides(color = guide_legend((title = "Treatment Type"))) + 
+  scale_color_manual(values = c("Ambient" = "#189bff", "OAH" = "#598c78")) +
+  scale_y_continuous() +
+  theme_classic() +
+  theme(panel.background = element_rect(fill = "white"),
+        plot.background = element_rect(fill = "white"),
+        legend.background = element_rect(fill = "white", color = "black"),
+        plot.title = element_text(size = 25, hjust = 0.5),
+        axis.text.x = element_text(size = 15),
+        axis.text.y = element_text(size = 20),
+        axis.title.x = element_text(size = 20),
+        axis.title.y = element_text(size = 20))
+
+```
+
+
+
+# K+ : Potassium
+
+Potassium Summary Stats
+```{r}
+# K+
+# Summary stats
+
+# Ambient data
+Fecundity_No_Atresia_Samples %>%
+  group_by(Ambient.Or.OAH, Weight_Adjusted_Fecundity_Fecundity.Mean_Weight) %>%
+  summarize(count = n(),
+            median = round(median(K...mmol.L.), 3),
+            mean = round(mean(K...mmol.L.), 3),
+            sd = round(sd(K...mmol.L.), 3),
+            cv = round(sd(K...mmol.L.)/mean(K...mmol.L.), 3)) %>%
+  ungroup()
+
+```
+
+
+
+Sodium scattterplot
+```{r}
+# Na+
+# Fecundity No Atresia Samples
+
+# Scatterplot
+potassium_fec_na_scatterplot <- Fecundity_No_Atresia_Samples %>%
+  ggplot() + 
+  geom_point(aes(x = Weight_Adjusted_Fecundity_Fecundity.Mean_Weight, y = K...mmol.L.), colour = "black") +
+  labs(title = "Potassium", x = "Weight Adjusted Fecundity", y = "Potassium (mmol/L)") +
+  theme_classic() +
+  theme(panel.background = element_rect(fill = "white"),
+        plot.background = element_rect(fill = "white"),
+        legend.background = element_rect(fill = "white", color = "black"),
+        title = element_text(size = 12),
+        plot.title = element_text(size = 30, hjust = 0.5),
+        axis.text.x = element_text(size = 20),
+        axis.text.y = element_text(size = 20),
+        axis.title.x = element_text(size = 20),
+        axis.title.y = element_text(size = 20))
+
+print(potassium_fec_na_scatterplot)
+
+ggsave(filename = "data-images/potassium_fec_na_scatterplot.pdf", plot = potassium_fec_na_scatterplot, device = "pdf")
+ggsave(filename = "data-images/potassium_fec_na_scatterplot.png", plot = potassium_fec_na_scatterplot, device = "png")
+
+# Color by treatment
+potassium_fec_na_scatterplot2 <- Fecundity_No_Atresia_Samples %>%
+  ggplot() + 
+  geom_point(aes(x = Weight_Adjusted_Fecundity_Fecundity.Mean_Weight, y = K...mmol.L., col = Ambient.Or.OAH)) +
+  labs(title = "Potassium", x = "Weight Adjusted Fecundity", y = "Potassium (mmol/L)") +
+  theme_classic() +
+  guides(color = guide_legend((title = "Treatment Type"))) + 
+  scale_color_manual(values = c("Ambient" = "#189bff", "OAH" = "#598c78")) +
+  theme(panel.background = element_rect(fill = "white"),
+        plot.background = element_rect(fill = "white"),
+        legend.background = element_rect(fill = "white", color = "black"),
+        title = element_text(size = 12),
+        plot.title = element_text(size = 30, hjust = 0.5),
+        axis.text.x = element_text(size = 20),
+        axis.text.y = element_text(size = 20),
+        axis.title.x = element_text(size = 20),
+        axis.title.y = element_text(size = 20))
+
+print(potassium_fec_na_scatterplot2)
+
+```
+
+
+# K+ Stat Tests
+
+Weight Adjusted Fecundity, No Atresia 
+```{r}
+# K+
+# Weight Adjusted Fecundity, No Atresia 
+
+# Fancy lm model
+
+# Interactive
+potassium_fec_na_lm <- lm(K...mmol.L. ~ Ambient.Or.OAH * Weight_Adjusted_Fecundity_Fecundity.Mean_Weight, data = Fecundity_No_Atresia_Samples)
+summary(potassium_fec_na_lm)
+
+potassium_fec_na_lm_sim_res_plot <- simulateResiduals(fittedModel = potassium_fec_na_lm)
+plot(potassium_fec_na_lm_sim_res_plot)
+
+plotResiduals(potassium_fec_na_lm)
+
+testDispersion(potassium_fec_na_lm)
+
+visualize(potassium_fec_na_lm)
+
+
+# Normality
+shapiro.test(residuals(lm(K...mmol.L. ~ Ambient.Or.OAH * Weight_Adjusted_Fecundity_Fecundity.Mean_Weight, data = Fecundity_No_Atresia_Samples)))
+
+# QQ plot
+ggqqplot(residuals(lm(K...mmol.L. ~ Ambient.Or.OAH * Weight_Adjusted_Fecundity_Fecundity.Mean_Weight, data = Fecundity_No_Atresia_Samples))) +
+labs(title = "Potassium Fecundity No Atresia Residual QQplot",
+     subtitle = "residuals(lm(K...mmol.L. ~ Ambient.Or.OAH * Weight_Adjusted_Fecundity_Fecundity.Mean_Weight, data = Fecundity_No_Atresia_Samples))",
+                               x = "Potassium Theoretical Quantiles (Predicted values)",
+                               y = "Potassium Sample Quantiles") +
+  theme(plot.title = element_text(hjust = 0.5),
+        plot.subtitle = element_text(hjust = 0.5, size = 6))
+
+# Transform data: square root 
+potassium_fec_na_sqrt <- Fecundity_No_Atresia_Samples %>%
+  mutate(K...mmol.L. = sqrt(K...mmol.L.))
+
+potassium_fec_na_lm_sqrt <- lm(K...mmol.L. ~ Ambient.Or.OAH * Weight_Adjusted_Fecundity_Fecundity.Mean_Weight, data = potassium_fec_na_sqrt)
+summary(potassium_fec_na_lm_sqrt)
+
+potassium_fec_na_sqrt_sim <- simulateResiduals(fittedModel = potassium_fec_na_lm_sqrt) 
+plot(potassium_fec_na_sqrt_sim)
+
+plotResiduals(potassium_fec_na_lm_sqrt)
+
+testDispersion(potassium_fec_na_lm_sqrt)
+
+```
+
+
+
+Residuals Plot (if significant)
+```{r}
+# K+
+# Ambient samples
+
+# ggplot with geom_smooth(aes(x=,y=)), method = "lm")
+
+potassium_fec_na_lm_plot <- ggplot(data = Fecundity_No_Atresia_Samples, aes(x = Weight_Adjusted_Fecundity_Fecundity.Mean_Weight, y = K...mmol.L.)) +
+  geom_point(aes(col = Ambient.Or.OAH)) +
+  geom_smooth(aes(group = 1), method = "lm") +
+  labs(title = "Potassium", x = "Weight Adjusted Fecudnity", y = "Potassium (mmol/L)", color = "Category") +
+  guides(color = guide_legend((title = "Treatment Type"))) + 
+  scale_color_manual(values = c("Ambient" = "#189bff", "OAH" = "#598c78")) +
+  scale_y_continuous() +
+  theme_classic() +
+  theme(panel.background = element_rect(fill = "white"),
+        plot.background = element_rect(fill = "white"),
+        legend.background = element_rect(fill = "white", color = "black"),
+        plot.title = element_text(size = 25, hjust = 0.5),
+        axis.text.x = element_text(size = 15),
+        axis.text.y = element_text(size = 20),
+        axis.title.x = element_text(size = 20),
+        axis.title.y = element_text(size = 20))
+
+print(potassium_fec_na_lm_plot)
+
+ggsave(filename = "data-images/potassium_fec_na_lm_plot.pdf", plot = potassium_fec_na_lm_plot, device = "pdf")
+ggsave(filename = "data-images/potassium_fec_na_lm_plot.png", plot = potassium_fec_na_lm_plot, device = "png")
+
+
+ggplot(data = potassium_fec_na_sqrt, aes(x = Weight_Adjusted_Fecundity_Fecundity.Mean_Weight, y = K...mmol.L.)) +
+  geom_point(aes(col = Ambient.Or.OAH)) +
+  geom_smooth(aes(group = 1), method = "lm") +
+  labs(title = "Potassium", x = "Weight Adjusted Fecudnity", y = "Sqrt Potassium", color = "Category") +
+  guides(color = guide_legend((title = "Treatment Type"))) + 
+  scale_color_manual(values = c("Ambient" = "#189bff", "OAH" = "#598c78")) +
+  scale_y_continuous() +
+  theme_classic() +
+  theme(panel.background = element_rect(fill = "white"),
+        plot.background = element_rect(fill = "white"),
+        legend.background = element_rect(fill = "white", color = "black"),
+        plot.title = element_text(size = 25, hjust = 0.5),
+        axis.text.x = element_text(size = 15),
+        axis.text.y = element_text(size = 20),
+        axis.title.x = element_text(size = 20),
+        axis.title.y = element_text(size = 20))
+
+```
+
+
+# Ca+2 : Calcium
+
+Calcium Summary Stats
+```{r}
+# Ca+2
+# Summary stats
+
+# Ambient data
+Fecundity_No_Atresia_Samples %>%
+  group_by(Ambient.Or.OAH, Weight_Adjusted_Fecundity_Fecundity.Mean_Weight) %>%
+  summarize(count = n(),
+            median = round(median(Ca....mmol.L.), 3),
+            mean = round(mean(Ca....mmol.L.), 3),
+            sd = round(sd(Ca....mmol.L.), 3),
+            cv = round(sd(Ca....mmol.L.)/mean(Ca....mmol.L.), 3)) %>%
+  ungroup()
+
+```
+
+
+
+Sodium scattterplot
+```{r}
+# Ca+2
+# Fecundity No Atresia Samples
+
+# Scatterplot
+calcium_fec_na_scatterplot <- Fecundity_No_Atresia_Samples %>%
+  ggplot() + 
+  geom_point(aes(x = Weight_Adjusted_Fecundity_Fecundity.Mean_Weight, y = Ca....mmol.L.), colour = "black") +
+  labs(title = "Calcium", x = "Weight Adjusted Fecundity", y = "Calcium (mmol/L)") +
+  theme_classic() +
+  theme(panel.background = element_rect(fill = "white"),
+        plot.background = element_rect(fill = "white"),
+        legend.background = element_rect(fill = "white", color = "black"),
+        title = element_text(size = 12),
+        plot.title = element_text(size = 30, hjust = 0.5),
+        axis.text.x = element_text(size = 20),
+        axis.text.y = element_text(size = 20),
+        axis.title.x = element_text(size = 20),
+        axis.title.y = element_text(size = 20))
+
+print(calcium_fec_na_scatterplot)
+
+ggsave(filename = "data-images/calcium_fec_na_scatterplot.pdf", plot = calcium_fec_na_scatterplot, device = "pdf")
+ggsave(filename = "data-images/calcium_fec_na_scatterplot.png", plot = calcium_fec_na_scatterplot, device = "png")
+
+# Color by treatment
+calcium_fec_na_scatterplot2 <- Fecundity_No_Atresia_Samples %>%
+  ggplot() + 
+  geom_point(aes(x = Weight_Adjusted_Fecundity_Fecundity.Mean_Weight, y = Ca....mmol.L., col = Ambient.Or.OAH)) +
+  labs(title = "Calcium", x = "Weight Adjusted Fecundity", y = "Calcium (mmol/L)") +
+  theme_classic() +
+  guides(color = guide_legend((title = "Treatment Type"))) + 
+  scale_color_manual(values = c("Ambient" = "#189bff", "OAH" = "#598c78")) +
+  theme(panel.background = element_rect(fill = "white"),
+        plot.background = element_rect(fill = "white"),
+        legend.background = element_rect(fill = "white", color = "black"),
+        title = element_text(size = 12),
+        plot.title = element_text(size = 30, hjust = 0.5),
+        axis.text.x = element_text(size = 20),
+        axis.text.y = element_text(size = 20),
+        axis.title.x = element_text(size = 20),
+        axis.title.y = element_text(size = 20))
+
+print(calcium_fec_na_scatterplot2)
+
+```
+
+
+# Ca+2 Stat Tests
+
+Weight Adjusted Fecundity, No Atresia 
+```{r}
+# Ca+2
+# Weight Adjusted Fecundity, No Atresia 
+
+# Fancy lm model
+
+# Interactive
+calcium_fec_na_lm <- lm(Ca....mmol.L. ~ Ambient.Or.OAH * Weight_Adjusted_Fecundity_Fecundity.Mean_Weight, data = Fecundity_No_Atresia_Samples)
+summary(calcium_fec_na_lm)
+
+calcium_fec_na_lm_sim_res_plot <- simulateResiduals(fittedModel = calcium_fec_na_lm)
+plot(calcium_fec_na_lm_sim_res_plot)
+
+plotResiduals(calcium_fec_na_lm)
+
+testDispersion(calcium_fec_na_lm)
+
+visualize(calcium_fec_na_lm)
+
+
+# Normality
+shapiro.test(residuals(lm(Ca....mmol.L. ~ Ambient.Or.OAH * Weight_Adjusted_Fecundity_Fecundity.Mean_Weight, data = Fecundity_No_Atresia_Samples)))
+
+# QQ plot
+ggqqplot(residuals(lm(Ca....mmol.L. ~ Ambient.Or.OAH * Weight_Adjusted_Fecundity_Fecundity.Mean_Weight, data = Fecundity_No_Atresia_Samples))) +
+labs(title = "Calcium Fecundity No Atresia Residual QQplot",
+     subtitle = "residuals(lm(Ca....mmol.L. ~ Ambient.Or.OAH * Weight_Adjusted_Fecundity_Fecundity.Mean_Weight, data = Fecundity_No_Atresia_Samples))",
+                               x = "Calcium Theoretical Quantiles (Predicted values)",
+                               y = "Calcium Sample Quantiles") +
+  theme(plot.title = element_text(hjust = 0.5),
+        plot.subtitle = element_text(hjust = 0.5, size = 6))
+
+# Transform data: square root 
+calcium_fec_na_sqrt <- Fecundity_No_Atresia_Samples %>%
+  mutate(Ca....mmol.L. = sqrt(Ca....mmol.L.))
+
+calcium_fec_na_lm_sqrt <- lm(Ca....mmol.L. ~ Ambient.Or.OAH * Weight_Adjusted_Fecundity_Fecundity.Mean_Weight, data = calcium_fec_na_sqrt)
+summary(calcium_fec_na_lm_sqrt)
+
+calcium_fec_na_sqrt_sim <- simulateResiduals(fittedModel = calcium_fec_na_lm_sqrt) 
+plot(calcium_fec_na_sqrt_sim)
+
+plotResiduals(calcium_fec_na_lm_sqrt)
+
+testDispersion(calcium_fec_na_lm_sqrt)
+
+```
+
+
+
+Residuals Plot (if significant)
+```{r}
+# Ca+2
+# Ambient samples
+
+# ggplot with geom_smooth(aes(x=,y=)), method = "lm")
+
+calcium_fec_na_lm_plot <- ggplot(data = Fecundity_No_Atresia_Samples, aes(x = Weight_Adjusted_Fecundity_Fecundity.Mean_Weight, y = Ca....mmol.L.)) +
+  geom_point(aes(col = Ambient.Or.OAH)) +
+  geom_smooth(aes(group = 1), method = "lm") +
+  labs(title = "Calcium", x = "Weight Adjusted Fecudnity", y = "Calcium (mmol/L)", color = "Category") +
+  guides(color = guide_legend((title = "Treatment Type"))) + 
+  scale_color_manual(values = c("Ambient" = "#189bff", "OAH" = "#598c78")) +
+  scale_y_continuous() +
+  theme_classic() +
+  theme(panel.background = element_rect(fill = "white"),
+        plot.background = element_rect(fill = "white"),
+        legend.background = element_rect(fill = "white", color = "black"),
+        plot.title = element_text(size = 25, hjust = 0.5),
+        axis.text.x = element_text(size = 15),
+        axis.text.y = element_text(size = 20),
+        axis.title.x = element_text(size = 20),
+        axis.title.y = element_text(size = 20))
+
+print(calcium_fec_na_lm_plot)
+
+ggsave(filename = "data-images/calcium_fec_na_lm_plot.pdf", plot = calcium_fec_na_lm_plot, device = "pdf")
+ggsave(filename = "data-images/calcium_fec_na_lm_plot.png", plot = calcium_fec_na_lm_plot, device = "png")
+
+
+ggplot(data = calcium_fec_na_sqrt, aes(x = Weight_Adjusted_Fecundity_Fecundity.Mean_Weight, y = Ca....mmol.L.)) +
+  geom_point(aes(col = Ambient.Or.OAH)) +
+  geom_smooth(aes(group = 1), method = "lm") +
+  labs(title = "Calcium", x = "Weight Adjusted Fecudnity", y = "Sqrt Calcium", color = "Category") +
+  guides(color = guide_legend((title = "Treatment Type"))) + 
+  scale_color_manual(values = c("Ambient" = "#189bff", "OAH" = "#598c78")) +
+  scale_y_continuous() +
+  theme_classic() +
+  theme(panel.background = element_rect(fill = "white"),
+        plot.background = element_rect(fill = "white"),
+        legend.background = element_rect(fill = "white", color = "black"),
+        plot.title = element_text(size = 25, hjust = 0.5),
+        axis.text.x = element_text(size = 15),
+        axis.text.y = element_text(size = 20),
+        axis.title.x = element_text(size = 20),
+        axis.title.y = element_text(size = 20))
+
+```
+
+
+
+# Summary Graphs:
+
+```{r}
+# Merged Scatterplots
+pH_fec_na_scatterplot + hct_fec_na_scatterplot + glucose_fec_na_scatterplot + sodium_fec_na_scatterplot + chloride_fec_na_scatterplot + potassium_fec_na_scatterplot + calcium_fec_na_scatterplot + plot_layout(ncol = 3, guides = "collect") +
+  theme(plot.title = element_text(size = 10),
+    axis.title.y = element_text(size = 5))
+
+```
+
+```{r}
+pH <- Fecundity_No_Atresia_Samples %>%
+  ggplot() + 
+  geom_point(aes(x = Weight_Adjusted_Fecundity_Fecundity.Mean_Weight, y = pH), colour = "black") +
+  labs(title = "pH", x = "Weight Adjusted Fecundity", y = "pH") +
+  theme_classic() +
+  theme(panel.background = element_rect(fill = "white"),
+        plot.background = element_rect(fill = "white"),
+        legend.background = element_rect(fill = "white", color = "black"))
+
+hct <- Fecundity_No_Atresia_Samples %>%
+  ggplot() + 
+  geom_point(aes(x = Weight_Adjusted_Fecundity_Fecundity.Mean_Weight, y = Hct....), colour = "black") +
+  labs(title = "Hematocrit", x = "Weight Adjusted Fecundity", y = "Hematocrit (%)") +
+  theme_classic() +
+  theme(panel.background = element_rect(fill = "white"),
+        plot.background = element_rect(fill = "white"),
+        legend.background = element_rect(fill = "white", color = "black"))
+
+glucose <- Fecundity_No_Atresia_Samples %>%
+  ggplot() + 
+  geom_point(aes(x = Weight_Adjusted_Fecundity_Fecundity.Mean_Weight, y = Glu..mmol.L.), colour = "black") +
+  labs(title = "Glucose", x = "Weight Adjusted Fecundity", y = "Glucose (mmol/L)") +
+  theme_classic() +
+  theme(panel.background = element_rect(fill = "white"),
+        plot.background = element_rect(fill = "white"),
+        legend.background = element_rect(fill = "white", color = "black"))
+        
+Na <- Fecundity_No_Atresia_Samples %>%
+  ggplot() + 
+  geom_point(aes(x = Weight_Adjusted_Fecundity_Fecundity.Mean_Weight, y = Na...mmol.L.), colour = "black") +
+  labs(title = "Sodium", x = "Weight Adjusted Fecundity", y = "Sodium (mmol/L)") +
+  theme_classic() +
+  theme(panel.background = element_rect(fill = "white"),
+        plot.background = element_rect(fill = "white"),
+        legend.background = element_rect(fill = "white", color = "black"))
+
+Cl <- Fecundity_No_Atresia_Samples %>%
+  ggplot() + 
+  geom_point(aes(x = Weight_Adjusted_Fecundity_Fecundity.Mean_Weight, y = Cl...mmol.L.), colour = "black") +
+  labs(title = "Chloride", x = "Weight Adjusted Fecundity", y = "Chloride (mmol/L)") +
+  theme_classic() +
+  theme(panel.background = element_rect(fill = "white"),
+        plot.background = element_rect(fill = "white"),
+        legend.background = element_rect(fill = "white", color = "black"))
+
+K <- Fecundity_No_Atresia_Samples %>%
+  ggplot() + 
+  geom_point(aes(x = Weight_Adjusted_Fecundity_Fecundity.Mean_Weight, y = K...mmol.L.), colour = "black") +
+  labs(title = "Potassium", x = "Weight Adjusted Fecundity", y = "Potassium (mmol/L)") +
+  theme_classic() +
+  theme(panel.background = element_rect(fill = "white"),
+        plot.background = element_rect(fill = "white"),
+        legend.background = element_rect(fill = "white", color = "black"))
+
+Ca <- Fecundity_No_Atresia_Samples %>%
+  ggplot() + 
+  geom_point(aes(x = Weight_Adjusted_Fecundity_Fecundity.Mean_Weight, y = Ca....mmol.L.), colour = "black") +
+  labs(title = "Calcium", x = "Weight Adjusted Fecundity", y = "Calcium (mmol/L)") +
+  theme_classic() +
+  theme(panel.background = element_rect(fill = "white"),
+        plot.background = element_rect(fill = "white"),
+        legend.background = element_rect(fill = "white", color = "black"))
+        
+# Combine 
+all_params_plot <- pH + hct + glucose + Na + Cl + K + Ca + plot_layout(ncol = 3, guides = "collect") 
+all_params_plot
+```
+
+
+```{r}
+# All regression graphs
+
+pH_lm <- ggplot(data = Fecundity_No_Atresia_Samples, aes(x = Weight_Adjusted_Fecundity_Fecundity.Mean_Weight, y = pH)) +
+  geom_point(aes(col = Ambient.Or.OAH)) +
+  geom_smooth(aes(group = 1), method = "lm") +
+  labs(title = "pH", x = "Weight Adjusted Fecudnity", y = "pH", color = "Category") +
+  guides(color = guide_legend((title = "Treatment Type"))) + 
+  scale_color_manual(values = c("Ambient" = "#189bff", "OAH" = "#598c78")) +
+  scale_y_continuous() +
+  theme_classic() +
+  theme(panel.background = element_rect(fill = "white"),
+        plot.background = element_rect(fill = "white"),
+        legend.background = element_rect(fill = "white", color = "black"))
+  
+
+hct_lm <- ggplot(data = Fecundity_No_Atresia_Samples, aes(x = Weight_Adjusted_Fecundity_Fecundity.Mean_Weight, y = Hct....)) +
+  geom_point(aes(col = Ambient.Or.OAH)) +
+  geom_smooth(aes(group = 1), method = "lm") +
+  labs(title = "Hematocrit", x = "Weight Adjusted Fecudnity", y = "Hematocrit (%)", color = "Category") +
+  guides(color = guide_legend((title = "Treatment Type"))) + 
+  scale_color_manual(values = c("Ambient" = "#189bff", "OAH" = "#598c78")) +
+  scale_y_continuous() +
+  theme_classic() +
+  theme(panel.background = element_rect(fill = "white"),
+        plot.background = element_rect(fill = "white"),
+        legend.background = element_rect(fill = "white", color = "black"))
+
+
+glucose_lm <- ggplot(data = Fecundity_No_Atresia_Samples, aes(x = Weight_Adjusted_Fecundity_Fecundity.Mean_Weight, y = Glu..mmol.L.)) +
+  geom_point(aes(col = Ambient.Or.OAH)) +
+  geom_smooth(aes(group = 1), method = "lm") +
+  labs(title = "Glucose", x = "Weight Adjusted Fecudnity", y = "Glucose (mmol/L)", color = "Category") +
+  guides(color = guide_legend((title = "Treatment Type"))) + 
+  scale_color_manual(values = c("Ambient" = "#189bff", "OAH" = "#598c78")) +
+  scale_y_continuous() +
+  theme_classic() +
+  theme(panel.background = element_rect(fill = "white"),
+        plot.background = element_rect(fill = "white"),
+        legend.background = element_rect(fill = "white", color = "black"))
+
+  
+Na_lm <- ggplot(data = Fecundity_No_Atresia_Samples, aes(x = Weight_Adjusted_Fecundity_Fecundity.Mean_Weight, y = Na...mmol.L.)) +
+  geom_point(aes(col = Ambient.Or.OAH)) +
+  geom_smooth(aes(group = 1), method = "lm") +
+  labs(title = "Sodium", x = "Weight Adjusted Fecudnity", y = "Sodium (mmol/L)", color = "Category") +
+  guides(color = guide_legend((title = "Treatment Type"))) + 
+  scale_color_manual(values = c("Ambient" = "#189bff", "OAH" = "#598c78")) +
+  scale_y_continuous() +
+  theme_classic() +
+  theme(panel.background = element_rect(fill = "white"),
+        plot.background = element_rect(fill = "white"),
+        legend.background = element_rect(fill = "white", color = "black"))
+
+
+Cl_lm <- ggplot(data = Fecundity_No_Atresia_Samples, aes(x = Weight_Adjusted_Fecundity_Fecundity.Mean_Weight, y = Cl...mmol.L.)) +
+  geom_point(aes(col = Ambient.Or.OAH)) +
+  geom_smooth(aes(group = 1), method = "lm") +
+  labs(title = "Chloride", x = "Weight Adjusted Fecudnity", y = "Chloride (mmol/L)", color = "Category") +
+  guides(color = guide_legend((title = "Treatment Type"))) + 
+  scale_color_manual(values = c("Ambient" = "#189bff", "OAH" = "#598c78")) +
+  scale_y_continuous() +
+  theme_classic() +
+  theme(panel.background = element_rect(fill = "white"),
+        plot.background = element_rect(fill = "white"),
+        legend.background = element_rect(fill = "white", color = "black"))
+
+
+K_lm <- ggplot(data = Fecundity_No_Atresia_Samples, aes(x = Weight_Adjusted_Fecundity_Fecundity.Mean_Weight, y = K...mmol.L.)) +
+  geom_point(aes(col = Ambient.Or.OAH)) +
+  geom_smooth(aes(group = 1), method = "lm") +
+  labs(title = "Potassium", x = "Weight Adjusted Fecudnity", y = "Potassium (mmol/L)", color = "Category") +
+  guides(color = guide_legend((title = "Treatment Type"))) + 
+  scale_color_manual(values = c("Ambient" = "#189bff", "OAH" = "#598c78")) +
+  scale_y_continuous() +
+  theme_classic() +
+  theme(panel.background = element_rect(fill = "white"),
+        plot.background = element_rect(fill = "white"),
+        legend.background = element_rect(fill = "white", color = "black"))
+
+
+Ca_lm <- ggplot(data = Fecundity_No_Atresia_Samples, aes(x = Weight_Adjusted_Fecundity_Fecundity.Mean_Weight, y = Ca....mmol.L.)) +
+  geom_point(aes(col = Ambient.Or.OAH)) +
+  geom_smooth(aes(group = 1), method = "lm") +
+  labs(title = "Calcium", x = "Weight Adjusted Fecudnity", y = "Calcium (mmol/L)", color = "Category") +
+  guides(color = guide_legend((title = "Treatment Type"))) + 
+  scale_color_manual(values = c("Ambient" = "#189bff", "OAH" = "#598c78")) +
+  scale_y_continuous() +
+  theme_classic() +
+  theme(panel.background = element_rect(fill = "white"),
+        plot.background = element_rect(fill = "white"),
+        legend.background = element_rect(fill = "white", color = "black"))
+       
+ 
+# Merge lm regression plots
+param_regress_plots <- pH_lm + hct_lm + glucose_lm + Na_lm + Cl_lm + K_lm + Ca_lm + plot_layout(ncol = 3, guides = "collect") 
+param_regress_plots
+  
+```
+
+
+
+```{r}
+# All regression graphs
+# sqrt transformed
+
+pH_lm_sqrt <- ggplot(data = pH_fec_na_sqrt, aes(x = Weight_Adjusted_Fecundity_Fecundity.Mean_Weight, y = pH)) +
+  geom_point(aes(col = Ambient.Or.OAH)) +
+  geom_smooth(aes(group = 1), method = "lm") +
+  labs(title = "pH", x = "Weight Adjusted Fecudnity", y = "Sqrt pH", color = "Category") +
+  guides(color = guide_legend((title = "Treatment Type"))) + 
+  scale_color_manual(values = c("Ambient" = "#189bff", "OAH" = "#598c78")) +
+  scale_y_continuous() +
+  theme_classic() +
+  theme(panel.background = element_rect(fill = "white"),
+        plot.background = element_rect(fill = "white"),
+        legend.background = element_rect(fill = "white", color = "black"))
+  
+
+hct_lm_sqrt <- ggplot(data = hct_fec_na_sqrt, aes(x = Weight_Adjusted_Fecundity_Fecundity.Mean_Weight, y = Hct....)) +
+  geom_point(aes(col = Ambient.Or.OAH)) +
+  geom_smooth(aes(group = 1), method = "lm") +
+  labs(title = "Hematocrit", x = "Weight Adjusted Fecudnity", y = "Sqrt Hematocrit", color = "Category") +
+  guides(color = guide_legend((title = "Treatment Type"))) + 
+  scale_color_manual(values = c("Ambient" = "#189bff", "OAH" = "#598c78")) +
+  scale_y_continuous() +
+  theme_classic() +
+  theme(panel.background = element_rect(fill = "white"),
+        plot.background = element_rect(fill = "white"),
+        legend.background = element_rect(fill = "white", color = "black"))
+
+
+glucose_lm_sqrt <- ggplot(data = glucose_fec_na_sqrt, aes(x = Weight_Adjusted_Fecundity_Fecundity.Mean_Weight, y = Glu..mmol.L.)) +
+  geom_point(aes(col = Ambient.Or.OAH)) +
+  geom_smooth(aes(group = 1), method = "lm") +
+  labs(title = "Glucose", x = "Weight Adjusted Fecudnity", y = "Sqrt Glucose", color = "Category") +
+  guides(color = guide_legend((title = "Treatment Type"))) + 
+  scale_color_manual(values = c("Ambient" = "#189bff", "OAH" = "#598c78")) +
+  scale_y_continuous() +
+  theme_classic() +
+  theme(panel.background = element_rect(fill = "white"),
+        plot.background = element_rect(fill = "white"),
+        legend.background = element_rect(fill = "white", color = "black"))
+
+  
+Na_lm_sqrt <- ggplot(data = sodium_fec_na_sqrt, aes(x = Weight_Adjusted_Fecundity_Fecundity.Mean_Weight, y = Na...mmol.L.)) +
+  geom_point(aes(col = Ambient.Or.OAH)) +
+  geom_smooth(aes(group = 1), method = "lm") +
+  labs(title = "Sodium", x = "Weight Adjusted Fecudnity", y = "Sqrt Sodium", color = "Category") +
+  guides(color = guide_legend((title = "Treatment Type"))) + 
+  scale_color_manual(values = c("Ambient" = "#189bff", "OAH" = "#598c78")) +
+  scale_y_continuous() +
+  theme_classic() +
+  theme(panel.background = element_rect(fill = "white"),
+        plot.background = element_rect(fill = "white"),
+        legend.background = element_rect(fill = "white", color = "black"))
+
+
+Cl_lm_sqrt <- ggplot(data = chloride_fec_na_sqrt, aes(x = Weight_Adjusted_Fecundity_Fecundity.Mean_Weight, y = Cl...mmol.L.)) +
+  geom_point(aes(col = Ambient.Or.OAH)) +
+  geom_smooth(aes(group = 1), method = "lm") +
+  labs(title = "Chloride", x = "Weight Adjusted Fecudnity", y = "Sqrt Chloride", color = "Category") +
+  guides(color = guide_legend((title = "Treatment Type"))) + 
+  scale_color_manual(values = c("Ambient" = "#189bff", "OAH" = "#598c78")) +
+  scale_y_continuous() +
+  theme_classic() +
+  theme(panel.background = element_rect(fill = "white"),
+        plot.background = element_rect(fill = "white"),
+        legend.background = element_rect(fill = "white", color = "black"))
+
+
+K_lm_sqrt <- ggplot(data = potassium_fec_na_sqrt, aes(x = Weight_Adjusted_Fecundity_Fecundity.Mean_Weight, y = K...mmol.L.)) +
+  geom_point(aes(col = Ambient.Or.OAH)) +
+  geom_smooth(aes(group = 1), method = "lm") +
+  labs(title = "Potassium", x = "Weight Adjusted Fecudnity", y = "Sqrt Potassium", color = "Category") +
+  guides(color = guide_legend((title = "Treatment Type"))) + 
+  scale_color_manual(values = c("Ambient" = "#189bff", "OAH" = "#598c78")) +
+  scale_y_continuous() +
+  theme_classic() +
+  theme(panel.background = element_rect(fill = "white"),
+        plot.background = element_rect(fill = "white"),
+        legend.background = element_rect(fill = "white", color = "black"))
+
+
+Ca_lm_sqrt <- ggplot(data = calcium_fec_na_sqrt, aes(x = Weight_Adjusted_Fecundity_Fecundity.Mean_Weight, y = Ca....mmol.L.)) +
+  geom_point(aes(col = Ambient.Or.OAH)) +
+  geom_smooth(aes(group = 1), method = "lm") +
+  labs(title = "Calcium", x = "Weight Adjusted Fecudnity", y = "Sqrt Calcium", color = "Category") +
+  guides(color = guide_legend((title = "Treatment Type"))) + 
+  scale_color_manual(values = c("Ambient" = "#189bff", "OAH" = "#598c78")) +
+  scale_y_continuous() +
+  theme_classic() +
+  theme(panel.background = element_rect(fill = "white"),
+        plot.background = element_rect(fill = "white"),
+        legend.background = element_rect(fill = "white", color = "black"))
+        
+# Merge lm regression plots
+
+param_regress_sqrt_plots <- pH_lm_sqrt + hct_lm_sqrt + glucose_lm_sqrt + Na_lm_sqrt + Cl_lm_sqrt + K_lm_sqrt + Ca_lm_sqrt + plot_layout(guides = "collect") 
+param_regress_sqrt_plots
+  
+```
+

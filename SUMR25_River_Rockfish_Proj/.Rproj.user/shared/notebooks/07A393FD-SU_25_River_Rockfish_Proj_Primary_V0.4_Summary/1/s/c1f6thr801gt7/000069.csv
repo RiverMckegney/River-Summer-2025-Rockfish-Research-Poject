@@ -1,0 +1,21 @@
+"0","# Primary samples: Fecundity Class sample size"
+"0","primary_sample_fecundity_class_barplot <- Primary_Samples %>%"
+"0","  group_by(Fecundity_Class, Ambient.Or.OAH) %>% "
+"0","  summarise(n_size = n_distinct(Patient.ID_edited), .groups = ""drop"") %>%"
+"0","  ggplot(aes(x = Fecundity_Class, y = n_size)) +"
+"0","  geom_bar(stat = ""identity"" ) +"
+"0","  scale_y_continuous(expand = c(0, 0), limits = c(0, 15.5), breaks = c(0, 3, 6, 9, 12, 15)) +"
+"0","  facet_grid(~ Ambient.Or.OAH) +"
+"0","  labs(title = ""Sample Size"","
+"0","        x = ""Parturition Status & Treatment Type"","
+"0","        y = ""Sample Size (n)"") +"
+"0","  guides(fill = guide_legend((title = ""Reproductive State""))) +"
+"0","  theme_classic() +"
+"0","  theme(plot.title = element_text(size = 30, hjust = 0.5))"
+"0",""
+"0","print(primary_sample_fecundity_class_barplot)"
+"2","Warning in gzfile(file, ""wb"") :
+  cannot open compressed file 'C:/Users/rmcke/OneDrive/Documents/Summer_2025_Rockfish_Research_Project/SUMR25_River_Rockfish_Proj/.Rproj.user/shared/notebooks/07A393FD-SU_25_River_Rockfish_Proj_Primary_V0.4_Summary/1/0DAB469D3d3176e6/c1f6thr801gt7_t/2c8f1a3d313244f6a4fcefa7caad9bcb.snapshot', probable reason 'No such file or directory'
+"
+"2","G1;H1;Errorh in gzfile(file, ""wb"") : cannot open the connection
+g"

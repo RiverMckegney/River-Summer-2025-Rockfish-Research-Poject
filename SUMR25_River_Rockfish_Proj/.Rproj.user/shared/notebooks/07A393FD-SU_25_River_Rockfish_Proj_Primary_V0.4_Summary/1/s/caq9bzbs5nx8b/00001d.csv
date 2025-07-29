@@ -1,0 +1,60 @@
+"0","# Rerun stat tests"
+"0",""
+"0","# Interactive aov model"
+"0","potassium_primary_aov_int2 <- aov(K...mmol.L. ~ Pregnant.Or.Atresia * Ambient.Or.OAH, data = k_outlier_removed)"
+"0","summary(potassium_primary_aov_int2) # interaction significant"
+"1","                                   Df Sum Sq Mean Sq F value Pr(>F)
+Pregnant.Or.Atresia                 1 0.0002 0.00015   0.003 0.9539
+Ambient.Or.OAH                      1 0.0056 0.00557   0.124 0.7283
+Pregnant.Or.Atresia:Ambient.Or.OAH  1 0.1567 0.15668   3.486 0.0753
+Residuals                          22 0.9888 0.04494               
+                                    
+Pregnant.Or.Atresia                 
+Ambient.Or.OAH                      
+Pregnant.Or.Atresia:Ambient.Or.OAH .
+Residuals                           
+---
+Signif. codes:  0 ‘***’ 0.001 ‘**’ 0.01 ‘*’ 0.05 ‘.’ 0.1 ‘ ’ 1
+"
+"0","# Parametric Post-Hoc: Tukey's HSD test"
+"0","TukeyHSD(potassium_primary_aov_int2)"
+"1","  Tukey multiple comparisons of means
+    95% family-wise confidence level
+
+Fit: aov(formula = K...mmol.L. ~ Pregnant.Or.Atresia * Ambient.Or.OAH, data = k_outlier_removed)
+
+$Pregnant.Or.Atresia
+                          diff        lwr       upr     p adj
+Atresia-Post Parturition 0.005 -0.1722314 0.1822314 0.9538726
+
+$Ambient.Or.OAH
+                  diff        lwr       upr     p adj
+OAH-Ambient 0.03466667 -0.1699826 0.2393159 0.7287018
+
+$`Pregnant.Or.Atresia:Ambient.Or.OAH`
+                                                 diff        lwr
+Atresia:Ambient-Post Parturition:Ambient       0.0875 -0.1811962
+Post Parturition:OAH-Post Parturition:Ambient  0.2875 -0.1778954
+Atresia:OAH-Post Parturition:Ambient          -0.0125 -0.3729937
+Post Parturition:OAH-Atresia:Ambient           0.2000 -0.2496147
+Atresia:OAH-Atresia:Ambient                   -0.1000 -0.4398768
+Atresia:OAH-Post Parturition:OAH              -0.3000 -0.8098151
+                                                    upr     p adj
+Atresia:Ambient-Post Parturition:Ambient      0.3561962 0.8027097
+Post Parturition:OAH-Post Parturition:Ambient 0.7528954 0.3398679
+Atresia:OAH-Post Parturition:Ambient          0.3479937 0.9996699
+Post Parturition:OAH-Atresia:Ambient          0.6496147 0.6119129
+Atresia:OAH-Atresia:Ambient                   0.2398768 0.8457895
+Atresia:OAH-Post Parturition:OAH              0.2098151 0.3811051
+
+"
+"0","potassium_primary_aov_plot2 <- simulateResiduals(fittedModel = potassium_primary_aov_int2)"
+"2","G2;H2;Warningh in checkModel(fittedModel) :
+  DHARMa: fittedModel not in class of supported models. Absolutely no guarantee that this will work!g
+"
+"0","plot(potassium_primary_aov_plot2) # No problems (when both outliers removed)"
+"2","Warning in gzfile(file, ""wb"") :
+  cannot open compressed file 'C:/Users/rmcke/OneDrive/Documents/Summer_2025_Rockfish_Research_Project/SUMR25_River_Rockfish_Proj/.Rproj.user/shared/notebooks/07A393FD-SU_25_River_Rockfish_Proj_Primary_V0.4_Summary/1/0DAB469D3d3176e6/caq9bzbs5nx8b_t/ede17125981742609f305bc0457bdf70.snapshot', probable reason 'No such file or directory'
+"
+"2","G1;H1;Errorh in gzfile(file, ""wb"") : cannot open the connection
+g"

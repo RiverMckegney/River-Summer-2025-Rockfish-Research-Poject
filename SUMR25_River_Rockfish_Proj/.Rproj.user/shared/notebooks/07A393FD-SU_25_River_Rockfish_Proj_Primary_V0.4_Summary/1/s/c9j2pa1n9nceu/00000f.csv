@@ -1,0 +1,62 @@
+"0","# pH"
+"0","# Primary Samples"
+"0",""
+"0","# Interactive aov model"
+"0","pH_primary_aov_int <- aov(pH ~ Pregnant.Or.Atresia * Ambient.Or.OAH, data = Primary_Samples)"
+"0","summary(pH_primary_aov_int) # interaction significant"
+"1","                                   Df  Sum Sq Mean Sq F value
+Pregnant.Or.Atresia                 1 0.06629 0.06629   9.638
+Ambient.Or.OAH                      1 0.03877 0.03877   5.637
+Pregnant.Or.Atresia:Ambient.Or.OAH  1 0.02078 0.02078   3.022
+Residuals                          24 0.16506 0.00688        
+                                    Pr(>F)   
+Pregnant.Or.Atresia                0.00483 **
+Ambient.Or.OAH                     0.02593 * 
+Pregnant.Or.Atresia:Ambient.Or.OAH 0.09495 . 
+Residuals                                    
+---
+Signif. codes:  0 ‘***’ 0.001 ‘**’ 0.01 ‘*’ 0.05 ‘.’ 0.1 ‘ ’ 1
+"
+"0","# Additive aov model"
+"0","# If interaction not significant (p-value > 0.05), use additive model"
+"0",""
+"0","# Parametric Post-Hoc: Tukey's HSD test"
+"0","TukeyHSD(pH_primary_aov_int)"
+"1","  Tukey multiple comparisons of means
+    95% family-wise confidence level
+
+Fit: aov(formula = pH ~ Pregnant.Or.Atresia * Ambient.Or.OAH, data = Primary_Samples)
+
+$Pregnant.Or.Atresia
+                               diff        lwr         upr    p adj
+Atresia-Post Parturition -0.1015444 -0.1690501 -0.03403877 0.004834
+
+$Ambient.Or.OAH
+                   diff        lwr         upr    p adj
+OAH-Ambient -0.08561481 -0.1603143 -0.01091529 0.026428
+
+$`Pregnant.Or.Atresia:Ambient.Or.OAH`
+                                                     diff
+Atresia:Ambient-Post Parturition:Ambient      -0.06418269
+Post Parturition:OAH-Post Parturition:Ambient  0.00862500
+Atresia:OAH-Post Parturition:Ambient          -0.19247500
+Post Parturition:OAH-Atresia:Ambient           0.07280769
+Atresia:OAH-Atresia:Ambient                   -0.12829231
+Atresia:OAH-Post Parturition:OAH              -0.20110000
+                                                     lwr
+Atresia:Ambient-Post Parturition:Ambient      -0.1669825
+Post Parturition:OAH-Post Parturition:Ambient -0.1722337
+Atresia:OAH-Post Parturition:Ambient          -0.3228940
+Post Parturition:OAH-Atresia:Ambient          -0.1009557
+Atresia:OAH-Atresia:Ambient                   -0.2486791
+Atresia:OAH-Post Parturition:OAH              -0.3925028
+                                                      upr     p adj
+Atresia:Ambient-Post Parturition:Ambient       0.03861711 0.3345551
+Post Parturition:OAH-Post Parturition:Ambient  0.18948366 0.9991631
+Atresia:OAH-Post Parturition:Ambient          -0.06205597 0.0023249
+Post Parturition:OAH-Atresia:Ambient           0.24657107 0.6594942
+Atresia:OAH-Atresia:Ambient                   -0.00790551 0.0337411
+Atresia:OAH-Post Parturition:OAH              -0.00969719 0.0369572
+
+"
+"0","# Normality plot"

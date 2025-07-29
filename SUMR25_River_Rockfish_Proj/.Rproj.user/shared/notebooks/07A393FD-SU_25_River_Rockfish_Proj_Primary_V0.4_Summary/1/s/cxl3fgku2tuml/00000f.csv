@@ -1,0 +1,6 @@
+"0","# Test outliers"
+"0","chloride_primary_aov_res_plot <- simulateResiduals(fittedModel = chloride_primary_aov_add)"
+"2","G2;H2;Warningh in checkModel(fittedModel) :
+  DHARMa: fittedModel not in class of supported models. Absolutely no guarantee that this will work!g
+"
+"0","plot(chloride_primary_aov_res_plot) # Quantile deviation"

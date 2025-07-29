@@ -1,0 +1,11 @@
+"0","# Remove outlier"
+"0","na_outlier_removed <- Primary_Samples %>%"
+"0","  filter(Na...mmol.L. != 218)"
+"0",""
+"0","# view again"
+"0","boxplot(na_outlier_removed$Na...mmol.L., horizontal = TRUE)"
+"2","Warning in gzfile(file, ""wb"") :
+  cannot open compressed file 'C:/Users/rmcke/OneDrive/Documents/Summer_2025_Rockfish_Research_Project/SUMR25_River_Rockfish_Proj/.Rproj.user/shared/notebooks/07A393FD-SU_25_River_Rockfish_Proj_Primary_V0.4_Summary/1/0DAB469D3d3176e6/cboso41xeuf4r_t/cc3b1b2d04554e30818d7954a3e0f8c1.snapshot', probable reason 'No such file or directory'
+"
+"2","G1;H1;Errorh in gzfile(file, ""wb"") : cannot open the connection
+g"

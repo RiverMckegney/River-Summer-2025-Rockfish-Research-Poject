@@ -1,0 +1,37 @@
+"0","# glucose"
+"0","# Parametric Tests"
+"0",""
+"0","# Normality Test"
+"0","shapiro.test(Primary_Samples$Glu..mmol.L.)"
+"1","
+	Shapiro-Wilk normality test
+
+data:  Primary_Samples$Glu..mmol.L.
+W = 0.84841, p-value = 0.0008683
+
+"
+"0","shapiro.test(residuals(lm(Glu..mmol.L. ~ Pregnant.Or.Atresia * Ambient.Or.OAH, data = Primary_Samples)))"
+"1","
+	Shapiro-Wilk normality test
+
+data:  residuals(lm(Glu..mmol.L. ~ Pregnant.Or.Atresia * Ambient.Or.OAH, data = Primary_Samples))
+W = 0.88835, p-value = 0.00617
+
+"
+"0","# Parametric variance test:"
+"0","bartlett.test(Glu..mmol.L. ~ Pregnant.Or.Atresia, data = Primary_Samples) "
+"1","
+	Bartlett test of homogeneity of variances
+
+data:  Glu..mmol.L. by Pregnant.Or.Atresia
+Bartlett's K-squared = 1.6702, df = 1, p-value = 0.1962
+
+"
+"0","bartlett.test(Glu..mmol.L. ~ Ambient.Or.OAH, data = Primary_Samples)"
+"1","
+	Bartlett test of homogeneity of variances
+
+data:  Glu..mmol.L. by Ambient.Or.OAH
+Bartlett's K-squared = 0.27111, df = 1, p-value = 0.6026
+
+"
