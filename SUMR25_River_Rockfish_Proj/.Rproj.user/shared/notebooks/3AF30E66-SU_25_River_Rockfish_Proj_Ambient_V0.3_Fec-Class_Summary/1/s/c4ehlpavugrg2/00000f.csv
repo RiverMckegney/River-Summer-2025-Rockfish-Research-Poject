@@ -1,0 +1,7 @@
+"0","sodium_aov_ambient_fec <- aov(Na...mmol.L. ~ Fecundity_Class, data = Ambient_Samples)
+summary(sodium_aov_ambient_fec)
+"
+"1","                Df Sum Sq Mean Sq F value Pr(>F)
+Fecundity_Class  2  156.8   78.38   0.865  0.438
+Residuals       18 1631.8   90.66               
+"

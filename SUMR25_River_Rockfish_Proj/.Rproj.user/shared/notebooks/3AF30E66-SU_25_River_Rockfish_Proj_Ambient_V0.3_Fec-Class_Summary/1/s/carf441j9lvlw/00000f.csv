@@ -1,0 +1,14 @@
+"0","# Nonparametric Post Hoc: Dunn's test
+DunnTest(Na...mmol.L. ~ Fecundity_Class, data = Ambient_Samples)
+"
+"1","
+ Dunn's test of multiple comparisons using rank sums : holm  
+
+                             mean.rank.diff   pval    
+Low (~1,000s)-High (>50,000)      -3.375000 0.8730    
+Atresia-High (>50,000)             2.451923 0.8730    
+Atresia-Low (~1,000s)              5.826923 0.2899    
+---
+Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1
+
+"

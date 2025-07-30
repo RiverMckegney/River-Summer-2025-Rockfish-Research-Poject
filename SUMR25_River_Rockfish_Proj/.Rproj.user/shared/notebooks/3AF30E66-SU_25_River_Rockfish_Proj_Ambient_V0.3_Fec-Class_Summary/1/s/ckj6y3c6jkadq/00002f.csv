@@ -1,0 +1,15 @@
+"0","testDispersion(potassium_amb_fec_no_atresia_lm_sqrt)"
+"2","Warning in gzfile(file, ""wb"") :
+  cannot open compressed file 'C:/Users/rmcke/OneDrive/Documents/Summer_2025_Rockfish_Research_Project/SUMR25_River_Rockfish_Proj/.Rproj.user/shared/notebooks/3AF30E66-SU_25_River_Rockfish_Proj_Ambient_V0.3_Fec-Class_Summary/1/0DAB469D3d3176e6/ckj6y3c6jkadq_t/f2d1f19a66394fca9e8f39451525181c.snapshot', probable reason 'No such file or directory'
+"
+"2","G1;H1;Errorh in gzfile(file, ""wb"") : cannot open the connection
+g"
+"2","G1;
+	DHARMa nonparametric dispersion test via sd of residuals fitted
+	vs. simulated
+
+data:  simulationOutput
+dispersion = 0.84221, p-value = 0.92
+alternative hypothesis: two.sided
+
+g"
