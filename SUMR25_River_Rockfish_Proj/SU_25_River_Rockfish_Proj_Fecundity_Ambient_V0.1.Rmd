@@ -537,6 +537,32 @@ pH_amb_fec_all_facet_scatterplot_fecundity_class <- ggplot(data = Amb_Fec_Sample
   
 print(pH_amb_fec_all_facet_scatterplot_fecundity_class)
 
+ ggplot(data = Amb_Fec_Samples) + 
+  geom_point(aes(y = pH, x = All_Fecundity), colour = "black") +
+  labs(title = "pH", y = "pH", x = "Brood Count") +
+  theme_classic() +
+  theme(panel.background = element_rect(fill = "white"),
+        plot.background = element_rect(fill = "white"),
+        legend.background = element_rect(fill = "white", color = "black"),
+        plot.title = element_text(size = 25, hjust = 0.5),
+        axis.text.x = element_text(size = 15),
+        axis.text.y = element_text(size = 15),
+        axis.title.x = element_text(size = 20),
+        axis.title.y = element_text(size = 20))
+
+ ggplot(data = Amb_Fec_Samples) + 
+  geom_point(aes(y = pH, x = All_Fecundity, col = m_w)) +
+  labs(title = "pH", y = "pH", x = "Brood Count") +
+  theme_classic() +
+  theme(panel.background = element_rect(fill = "white"),
+        plot.background = element_rect(fill = "white"),
+        legend.background = element_rect(fill = "white", color = "black"),
+        plot.title = element_text(size = 25, hjust = 0.5),
+        axis.text.x = element_text(size = 15),
+        axis.text.y = element_text(size = 15),
+        axis.title.x = element_text(size = 20),
+        axis.title.y = element_text(size = 20))
+ 
 ```
 
 

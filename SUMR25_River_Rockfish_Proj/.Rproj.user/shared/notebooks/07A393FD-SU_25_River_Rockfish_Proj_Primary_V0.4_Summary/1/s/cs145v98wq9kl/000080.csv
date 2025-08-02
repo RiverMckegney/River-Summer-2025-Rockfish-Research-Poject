@@ -1,0 +1,24 @@
+"0","ca_primary_pregnancy <- ggplot(data = Primary_Samples, aes(x = Pregnant.Or.Atresia, y = Ca....mmol.L.)) +
+  geom_boxplot() +
+  geom_point(position = position_dodge(width = 0.75), alpha = 0.3, color = ""black"") +
+  labs(title = ""Calcium"", x = ""Parturition Type"", y = ""Calcium (mmol/L)"") +
+  theme_classic() +
+  theme(panel.background = element_rect(fill = ""white""),
+        plot.background = element_rect(fill = ""white""),
+        legend.background = element_rect(fill = ""white"", color = ""black""))
+
+
+ca_primary_treatment <- ggplot(data = Primary_Samples, aes(x = Ambient.Or.OAH, y = Ca....mmol.L.)) +
+  geom_boxplot() +
+  geom_point(position = position_dodge(width = 0.75), alpha = 0.3, color = ""black"") +
+  labs(title = ""Calcium"", x = ""Treatment Type"", y = ""Calcium (mmol/L)"") +
+  theme_classic() +
+  theme(panel.background = element_rect(fill = ""white""),
+        plot.background = element_rect(fill = ""white""),
+        legend.background = element_rect(fill = ""white"", color = ""black""))
+
+ca_primary_basic <- ca_primary_pregnancy + ca_primary_treatment + plot_layout(guides = ""collect"")
+"
+"0",""
+"0","print(ca_primary_basic)"
+"0",""

@@ -1,6 +1,14 @@
-"0","outlierTest(ca_ambient_fec_sim)"
-"2","G1;H1;Errorh in UseMethod(""outlierTest"") : 
-  no applicable method for 'outlierTest' applied to an object of class ""DHARMa""
-Error during wrapup: not that many frames on the stack
-Error: no more error handlers available (recursive errors?); invoking 'abort' restart
-g"
+"0","
+calcium_aov_ambient_fec <- aov(Ca....mmol.L. ~ Fecundity_Class, data = Ambient_Samples)
+summary(calcium_aov_ambient_fec)
+"
+"1","                Df Sum Sq Mean Sq F value  Pr(>F)
+Fecundity_Class  2 0.1328 0.06641   7.281 0.00482
+Residuals       18 0.1642 0.00912                
+                  
+Fecundity_Class **
+Residuals         
+---
+Signif. codes:  
+0 ‘***’ 0.001 ‘**’ 0.01 ‘*’ 0.05 ‘.’ 0.1 ‘ ’ 1
+"

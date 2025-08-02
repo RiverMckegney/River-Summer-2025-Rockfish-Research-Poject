@@ -1,5 +1,45 @@
-"0","outlierTest(pH_aov_ambient_fec)
+"0","# pH"
+"0","# Ambient ANOVA Test"
+"0",""
+"0","# Testing for differences in ambient parturition success metrics"
+"0","# One-way ANOVA (parametric) or Kruskal-Wallis test (nonparametric)"
+"0",""
+"0","pH_aov_ambient_fec <- aov(pH ~ Fecundity_Class, data = Ambient_Samples)"
+"0","summary(pH_aov_ambient_fec)"
+"1","                Df  Sum Sq  Mean Sq F value
+Fecundity_Class  2 0.02183 0.010916   1.336
+Residuals       18 0.14711 0.008173        
+                Pr(>F)
+Fecundity_Class  0.288
+Residuals             
 "
-"1","No Studentized residuals with Bonferroni p < 0.05
-Largest |rstudent|:
+"0","# If significant, Post Hoc Test: "
+"0","# - Tukey's HSD (parametric, normality & equal variance across groups)"
+"0","# - Dunn's test (non-parametric, after Kruskal-Wallis test)"
+"0",""
+"0","TukeyHSD(pH_aov_ambient_fec)"
+"1","  Tukey multiple comparisons of means
+    95% family-wise confidence level
+
+Fit: aov(formula = pH ~ Fecundity_Class, data = Ambient_Samples)
+
+$Fecundity_Class
+                                    diff
+Low (~1,000s)-High (>50,000)  0.02675000
+Atresia-High (>50,000)       -0.05080769
+Atresia-Low (~1,000s)        -0.07755769
+                                    lwr
+Low (~1,000s)-High (>50,000) -0.1363959
+Atresia-High (>50,000)       -0.1827287
+Atresia-Low (~1,000s)        -0.2094787
+                                    upr     p adj
+Low (~1,000s)-High (>50,000) 0.18989587 0.9084726
+Atresia-High (>50,000)       0.08111329 0.5966404
+Atresia-Low (~1,000s)        0.05436329 0.3141611
+
 "
+"0","pH_ambient_fec_sim <- simulateResiduals(fittedModel = pH_aov_ambient_fec) "
+"2","G2;H2;Warningh in checkModel(fittedModel) :
+  DHARMa: fittedModel not in class of supported models. Absolutely no guarantee that this will work!g
+"
+"0","plot(pH_ambient_fec_sim)"

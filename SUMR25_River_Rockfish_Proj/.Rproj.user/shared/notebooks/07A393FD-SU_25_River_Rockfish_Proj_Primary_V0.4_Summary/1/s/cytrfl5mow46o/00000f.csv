@@ -4,20 +4,34 @@
 "0","# Interactive aov model"
 "0","chloride_primary_aov_int <- aov(Cl...mmol.L. ~ Pregnant.Or.Atresia * Ambient.Or.OAH, data = Primary_Samples)"
 "0","summary(chloride_primary_aov_int) # interaction not significant"
-"1","                                   Df Sum Sq Mean Sq F value Pr(>F)
-Pregnant.Or.Atresia                 1    1.4   1.400   0.098  0.757
-Ambient.Or.OAH                      1    7.5   7.536   0.526  0.475
-Pregnant.Or.Atresia:Ambient.Or.OAH  1    2.5   2.533   0.177  0.678
-Residuals                          24  343.5  14.314               
+"1","                                   Df Sum Sq
+Pregnant.Or.Atresia                 1    1.4
+Ambient.Or.OAH                      1    7.5
+Pregnant.Or.Atresia:Ambient.Or.OAH  1    2.5
+Residuals                          24  343.5
+                                   Mean Sq
+Pregnant.Or.Atresia                  1.400
+Ambient.Or.OAH                       7.536
+Pregnant.Or.Atresia:Ambient.Or.OAH   2.533
+Residuals                           14.314
+                                   F value Pr(>F)
+Pregnant.Or.Atresia                  0.098  0.757
+Ambient.Or.OAH                       0.526  0.475
+Pregnant.Or.Atresia:Ambient.Or.OAH   0.177  0.678
+Residuals                                        
 "
 "0","# Additive aov model"
 "0","# If interaction not significant (p-value > 0.05), use additive model"
 "0","chloride_primary_aov_add <- aov(Cl...mmol.L. ~ Pregnant.Or.Atresia + Ambient.Or.OAH, data = Primary_Samples)"
 "0","summary(chloride_primary_aov_add)"
-"1","                    Df Sum Sq Mean Sq F value Pr(>F)
-Pregnant.Or.Atresia  1    1.4   1.400   0.101  0.753
-Ambient.Or.OAH       1    7.5   7.536   0.544  0.467
-Residuals           25  346.1  13.843               
+"1","                    Df Sum Sq Mean Sq F value
+Pregnant.Or.Atresia  1    1.4   1.400   0.101
+Ambient.Or.OAH       1    7.5   7.536   0.544
+Residuals           25  346.1  13.843        
+                    Pr(>F)
+Pregnant.Or.Atresia  0.753
+Ambient.Or.OAH       0.467
+Residuals                 
 "
 "0","# Parametric Post-Hoc: Tukey's HSD test"
 "0","TukeyHSD(chloride_primary_aov_add)"
@@ -27,8 +41,10 @@ Residuals           25  346.1  13.843
 Fit: aov(formula = Cl...mmol.L. ~ Pregnant.Or.Atresia + Ambient.Or.OAH, data = Primary_Samples)
 
 $Pregnant.Or.Atresia
-                              diff       lwr     upr     p adj
-Atresia-Post Parturition 0.4666667 -2.555517 3.48885 0.7531103
+                       diff       lwr     upr
+Atresia-Pregnancy 0.4666667 -2.555517 3.48885
+                      p adj
+Atresia-Pregnancy 0.7531103
 
 $Ambient.Or.OAH
                 diff       lwr      upr     p adj

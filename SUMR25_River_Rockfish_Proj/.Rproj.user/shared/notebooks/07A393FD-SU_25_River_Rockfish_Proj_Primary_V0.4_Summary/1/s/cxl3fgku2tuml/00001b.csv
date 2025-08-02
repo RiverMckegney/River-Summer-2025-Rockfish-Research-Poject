@@ -7,23 +7,32 @@
 "0","# Interactive aov model"
 "0","chloride_primary_aov_int2 <- aov(Cl...mmol.L. ~ Pregnant.Or.Atresia * Ambient.Or.OAH, data = cl_primary_sqrt)"
 "0","summary(chloride_primary_aov_int2) # interaction not significant"
-"1","                                   Df Sum Sq  Mean Sq F value
-Pregnant.Or.Atresia                 1 0.0021 0.002112   0.094
-Ambient.Or.OAH                      1 0.0123 0.012275   0.545
-Pregnant.Or.Atresia:Ambient.Or.OAH  1 0.0039 0.003882   0.172
-Residuals                          24 0.5409 0.022537        
-                                   Pr(>F)
-Pregnant.Or.Atresia                 0.762
-Ambient.Or.OAH                      0.468
-Pregnant.Or.Atresia:Ambient.Or.OAH  0.682
-Residuals                                
+"1","                                   Df Sum Sq
+Pregnant.Or.Atresia                 1 0.0021
+Ambient.Or.OAH                      1 0.0123
+Pregnant.Or.Atresia:Ambient.Or.OAH  1 0.0039
+Residuals                          24 0.5409
+                                    Mean Sq
+Pregnant.Or.Atresia                0.002112
+Ambient.Or.OAH                     0.012275
+Pregnant.Or.Atresia:Ambient.Or.OAH 0.003882
+Residuals                          0.022537
+                                   F value Pr(>F)
+Pregnant.Or.Atresia                  0.094  0.762
+Ambient.Or.OAH                       0.545  0.468
+Pregnant.Or.Atresia:Ambient.Or.OAH   0.172  0.682
+Residuals                                        
 "
 "0","chloride_primary_aov_add2 <- aov(Cl...mmol.L. ~ Pregnant.Or.Atresia + Ambient.Or.OAH, data = cl_primary_sqrt)"
 "0","summary(chloride_primary_aov_add2) "
-"1","                    Df Sum Sq  Mean Sq F value Pr(>F)
-Pregnant.Or.Atresia  1 0.0021 0.002112   0.097  0.758
-Ambient.Or.OAH       1 0.0123 0.012275   0.563  0.460
-Residuals           25 0.5448 0.021791               
+"1","                    Df Sum Sq  Mean Sq F value
+Pregnant.Or.Atresia  1 0.0021 0.002112   0.097
+Ambient.Or.OAH       1 0.0123 0.012275   0.563
+Residuals           25 0.5448 0.021791        
+                    Pr(>F)
+Pregnant.Or.Atresia  0.758
+Ambient.Or.OAH       0.460
+Residuals                 
 "
 "0","# Parametric Post-Hoc: Tukey's HSD test"
 "0","TukeyHSD(chloride_primary_aov_add2)"
@@ -33,12 +42,16 @@ Residuals           25 0.5448 0.021791
 Fit: aov(formula = Cl...mmol.L. ~ Pregnant.Or.Atresia + Ambient.Or.OAH, data = cl_primary_sqrt)
 
 $Pregnant.Or.Atresia
-                               diff        lwr       upr     p adj
-Atresia-Post Parturition 0.01812396 -0.1017851 0.1380331 0.7581581
+                        diff        lwr       upr
+Atresia-Pregnancy 0.01812396 -0.1017851 0.1380331
+                      p adj
+Atresia-Pregnancy 0.7581581
 
 $Ambient.Or.OAH
-                  diff         lwr       upr     p adj
-OAH-Ambient 0.04817443 -0.08451299 0.1808618 0.4615869
+                  diff         lwr       upr
+OAH-Ambient 0.04817443 -0.08451299 0.1808618
+                p adj
+OAH-Ambient 0.4615869
 
 "
 "0","chloride_primary_aov_res_plot2 <- simulateResiduals(fittedModel = chloride_primary_aov_add2)"
@@ -47,7 +60,7 @@ OAH-Ambient 0.04817443 -0.08451299 0.1808618 0.4615869
 "
 "0","plot(chloride_primary_aov_res_plot2) # Still shows quantile deviation"
 "2","Warning in gzfile(file, ""wb"") :
-  cannot open compressed file 'C:/Users/rmcke/OneDrive/Documents/Summer_2025_Rockfish_Research_Project/SUMR25_River_Rockfish_Proj/.Rproj.user/shared/notebooks/07A393FD-SU_25_River_Rockfish_Proj_Primary_V0.4_Summary/1/0DAB469D3d3176e6/cxl3fgku2tuml_t/e33b5e86022940d785c8a9511869edad.snapshot', probable reason 'No such file or directory'
+  cannot open compressed file 'C:/Users/rmcke/OneDrive/Documents/Summer_2025_Rockfish_Research_Project/SUMR25_River_Rockfish_Proj/.Rproj.user/shared/notebooks/07A393FD-SU_25_River_Rockfish_Proj_Primary_V0.4_Summary/1/0DAB469De07e75f9/cxl3fgku2tuml_t/0cfde43268ce46088e4cd2c2661a6e71.snapshot', probable reason 'No such file or directory'
 "
 "2","G1;H1;Errorh in gzfile(file, ""wb"") : cannot open the connection
 g"

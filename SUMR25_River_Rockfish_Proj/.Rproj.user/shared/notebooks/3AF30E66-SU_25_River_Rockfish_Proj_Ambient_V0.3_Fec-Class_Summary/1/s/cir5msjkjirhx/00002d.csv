@@ -1,0 +1,38 @@
+"0","calcium_amb_fec_no_atresia_lm <- lm(Ca....mmol.L. ~ Weight_Adjusted_Fecundity_Fecundity.Mean_Weight, data = Ambient_Samples)
+summary(calcium_amb_fec_no_atresia_lm)
+"
+"1","
+Call:
+lm(formula = Ca....mmol.L. ~ Weight_Adjusted_Fecundity_Fecundity.Mean_Weight, 
+    data = Ambient_Samples)
+
+Residuals:
+     Min       1Q   Median       3Q      Max 
+-0.02236 -0.01883 -0.01495  0.01027  0.06475 
+
+Coefficients:
+                                                 Estimate
+(Intercept)                                     1.3912642
+Weight_Adjusted_Fecundity_Fecundity.Mean_Weight 0.0002731
+                                                Std. Error
+(Intercept)                                      0.0207348
+Weight_Adjusted_Fecundity_Fecundity.Mean_Weight  0.0001181
+                                                t value
+(Intercept)                                      67.098
+Weight_Adjusted_Fecundity_Fecundity.Mean_Weight   2.313
+                                                Pr(>|t|)
+(Intercept)                                     7.37e-10
+Weight_Adjusted_Fecundity_Fecundity.Mean_Weight   0.0601
+                                                   
+(Intercept)                                     ***
+Weight_Adjusted_Fecundity_Fecundity.Mean_Weight .  
+---
+Signif. codes:  
+0 ‘***’ 0.001 ‘**’ 0.01 ‘*’ 0.05 ‘.’ 0.1 ‘ ’ 1
+
+Residual standard error: 0.03237 on 6 degrees of freedom
+  (13 observations deleted due to missingness)
+Multiple R-squared:  0.4713,	Adjusted R-squared:  0.3831 
+F-statistic: 5.348 on 1 and 6 DF,  p-value: 0.06006
+
+"

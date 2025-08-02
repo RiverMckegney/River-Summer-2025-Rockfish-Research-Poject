@@ -1,6 +1,5 @@
-"0",""
-"0","hct_primary_aov_plot <- simulateResiduals(fittedModel = hct_primary_aov_additive)"
-"2","G2;H2;Warningh in checkModel(fittedModel) :
-  DHARMa: fittedModel not in class of supported models. Absolutely no guarantee that this will work!g
+"2","Warning in gzfile(file, ""wb"") :
+  cannot open compressed file 'C:/Users/rmcke/OneDrive/Documents/Summer_2025_Rockfish_Research_Project/SUMR25_River_Rockfish_Proj/.Rproj.user/shared/notebooks/07A393FD-SU_25_River_Rockfish_Proj_Primary_V0.4_Summary/1/0DAB469De07e75f9/cryvqx6pemzei_t/c66cf8c69e9c433ea102df947a41226b.snapshot', probable reason 'No such file or directory'
 "
-"0","plot(hct_primary_aov_plot) # Looks good"
+"2","G1;H1;Errorh in gzfile(file, ""wb"") : cannot open the connection
+g"

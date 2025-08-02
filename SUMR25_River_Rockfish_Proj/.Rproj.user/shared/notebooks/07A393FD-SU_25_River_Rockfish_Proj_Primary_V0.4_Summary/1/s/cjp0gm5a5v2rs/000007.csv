@@ -1,0 +1,22 @@
+"0","ggplot(data = Primary_Samples, aes(x = Pregnant.Or.Atresia, y = Ca....mmol.L., fill = Ambient.Or.OAH)) +
+  geom_boxplot(aes(x = Pregnant.Or.Atresia, y = Ca....mmol.L., fill = Ambient.Or.OAH)) +
+  geom_point(aes(color = Ambient.Or.OAH), position = position_dodge(width = 0.75), alpha = 0.3, color = ""black"") +
+  labs(title = ""Calcium"", x = ""Parturition Type"", y = ""Calcium (mmol/L)"") +
+  guides(fill = guide_legend((title = ""Treatment Type""))) + 
+  scale_fill_manual(values = c(""Ambient"" = ""#189bff"", ""OAH"" = ""#598c78"")) +
+  theme_classic() +
+  theme(panel.background = element_rect(fill = ""white""),
+        plot.background = element_rect(fill = ""white""),
+        legend.background = element_rect(fill = ""white"", color = ""black""),
+        title = element_text(size = 12),
+        plot.title = element_text(size = 30, hjust = 0.5), legend.position = ""none"",
+        axis.text.x = element_text(size = 10),
+        axis.text.y = element_text(size = 20),
+        axis.title.x = element_blank(),
+        axis.title.y = element_text(size = 20))
+"
+"2","Warning in gzfile(file, ""wb"") :
+  cannot open compressed file 'C:/Users/rmcke/OneDrive/Documents/Summer_2025_Rockfish_Research_Project/SUMR25_River_Rockfish_Proj/.Rproj.user/shared/notebooks/07A393FD-SU_25_River_Rockfish_Proj_Primary_V0.4_Summary/1/0DAB469De07e75f9/cjp0gm5a5v2rs_t/d38d8b38418f48639691f01c2b1594cd.snapshot', probable reason 'No such file or directory'
+"
+"2","G1;H1;Errorh in gzfile(file, ""wb"") : cannot open the connection
+g"

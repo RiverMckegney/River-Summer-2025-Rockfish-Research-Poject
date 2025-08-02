@@ -1,0 +1,41 @@
+"0","# Ph"
+"0","# Linear Model"
+"0","pH_amb_fec_no_atresia_lm <- lm(pH ~ Weight_Adjusted_Fecundity_Fecundity.Mean_Weight, data = Ambient_Samples)"
+"0","summary(pH_amb_fec_no_atresia_lm)"
+"1","
+Call:
+lm(formula = pH ~ Weight_Adjusted_Fecundity_Fecundity.Mean_Weight, 
+    data = Ambient_Samples)
+
+Residuals:
+     Min       1Q   Median       3Q      Max 
+-0.11361 -0.02694  0.01591  0.04102  0.05887 
+
+Coefficients:
+                                                  Estimate
+(Intercept)                                      7.4734874
+Weight_Adjusted_Fecundity_Fecundity.Mean_Weight -0.0002228
+                                                Std. Error
+(Intercept)                                      0.0403735
+Weight_Adjusted_Fecundity_Fecundity.Mean_Weight  0.0002300
+                                                t value
+(Intercept)                                     185.109
+Weight_Adjusted_Fecundity_Fecundity.Mean_Weight  -0.969
+                                                Pr(>|t|)
+(Intercept)                                     1.68e-12
+Weight_Adjusted_Fecundity_Fecundity.Mean_Weight     0.37
+                                                   
+(Intercept)                                     ***
+Weight_Adjusted_Fecundity_Fecundity.Mean_Weight    
+---
+Signif. codes:  
+0 ‘***’ 0.001 ‘**’ 0.01 ‘*’ 0.05 ‘.’ 0.1 ‘ ’ 1
+
+Residual standard error: 0.06302 on 6 degrees of freedom
+  (13 observations deleted due to missingness)
+Multiple R-squared:  0.1352,	Adjusted R-squared:  -0.008899 
+F-statistic: 0.9383 on 1 and 6 DF,  p-value: 0.3701
+
+"
+"0","pH_ambient_sim <- simulateResiduals(fittedModel = pH_amb_fec_no_atresia_lm) "
+"0","plot(pH_ambient_sim)"

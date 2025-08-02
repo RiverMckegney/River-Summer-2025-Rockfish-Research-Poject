@@ -1,0 +1,4 @@
+"0","# Primary sample size table"
+"0",""
+"0","primary_n_tab <- data_frame(`Sample Size` = c(8, 13, 2, 5),`Treatment` = c(""Ambient"", ""Ambient"", ""OAH"", ""OAH""), `Parturition Type` = c(""Parturition"", ""Atresia"", ""Parturition"", ""Atresia""))"
+"0","print(primary_n_tab)"

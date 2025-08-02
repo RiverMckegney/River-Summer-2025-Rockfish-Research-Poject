@@ -1,0 +1,7 @@
+"0","# Sample Size"
+"0",""
+"0","# Ambient data:"
+"0","ambient_sample_size_table <- Ambient_Samples %>%"
+"0","  group_by(Ambient.Or.OAH, Consensus_Brood_Condition) %>%"
+"0","  summarise(n_size = n_distinct(Patient.ID_edited), .groups = ""drop"")"
+"0","print(ambient_sample_size_table)"

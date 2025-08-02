@@ -2,7 +2,7 @@
 "0","# Primary Samples"
 "0","# Parametric Assumptions "
 "0",""
-"0","# Qqplot: Residuals of aov or lm model (plot residuals of aov vs lm are identical)"
+"0","# Normality QQ plot"
 "0","chloride_primary_res_qqplot <- ggqqplot(residuals(aov(Cl...mmol.L. ~ Pregnant.Or.Atresia + Ambient.Or.OAH, data = Primary_Samples))) +"
 "0","labs(title = ""Chloride Interactive Residual QQplot"","
 "0","     subtitle = ""residuals(aov(Cl...mmol.L. ~ Pregnant.Or.Atresia * Ambient.Or.OAH, data = Primary_Samples))"","

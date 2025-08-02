@@ -1,22 +1,8 @@
-"0",""
-"0","testOutliers(sodium_primary_aov_res_plot)"
+"0","ggplot(data = Primary_Samples, aes(x = Pregnant.Or.Atresia, y = Na...mmol.L., fill = Ambient.Or.OAH)) +"
+"0","  geom_boxplot(aes(x = Pregnant.Or.Atresia, y = Na...mmol.L., fill = Ambient.Or.OAH)) +"
+"0","  geom_point(aes(color = Ambient.Or.OAH), position = position_dodge(width = 0.75), alpha = 0.3, color = ""black"")"
 "2","Warning in gzfile(file, ""wb"") :
-  cannot open compressed file 'C:/Users/rmcke/OneDrive/Documents/Summer_2025_Rockfish_Research_Project/SUMR25_River_Rockfish_Proj/.Rproj.user/shared/notebooks/07A393FD-SU_25_River_Rockfish_Proj_Primary_V0.4_Summary/1/0DAB469D3d3176e6/cboso41xeuf4r_t/51c58d443d144caf80339fb2f963c232.snapshot', probable reason 'No such file or directory'
+  cannot open compressed file 'C:/Users/rmcke/OneDrive/Documents/Summer_2025_Rockfish_Research_Project/SUMR25_River_Rockfish_Proj/.Rproj.user/shared/notebooks/07A393FD-SU_25_River_Rockfish_Proj_Primary_V0.4_Summary/1/0DAB469De07e75f9/cboso41xeuf4r_t/74c5b7ec087447acb4c900986808e8f9.snapshot', probable reason 'No such file or directory'
 "
 "2","G1;H1;Errorh in gzfile(file, ""wb"") : cannot open the connection
-g"
-"2","G1;
-	DHARMa outlier test based on exact binomial test with
-	approximate expectations
-
-data:  sodium_primary_aov_res_plot
-outliers at both margin(s) = 1, observations = 28, p-value =
-0.2007
-alternative hypothesis: true probability of success is not equal to 0.007968127
-95 percent confidence interval:
- 0.0009037988 0.1834775975
-sample estimates:
-frequency of outliers (expected: 0.00796812749003984 ) 
-                                            0.03571429 
-
 g"

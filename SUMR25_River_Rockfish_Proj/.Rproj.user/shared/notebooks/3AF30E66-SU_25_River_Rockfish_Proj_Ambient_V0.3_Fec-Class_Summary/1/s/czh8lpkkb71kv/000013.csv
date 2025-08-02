@@ -1,0 +1,22 @@
+"2","Warning in gzfile(file, ""wb"") :
+  cannot open compressed file 'C:/Users/rmcke/OneDrive/Documents/Summer_2025_Rockfish_Research_Project/SUMR25_River_Rockfish_Proj/.Rproj.user/shared/notebooks/3AF30E66-SU_25_River_Rockfish_Proj_Ambient_V0.3_Fec-Class_Summary/1/0DAB469De07e75f9/czh8lpkkb71kv_t/070f3993e92842c3939ab497e5dc2dd1.snapshot', probable reason 'No such file or directory'
+"
+"2","G1;H1;Errorh in gzfile(file, ""wb"") : cannot open the connection
+g"
+"0",""
+"0","pCO2_ambient_fec_class_boxplot <- ggplot(data = Ambient_Samples) + "
+"0","  geom_boxplot(aes(x = Fecundity_Class, y = pCO2..mmHg.), fill = ""#189bff"") +"
+"0","  geom_point(aes(x = Fecundity_Class, y = pCO2..mmHg.), alpha = 0.5, colour = ""black"") +"
+"0","  labs(title = ""Carbon Dioxide"", x = ""Fecundity Class"", y = ""pCO2 (mmHg)"") +"
+"0","  theme_classic() +"
+"0","  theme(panel.background = element_rect(fill = ""white""),"
+"0","        plot.background = element_rect(fill = ""white""),"
+"0","        legend.background = element_rect(fill = ""white"", color = ""black""),"
+"0","        title = element_text(size = 12),"
+"0","        plot.title = element_text(size = 30, hjust = 0.5),"
+"0","        axis.text.x = element_text(size = 10),"
+"0","        axis.text.y = element_text(size = 20),"
+"0","        axis.title.x = element_blank(),"
+"0","        axis.title.y = element_text(size = 20))"
+"0",""
+"0","print(pCO2_ambient_fec_class_boxplot)"

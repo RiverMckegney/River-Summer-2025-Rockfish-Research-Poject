@@ -1,6 +1,8 @@
-"0","# Test outliers"
-"0","sodium_primary_aov_res_plot <- simulateResiduals(fittedModel = sodium_primary_aov_int)"
-"2","G2;H2;Warningh in checkModel(fittedModel) :
-  DHARMa: fittedModel not in class of supported models. Absolutely no guarantee that this will work!g
+"0",""
+"0","# Find Outlier "
+"0","boxplot(Primary_Samples$Na...mmol.L., horizontal = TRUE)"
+"2","Warning in gzfile(file, ""wb"") :
+  cannot open compressed file 'C:/Users/rmcke/OneDrive/Documents/Summer_2025_Rockfish_Research_Project/SUMR25_River_Rockfish_Proj/.Rproj.user/shared/notebooks/07A393FD-SU_25_River_Rockfish_Proj_Primary_V0.4_Summary/1/0DAB469De07e75f9/cboso41xeuf4r_t/4422457449d245788c85fd1b431308c6.snapshot', probable reason 'No such file or directory'
 "
-"0","plot(sodium_primary_aov_res_plot) # KS significant, star"
+"2","G1;H1;Errorh in gzfile(file, ""wb"") : cannot open the connection
+g"

@@ -1,0 +1,102 @@
+"0","# Rerun stat tests"
+"0",""
+"0","# Interactive aov model"
+"0","glucose_primary_aov_int2 <- aov(Glu..mmol.L. ~ Pregnant.Or.Atresia * Ambient.Or.OAH, data = glu_outlier_removed)"
+"0","summary(glucose_primary_aov_int2) # interaction significant"
+"1","                                   Df Sum Sq
+Pregnant.Or.Atresia                 1  0.064
+Ambient.Or.OAH                      1  0.791
+Pregnant.Or.Atresia:Ambient.Or.OAH  1  1.290
+Residuals                          23  6.664
+                                   Mean Sq
+Pregnant.Or.Atresia                 0.0645
+Ambient.Or.OAH                      0.7909
+Pregnant.Or.Atresia:Ambient.Or.OAH  1.2901
+Residuals                           0.2898
+                                   F value Pr(>F)
+Pregnant.Or.Atresia                  0.222 0.6416
+Ambient.Or.OAH                       2.729 0.1121
+Pregnant.Or.Atresia:Ambient.Or.OAH   4.452 0.0459
+Residuals                                        
+                                    
+Pregnant.Or.Atresia                 
+Ambient.Or.OAH                      
+Pregnant.Or.Atresia:Ambient.Or.OAH *
+Residuals                           
+---
+Signif. codes:  
+0 ‘***’ 0.001 ‘**’ 0.01 ‘*’ 0.05 ‘.’ 0.1 ‘ ’ 1
+"
+"0","# Additive aov model"
+"0","# If interaction not significant (p-value > 0.05), use additive model"
+"0","glucose_primary_aov_add2 <- aov(Glu..mmol.L. ~ Pregnant.Or.Atresia + Ambient.Or.OAH, data = glu_outlier_removed)"
+"0","summary(glucose_primary_aov_add2)"
+"1","                    Df Sum Sq Mean Sq F value
+Pregnant.Or.Atresia  1  0.064  0.0645   0.194
+Ambient.Or.OAH       1  0.791  0.7909   2.386
+Residuals           24  7.954  0.3314        
+                    Pr(>F)
+Pregnant.Or.Atresia  0.663
+Ambient.Or.OAH       0.135
+Residuals                 
+"
+"0","# Parametric Post-Hoc: Tukey's HSD test"
+"0","TukeyHSD(glucose_primary_aov_int2)"
+"1","  Tukey multiple comparisons of means
+    95% family-wise confidence level
+
+Fit: aov(formula = Glu..mmol.L. ~ Pregnant.Or.Atresia * Ambient.Or.OAH, data = glu_outlier_removed)
+
+$Pregnant.Or.Atresia
+                       diff        lwr       upr
+Atresia-Pregnancy 0.1011765 -0.3425933 0.5449463
+                      p adj
+Atresia-Pregnancy 0.6416275
+
+$Ambient.Or.OAH
+                diff        lwr       upr
+OAH-Ambient 0.388437 -0.1005735 0.8774475
+                p adj
+OAH-Ambient 0.1139436
+
+$`Pregnant.Or.Atresia:Ambient.Or.OAH`
+                                     diff
+Atresia:Ambient-Pregnancy:Ambient  0.3125
+Pregnancy:OAH-Pregnancy:Ambient    1.1375
+Atresia:OAH-Pregnancy:Ambient      0.3675
+Pregnancy:OAH-Atresia:Ambient      0.8250
+Atresia:OAH-Atresia:Ambient        0.0550
+Atresia:OAH-Pregnancy:OAH         -0.7700
+                                          lwr
+Atresia:Ambient-Pregnancy:Ambient -0.36740473
+Pregnancy:OAH-Pregnancy:Ambient   -0.04012954
+Atresia:OAH-Pregnancy:Ambient     -0.48170074
+Pregnancy:OAH-Atresia:Ambient     -0.31269822
+Atresia:OAH-Atresia:Ambient       -0.73789836
+Atresia:OAH-Pregnancy:OAH         -2.01628596
+                                        upr
+Atresia:Ambient-Pregnancy:Ambient 0.9924047
+Pregnancy:OAH-Pregnancy:Ambient   2.3151295
+Atresia:OAH-Pregnancy:Ambient     1.2167007
+Pregnancy:OAH-Atresia:Ambient     1.9626982
+Atresia:OAH-Atresia:Ambient       0.8478984
+Atresia:OAH-Pregnancy:OAH         0.4762860
+                                      p adj
+Atresia:Ambient-Pregnancy:Ambient 0.5892474
+Pregnancy:OAH-Pregnancy:Ambient   0.0609063
+Atresia:OAH-Pregnancy:Ambient     0.6344721
+Pregnancy:OAH-Atresia:Ambient     0.2146336
+Atresia:OAH-Atresia:Ambient       0.9974183
+Atresia:OAH-Pregnancy:OAH         0.3416608
+
+"
+"0","glucose_primary_aov_plot2 <- simulateResiduals(fittedModel = glucose_primary_aov_int2)"
+"2","G2;H2;Warningh in checkModel(fittedModel) :
+  DHARMa: fittedModel not in class of supported models. Absolutely no guarantee that this will work!g
+"
+"0","plot(glucose_primary_aov_plot2) # No outliers anymore"
+"2","Warning in gzfile(file, ""wb"") :
+  cannot open compressed file 'C:/Users/rmcke/OneDrive/Documents/Summer_2025_Rockfish_Research_Project/SUMR25_River_Rockfish_Proj/.Rproj.user/shared/notebooks/07A393FD-SU_25_River_Rockfish_Proj_Primary_V0.4_Summary/1/0DAB469De07e75f9/c11lactwwovlb_t/cf5b9a0fb4bc48c6b71198239bea72d3.snapshot', probable reason 'No such file or directory'
+"
+"2","G1;H1;Errorh in gzfile(file, ""wb"") : cannot open the connection
+g"

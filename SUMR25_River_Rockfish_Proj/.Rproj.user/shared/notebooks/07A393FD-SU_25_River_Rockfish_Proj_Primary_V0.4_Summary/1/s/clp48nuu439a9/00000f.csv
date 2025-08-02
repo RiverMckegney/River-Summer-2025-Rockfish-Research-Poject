@@ -4,20 +4,34 @@
 "0","# Interactive aov model"
 "0","sodium_primary_aov_int <- aov(Na...mmol.L. ~ Pregnant.Or.Atresia * Ambient.Or.OAH, data = Primary_Samples)"
 "0","summary(sodium_primary_aov_int) # interaction not significant"
-"1","                                   Df Sum Sq Mean Sq F value Pr(>F)
-Pregnant.Or.Atresia                 1   58.7   58.72   0.849  0.366
-Ambient.Or.OAH                      1   97.2   97.24   1.406  0.247
-Pregnant.Or.Atresia:Ambient.Or.OAH  1   99.7   99.66   1.441  0.242
-Residuals                          24 1659.8   69.16               
+"1","                                   Df Sum Sq
+Pregnant.Or.Atresia                 1   58.7
+Ambient.Or.OAH                      1   97.2
+Pregnant.Or.Atresia:Ambient.Or.OAH  1   99.7
+Residuals                          24 1659.8
+                                   Mean Sq
+Pregnant.Or.Atresia                  58.72
+Ambient.Or.OAH                       97.24
+Pregnant.Or.Atresia:Ambient.Or.OAH   99.66
+Residuals                            69.16
+                                   F value Pr(>F)
+Pregnant.Or.Atresia                  0.849  0.366
+Ambient.Or.OAH                       1.406  0.247
+Pregnant.Or.Atresia:Ambient.Or.OAH   1.441  0.242
+Residuals                                        
 "
 "0","# Additive aov model"
 "0","# If interaction not significant (p-value > 0.05), use additive model"
 "0","sodium_primary_aov_add <- aov(Na...mmol.L. ~ Pregnant.Or.Atresia + Ambient.Or.OAH, data = Primary_Samples)"
 "0","summary(sodium_primary_aov_add)"
-"1","                    Df Sum Sq Mean Sq F value Pr(>F)
-Pregnant.Or.Atresia  1   58.7   58.72   0.834  0.370
-Ambient.Or.OAH       1   97.2   97.24   1.382  0.251
-Residuals           25 1759.5   70.38               
+"1","                    Df Sum Sq Mean Sq F value
+Pregnant.Or.Atresia  1   58.7   58.72   0.834
+Ambient.Or.OAH       1   97.2   97.24   1.382
+Residuals           25 1759.5   70.38        
+                    Pr(>F)
+Pregnant.Or.Atresia  0.370
+Ambient.Or.OAH       0.251
+Residuals                 
 "
 "0","# Parametric Post-Hoc: Tukey's HSD test"
 "0","TukeyHSD(sodium_primary_aov_add)"
@@ -27,11 +41,15 @@ Residuals           25 1759.5   70.38
 Fit: aov(formula = Na...mmol.L. ~ Pregnant.Or.Atresia + Ambient.Or.OAH, data = Primary_Samples)
 
 $Pregnant.Or.Atresia
-                             diff       lwr     upr     p adj
-Atresia-Post Parturition 3.022222 -3.792266 9.83671 0.3697553
+                      diff       lwr     upr
+Atresia-Pregnancy 3.022222 -3.792266 9.83671
+                      p adj
+Atresia-Pregnancy 0.3697553
 
 $Ambient.Or.OAH
-                 diff       lwr      upr     p adj
-OAH-Ambient -4.287831 -11.82852 3.252855 0.2525973
+                 diff       lwr      upr
+OAH-Ambient -4.287831 -11.82852 3.252855
+                p adj
+OAH-Ambient 0.2525973
 
 "
