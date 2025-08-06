@@ -27,7 +27,8 @@ Residuals
 "1","                    Df Sum Sq Mean Sq F value
 Pregnant.Or.Atresia  1   58.7   58.72   0.834
 Ambient.Or.OAH       1   97.2   97.24   1.382
-Residuals           25 1759.5   70.38        
+Residuals           25"
+"1"," 1759.5   70.38        
                     Pr(>F)
 Pregnant.Or.Atresia  0.370
 Ambient.Or.OAH       0.251

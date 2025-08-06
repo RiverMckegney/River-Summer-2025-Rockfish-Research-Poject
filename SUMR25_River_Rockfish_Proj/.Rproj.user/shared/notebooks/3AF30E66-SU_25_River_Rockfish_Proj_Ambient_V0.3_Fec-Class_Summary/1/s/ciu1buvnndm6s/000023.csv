@@ -1,0 +1,29 @@
+"0",""
+"0","# Parametric tests"
+"0",""
+"0","# Normality"
+"0","shapiro.test(Ambient_Samples$Ca....mmol.L.)"
+"1","
+	Shapiro-Wilk normality test
+
+data:  Ambient_Samples$Ca....mmol.L.
+W = 0.9463, p-value = 0.2894
+
+"
+"0","shapiro.test(residuals(aov(Ca....mmol.L. ~ Fecundity_Class, data = Ambient_Samples)))"
+"1","
+	Shapiro-Wilk normality test
+
+data:  residuals(aov(Ca....mmol.L. ~ Fecundity_Class, data = Ambient_Samples))
+W = 0.91863, p-value = 0.08147
+
+"
+"0","# QQplot:"
+"0","calcium_ambient_fec_res_qqplot <- ggqqplot(residuals(aov(Ca....mmol.L. ~ Fecundity_Class, data = Ambient_Samples))) +"
+"0","labs(title = ""Ambient Calcium Residual QQplot"","
+"0","     subtitle = ""residuals(aov(Ca....mmol.L. ~ Fecundity_Class, data = Ambient_Samples))"","
+"0","                               x = ""Calcium Theoretical Quantiles (Predicted values)"","
+"0","                               y = ""Calcium Sample Quantiles"") +"
+"0","  theme(plot.title = element_text(hjust = 0.5),"
+"0","        plot.subtitle = element_text(hjust = 0.5))"
+"0","print(calcium_ambient_fec_res_qqplot)"

@@ -1,0 +1,29 @@
+"0",""
+"0","# Parametric tests"
+"0",""
+"0","# Normality"
+"0","shapiro.test(Ambient_Samples$Na...mmol.L.)"
+"1","
+	Shapiro-Wilk normality test
+
+data:  Ambient_Samples$Na...mmol.L.
+W = 0.52676, p-value = 3.625e-07
+
+"
+"0","shapiro.test(residuals(aov(Na...mmol.L. ~ Fecundity_Class, data = Ambient_Samples)))"
+"1","
+	Shapiro-Wilk normality test
+
+data:  residuals(aov(Na...mmol.L. ~ Fecundity_Class, data = Ambient_Samples))
+W = 0.56321, p-value = 8.235e-07
+
+"
+"0","# QQplot:"
+"0","sodium_ambient_fec_res_qqplot <- ggqqplot(residuals(aov(Na...mmol.L. ~ Fecundity_Class, data = Ambient_Samples))) +"
+"0","labs(title = ""Ambient Sodium Residual QQplot"","
+"0","     subtitle = ""residuals(aov(Na...mmol.L. ~ Fecundity_Class, data = Ambient_Samples))"","
+"0","                               x = ""Sodium Theoretical Quantiles (Predicted values)"","
+"0","                               y = ""Sodium Sample Quantiles"") +"
+"0","  theme(plot.title = element_text(hjust = 0.5),"
+"0","        plot.subtitle = element_text(hjust = 0.5))"
+"0","print(sodium_ambient_fec_res_qqplot)"

@@ -1,0 +1,41 @@
+"0","# Na+"
+"0","# Linear Model"
+"0","sodium_amb_fec_no_atresia_lm <- lm(Na...mmol.L. ~ Weight_Adjusted_Fecundity_Fecundity.Mean_Weight, data = Ambient_Samples)"
+"0","summary(sodium_amb_fec_no_atresia_lm)"
+"1","
+Call:
+lm(formula = Na...mmol.L. ~ Weight_Adjusted_Fecundity_Fecundity.Mean_Weight, 
+    data = Ambient_Samples)
+
+Residuals:
+    Min      1Q  Median      3Q     Max 
+-6.7526 -1.0177  0.5473  2.5230  3.4276 
+
+Coefficients:
+                                                 Estimate
+(Intercept)                                     1.754e+02
+Weight_Adjusted_Fecundity_Fecundity.Mean_Weight 2.289e-03
+                                                Std. Error
+(Intercept)                                      2.355e+00
+Weight_Adjusted_Fecundity_Fecundity.Mean_Weight  1.342e-02
+                                                t value
+(Intercept)                                      74.474
+Weight_Adjusted_Fecundity_Fecundity.Mean_Weight   0.171
+                                                Pr(>|t|)
+(Intercept)                                     3.94e-10
+Weight_Adjusted_Fecundity_Fecundity.Mean_Weight     0.87
+                                                   
+(Intercept)                                     ***
+Weight_Adjusted_Fecundity_Fecundity.Mean_Weight    
+---
+Signif. codes:  
+0 ‘***’ 0.001 ‘**’ 0.01 ‘*’ 0.05 ‘.’ 0.1 ‘ ’ 1
+
+Residual standard error: 3.677 on 6 degrees of freedom
+  (13 observations deleted due to missingness)
+Multiple R-squared:  0.004827,	Adjusted R-squared:  -0.161 
+F-statistic: 0.0291 on 1 and 6 DF,  p-value: 0.8701
+
+"
+"0","sodium_ambient_sim <- simulateResiduals(fittedModel = sodium_amb_fec_no_atresia_lm) "
+"0","plot(sodium_ambient_sim)"

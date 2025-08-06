@@ -1,6 +1,7 @@
-"0","hct_amb_fec_no_atresia_lm <- lm(Hct.... ~ Weight_Adjusted_Fecundity_Fecundity.Mean_Weight, data = Ambient_Samples)
-summary(hct_amb_fec_no_atresia_lm)
-"
+"0","# hct"
+"0","# Linear Model"
+"0","hct_amb_fec_no_atresia_lm <- lm(Hct.... ~ Weight_Adjusted_Fecundity_Fecundity.Mean_Weight, data = Ambient_Samples)"
+"0","summary(hct_amb_fec_no_atresia_lm)"
 "1","
 Call:
 lm(formula = Hct.... ~ Weight_Adjusted_Fecundity_Fecundity.Mean_Weight, 
@@ -11,8 +12,7 @@ Residuals:
 -3.5587 -1.5142 -0.7795  0.5244  7.1866 
 
 Coefficients:
-                                                Estimate"
-"1","
+                                                Estimate
 (Intercept)                                     12.81211
 Weight_Adjusted_Fecundity_Fecundity.Mean_Weight  0.01494
                                                 Std. Error
@@ -32,8 +32,10 @@ Signif. codes:
 0 ‘***’ 0.001 ‘**’ 0.01 ‘*’ 0.05 ‘.’ 0.1 ‘ ’ 1
 
 Residual standard error: 3.633 on 6 degrees of freedom
-  (16 observations deleted due to missingness)
+  (13 observations deleted due to missingness)
 Multiple R-squared:  0.1748,	Adjusted R-squared:  0.03725 
 F-statistic: 1.271 on 1 and 6 DF,  p-value: 0.3027
 
 "
+"0","hct_ambient_sim <- simulateResiduals(fittedModel = hct_amb_fec_no_atresia_lm) "
+"0","plot(hct_ambient_sim)"

@@ -1,1 +1,4 @@
 "0","outlierTest(chloride_primary_aov_add) "
+"1","No Studentized residuals with Bonferroni p < 0.05
+Largest |rstudent|:
+"

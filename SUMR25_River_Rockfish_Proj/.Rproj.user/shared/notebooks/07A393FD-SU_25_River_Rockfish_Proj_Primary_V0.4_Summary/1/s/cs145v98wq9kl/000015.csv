@@ -1,0 +1,20 @@
+"0","ggplot(data = Primary_Samples, aes(x = Pregnant.Or.Atresia, y = pH)) +
+  geom_boxplot(aes(x = Pregnant.Or.Atresia, y = pH)) +
+  geom_point(aes(color = Ambient.Or.OAH), position = position_dodge(width = 0.75), alpha = 0.3, color = ""black"") +
+  labs(title = ""pH"", x = ""Parturition Type"", y = ""pH"") +
+  theme_classic() +
+  theme(panel.background = element_rect(fill = ""white""),
+        plot.background = element_rect(fill = ""white""),
+        legend.background = element_rect(fill = ""white"", color = ""black""),
+        title = element_text(size = 12),
+        plot.title = element_text(size = 30, hjust = 0.5),
+        axis.text.x = element_text(size = 10),
+        axis.text.y = element_text(size = 20),
+        axis.title.x = element_text(size = 20),
+        axis.title.y = element_text(size = 20))
+"
+"2","Warning in gzfile(file, ""wb"") :
+  cannot open compressed file 'C:/Users/rmcke/OneDrive/Documents/Summer_2025_Rockfish_Research_Project/SUMR25_River_Rockfish_Proj/.Rproj.user/shared/notebooks/07A393FD-SU_25_River_Rockfish_Proj_Primary_V0.4_Summary/1/0DAB469Df2e0e822/cs145v98wq9kl_t/5284413eabec46d898ed38507c21ce53.snapshot', probable reason 'No such file or directory'
+"
+"2","G1;H1;Errorh in gzfile(file, ""wb"") : cannot open the connection
+g"

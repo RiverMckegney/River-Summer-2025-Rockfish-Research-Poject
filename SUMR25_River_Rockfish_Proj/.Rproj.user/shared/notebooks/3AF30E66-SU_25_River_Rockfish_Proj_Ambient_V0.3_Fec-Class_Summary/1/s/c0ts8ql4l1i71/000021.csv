@@ -1,0 +1,31 @@
+"1","No Studentized residuals with Bonferroni p < 0.05
+Largest |rstudent|:
+"
+"0","# Parametric tests"
+"0",""
+"0","# Normality"
+"0","shapiro.test(Ambient_Samples$Hct....)"
+"1","
+	Shapiro-Wilk normality test
+
+data:  Ambient_Samples$Hct....
+W = 0.97482, p-value = 0.8355
+
+"
+"0","shapiro.test(residuals(aov(Hct.... ~ Fecundity_Class, data = Ambient_Samples)))"
+"1","
+	Shapiro-Wilk normality test
+
+data:  residuals(aov(Hct.... ~ Fecundity_Class, data = Ambient_Samples))
+W = 0.97094, p-value = 0.7538
+
+"
+"0","# QQplot:"
+"0","hct_ambient_fec_res_qqplot <- ggqqplot(residuals(aov(Hct.... ~ Fecundity_Class, data = Ambient_Samples))) +"
+"0","labs(title = ""Ambient Hematocrit Residual QQplot"","
+"0","     subtitle = ""residuals(aov(Hct.... ~ Fecundity_Class, data = Ambient_Samples))"","
+"0","                               x = ""Hct Theoretical Quantiles (Predicted values)"","
+"0","                               y = ""Hct Sample Quantiles"") +"
+"0","  theme(plot.title = element_text(hjust = 0.5),"
+"0","        plot.subtitle = element_text(hjust = 0.5))"
+"0","print(hct_ambient_fec_res_qqplot)"

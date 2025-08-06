@@ -1,0 +1,46 @@
+"0",""
+"0",""
+"0","# Parametric Variance test (Bartlett's test): require at least 2 obs for each group"
+"0","bartlett.test(Glu..mmol.L. ~ Fecundity_Class, data = Ambient_Samples)"
+"1","
+	Bartlett test of homogeneity of variances
+
+data:  Glu..mmol.L. by Fecundity_Class
+Bartlett's K-squared = 3.669, df = 2,
+p-value = 0.1597
+
+"
+"0","# Nonparametric variance test (Levene's test):"
+"0","leveneTest(Glu..mmol.L. ~ Fecundity_Class, data = Ambient_Samples)"
+"1","Levene's Test for Homogeneity of Variance (center = median)
+      Df F value Pr(>F)
+group  2  0.9391 0.4093
+      18               
+"
+"0","# Nonparametric stat test: Kruskall Wallis"
+"0","kruskal.test(Glu..mmol.L. ~ Fecundity_Class, data = Ambient_Samples)"
+"1","
+	Kruskal-Wallis rank sum test
+
+data:  Glu..mmol.L. by Fecundity_Class
+Kruskal-Wallis chi-squared = 4.0755, df = 2,
+p-value = 0.1303
+
+"
+"0","# Nonparametric Post Hoc: Dunn's test"
+"0","DunnTest(Glu..mmol.L. ~ Fecundity_Class, data = Ambient_Samples)"
+"1","
+ Dunn's test of multiple comparisons using rank sums : holm  
+
+                             mean.rank.diff
+Low (~1,000s)-High (>50,000)       2.625000
+Atresia-High (>50,000)             6.663462
+Atresia-Low (~1,000s)              4.038462
+                               pval    
+Low (~1,000s)-High (>50,000) 0.5480    
+Atresia-High (>50,000)       0.1778    
+Atresia-Low (~1,000s)        0.5060    
+---
+Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1
+
+"

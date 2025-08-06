@@ -3,3 +3,7 @@
 "0","  rename(Ambient.Or.OAH = Consensus_General_Treatment,"
 "0","         Pregnant.Or.Atresia = Consensus_Atresia_Or_Pregnant)"
 "0","         "
+"0","# Rename Factors"
+"0","ABL_merged <- ABL_merged %>%"
+"0","  mutate(Pregnant.Or.Atresia = ifelse(Pregnant.Or.Atresia == ""Post Parturition"", ""Pregnancy"", Pregnant.Or.Atresia))"
+"0",""

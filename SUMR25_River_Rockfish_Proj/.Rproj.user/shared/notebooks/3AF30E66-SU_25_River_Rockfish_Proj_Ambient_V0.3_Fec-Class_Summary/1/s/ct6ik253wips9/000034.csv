@@ -1,0 +1,14 @@
+"1","No Studentized residuals with Bonferroni p < 0.05
+Largest |rstudent|:
+"
+"0","# Normality test"
+"0","shapiro.test(residuals(hct_amb_fec_no_atresia_lm))"
+"1","
+	Shapiro-Wilk normality test
+
+data:  residuals(hct_amb_fec_no_atresia_lm)
+W = 0.86076, p-value = 0.1222
+
+"
+"0","# qq plot"
+"0","ggqqplot(residuals(lm(Hct.... ~ Weight_Adjusted_Fecundity_Fecundity.Mean_Weight, data = Ambient_Samples)))"

@@ -1,0 +1,5 @@
+"1","No Studentized residuals with Bonferroni p < 0.05
+Largest |rstudent|:
+"
+"0","# Find Outlier"
+"0","boxplot(Ambient_Samples$Cl...mmol.L., horizontal = TRUE)"

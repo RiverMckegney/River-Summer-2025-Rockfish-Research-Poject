@@ -1,0 +1,8 @@
+"0",""
+"0","set_flextable_defaults(background.color = ""white"")"
+"0",""
+"0","primary_n_tab <- flextable(primary_n_tab, cwidth = 1)"
+"0",""
+"0","save_as_image(primary_n_tab, path = ""data-images/primary_n_tab.png"")"
+"1","[1] ""data-images/primary_n_tab.png""
+"

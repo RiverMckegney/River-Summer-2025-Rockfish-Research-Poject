@@ -1,0 +1,56 @@
+"0","# pCO2"
+"0","# Ambient ANOVA Test"
+"0",""
+"0","# Testing for differences in ambient parturition success metrics"
+"0","# One-way ANOVA (parametric) or Kruskal-Wallis test (nonparametric)"
+"0",""
+"0","pCO2_aov_ambient_fec <- aov(pCO2..mmHg. ~ Fecundity_Class, data = Ambient_Samples)"
+"0","summary(pCO2_aov_ambient_fec)"
+"1","                Df Sum Sq Mean Sq F value Pr(>F)
+Fecundity_Class  2  10.10   5.050   1.817  0.191
+Residuals       18  50.02   2.779               
+"
+"0","# If significant, Post Hoc Test: "
+"0","# - Tukey's HSD (parametric, normality & equal variance across groups)"
+"0","# - Dunn's test (non-parametric, after Kruskal-Wallis test)"
+"0",""
+"0","TukeyHSD(pCO2_aov_ambient_fec)"
+"1","  Tukey multiple comparisons of means
+    95% family-wise confidence level
+
+Fit: aov(formula = pCO2..mmHg. ~ Fecundity_Class, data = Ambient_Samples)
+
+$Fecundity_Class
+                                   diff
+Low (~1,000s)-High (>50,000) -1.2750000
+Atresia-High (>50,000)        0.5384615
+Atresia-Low (~1,000s)         1.8134615
+                                    lwr      upr
+Low (~1,000s)-High (>50,000) -4.2833026 1.733303
+Atresia-High (>50,000)       -1.8940746 2.970998
+Atresia-Low (~1,000s)        -0.6190746 4.245998
+                                 p adj
+Low (~1,000s)-High (>50,000) 0.5371486
+Atresia-High (>50,000)       0.8401814
+Atresia-Low (~1,000s)        0.1666659
+
+"
+"0","# Install flexplot"
+"0","# devtools::install_github(""dustinfife/flexplot"", ref=""development"")"
+"0","require(flexplot)"
+"2","G3;Loading required package: flexplot
+g"
+"2","G3;
+Attaching package: ‘flexplot’
+
+g"
+"2","G3;The following object is masked from ‘package:ggplot2’:
+
+    flip_data
+
+g"
+"0","pCO2_ambient_fec_sim <- simulateResiduals(fittedModel = pCO2_aov_ambient_fec) "
+"2","G2;H2;Warningh in checkModel(fittedModel) :
+  DHARMa: fittedModel not in class of supported models. Absolutely no guarantee that this will work!g
+"
+"0","plot(pCO2_ambient_fec_sim)"

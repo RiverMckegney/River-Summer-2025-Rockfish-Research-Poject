@@ -1,0 +1,31 @@
+"1","No Studentized residuals with Bonferroni p < 0.05
+Largest |rstudent|:
+"
+"0","# Parametric tests"
+"0",""
+"0","# Normality"
+"0","shapiro.test(Ambient_Samples$pCO2..mmHg.)"
+"1","
+	Shapiro-Wilk normality test
+
+data:  Ambient_Samples$pCO2..mmHg.
+W = 0.97964, p-value = 0.9201
+
+"
+"0","shapiro.test(residuals(aov(pCO2..mmHg. ~ Fecundity_Class, data = Ambient_Samples)))"
+"1","
+	Shapiro-Wilk normality test
+
+data:  residuals(aov(pCO2..mmHg. ~ Fecundity_Class, data = Ambient_Samples))
+W = 0.95328, p-value = 0.3922
+
+"
+"0","# QQplot:"
+"0","pCO2_ambient_fec_res_qqplot <- ggqqplot(residuals(aov(pCO2..mmHg. ~ Fecundity_Class, data = Ambient_Samples))) +"
+"0","labs(title = ""Ambient pCO2 Residual QQplot"","
+"0","     subtitle = ""residuals(aov(pCO2 ~ Fecundity_Class, data = Ambient_Samples))"","
+"0","                               x = ""pCO2 Theoretical Quantiles (Predicted values)"","
+"0","                               y = ""pCO2 Sample Quantiles"") +"
+"0","  theme(plot.title = element_text(hjust = 0.5),"
+"0","        plot.subtitle = element_text(hjust = 0.5))"
+"0","print(pCO2_ambient_fec_res_qqplot)"

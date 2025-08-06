@@ -1,0 +1,22 @@
+"0","pCO2_primary_pregnancy <- ggplot(data = Primary_Samples, aes(x = Pregnant.Or.Atresia, y = pCO2..mmHg.)) +
+  geom_boxplot() +
+  geom_point(position = position_dodge(width = 0.75), alpha = 0.3, color = ""black"") +
+  labs(title = ""Carbon Dioxide"", x = ""Parturition Type"", y = ""pCO2 (mmHg)"") +
+  theme_classic() +
+  theme(panel.background = element_rect(fill = ""white""),
+        plot.background = element_rect(fill = ""white""),
+        legend.background = element_rect(fill = ""white"", color = ""black""))
+
+pCO2_primary_treatment <- ggplot(data = Primary_Samples, aes(x = Ambient.Or.OAH, y = pCO2..mmHg.)) +
+  geom_boxplot() +
+  geom_point(position = position_dodge(width = 0.75), alpha = 0.3, color = ""black"") +
+  labs(title = ""Carbon Dioxide"", x = ""Treatment Type"", y = ""pCO2 (mmHg)"") +
+  theme_classic() +
+  theme(panel.background = element_rect(fill = ""white""),
+        plot.background = element_rect(fill = ""white""),
+        legend.background = element_rect(fill = ""white"", color = ""black""))
+
+pCO2_primary_basic <- pCO2_primary_pregnancy + pCO2_primary_treatment + plot_layout(guides = ""collect"")
+"
+"0",""
+"0","pCO2_primary_basic"

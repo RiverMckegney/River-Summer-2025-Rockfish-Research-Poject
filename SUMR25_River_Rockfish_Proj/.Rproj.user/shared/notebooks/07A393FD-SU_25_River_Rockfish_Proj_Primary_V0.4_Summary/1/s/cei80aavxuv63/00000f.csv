@@ -9,11 +9,16 @@ Pregnant.Or.Atresia                 1 0.15667
 Ambient.Or.OAH                      1 0.08990
 Pregnant.Or.Atresia:Ambient.Or.OAH  1 0.00575
 Residuals                          24 0.17578
-                                   Mean Sq F value
-Pregnant.Or.Atresia                0.15667  21.391
-Ambient.Or.OAH                     0.08990  12.274
-Pregnant.Or.Atresia:Ambient.Or.OAH 0.00575   0.785
-Residuals                          0.00732        
+                                   Mean Sq
+Pregnant.Or.Atresia                0.15667
+Ambient.Or.OAH                     0.08990
+Pregnant.Or.Atresia:Ambient.Or.OAH 0.00575
+Residuals                          0.00732
+                                   F value
+Pregnant.Or.Atresia                 21.391
+Ambient.Or.OAH                      12.274
+Pregnant.Or.Atresia:Ambient.Or.OAH   0.785
+Residuals                                 
                                      Pr(>F)    
 Pregnant.Or.Atresia                0.000108 ***
 Ambient.Or.OAH                     0.001827 ** 
@@ -42,15 +47,16 @@ Signif. codes:
 "0","# Parametric Post-Hoc: Tukey's HSD test"
 "0","TukeyHSD(calcium_primary_aov_add)"
 "1","  Tukey multiple comparisons of means
-    95% family-wise confidence level
+"
+"1","    95% family-wise confidence level
 
 Fit: aov(formula = Ca....mmol.L. ~ Pregnant.Or.Atresia + Ambient.Or.OAH, data = Primary_Samples)
 
 $Pregnant.Or.Atresia
-                               diff        lwr
-Atresia-Post Parturition -0.1561111 -0.2253289
-                                 upr    p adj
-Atresia-Post Parturition -0.08689334 9.35e-05
+                        diff        lwr
+Atresia-Pregnancy -0.1561111 -0.2253289
+                          upr    p adj
+Atresia-Pregnancy -0.08689334 9.35e-05
 
 $Ambient.Or.OAH
                   diff        lwr         upr

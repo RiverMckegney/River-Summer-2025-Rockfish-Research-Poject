@@ -1,0 +1,16 @@
+"0","testOutliers(na_ambient_fec_sim)  "
+"1","
+	DHARMa outlier test based on exact binomial
+	test with approximate expectations
+
+data:  na_ambient_fec_sim
+outliers at both margin(s) = 1, observations
+= 21, p-value = 0.1546
+alternative hypothesis: true probability of success is not equal to 0.007968127
+95 percent confidence interval:
+ 0.001204883 0.238159910
+sample estimates:
+frequency of outliers (expected: 0.00796812749003984 ) 
+                                            0.04761905 
+
+"

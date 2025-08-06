@@ -36,7 +36,8 @@ Residuals
 "0","# Parametric Post-Hoc: Tukey's HSD test"
 "0","TukeyHSD(potassium_primary_aov_add)"
 "1","  Tukey multiple comparisons of means
-    95% family-wise confidence level
+"
+"1","    95% family-wise confidence level
 
 Fit: aov(formula = K...mmol.L. ~ Pregnant.Or.Atresia + Ambient.Or.OAH, data = Primary_Samples)
 

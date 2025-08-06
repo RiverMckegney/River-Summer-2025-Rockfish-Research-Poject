@@ -1,0 +1,90 @@
+"0","# Rerun stat tests"
+"0",""
+"0","# Interactive aov model"
+"0","sodium_primary_aov_int2 <- aov(Na...mmol.L. ~ Pregnant.Or.Atresia * Ambient.Or.OAH, data = na_outlier_removed)"
+"0","summary(sodium_primary_aov_int2) # interaction significant"
+"1","                                   Df Sum Sq
+Pregnant.Or.Atresia                 1   3.46
+Ambient.Or.OAH                      1  24.05
+Pregnant.Or.Atresia:Ambient.Or.OAH  1  45.33
+Residuals                          23 195.17
+                                   Mean Sq
+Pregnant.Or.Atresia                   3.46
+Ambient.Or.OAH                       24.05
+Pregnant.Or.Atresia:Ambient.Or.OAH   45.33
+Residuals                             8.49
+                                   F value Pr(>F)
+Pregnant.Or.Atresia                  0.408 0.5295
+Ambient.Or.OAH                       2.834 0.1058
+Pregnant.Or.Atresia:Ambient.Or.OAH   5.342 0.0301
+Residuals                                        
+                                    
+Pregnant.Or.Atresia                 
+Ambient.Or.OAH                      
+Pregnant.Or.Atresia:Ambient.Or.OAH *
+Residuals                           
+---
+Signif. codes:  
+0 ‘***’ 0.001 ‘**’ 0.01 ‘*’ 0.05 ‘.’ 0.1 ‘ ’ 1
+"
+"0","# Parametric Post-Hoc: Tukey's HSD test"
+"0","TukeyHSD(sodium_primary_aov_int2)"
+"1","  Tukey multiple comparisons of means
+    95% family-wise confidence level
+"
+"1","
+Fit: aov(formula = Na...mmol.L. ~ Pregnant.Or.Atresia * Ambient.Or.OAH, data = na_outlier_removed)
+
+$Pregnant.Or.Atresia
+                       diff       lwr      upr
+Atresia-Pregnancy 0.7411765 -1.660336 3.142689
+                      p adj
+Atresia-Pregnancy 0.5294889
+
+$Ambient.Or.OAH
+                 diff       lwr       upr
+OAH-Ambient -2.141849 -4.788187 0.5044895
+               p adj
+OAH-Ambient 0.107619
+
+$`Pregnant.Or.Atresia:Ambient.Or.OAH`
+                                        diff
+Atresia:Ambient-Pregnancy:Ambient  2.4166667
+Pregnancy:OAH-Pregnancy:Ambient    2.2500000
+Atresia:OAH-Pregnancy:Ambient     -1.7500000
+Pregnancy:OAH-Atresia:Ambient     -0.1666667
+Atresia:OAH-Atresia:Ambient       -4.1666667
+Atresia:OAH-Pregnancy:OAH         -4.0000000
+                                         lwr
+Atresia:Ambient-Pregnancy:Ambient  -1.262718
+Pregnancy:OAH-Pregnancy:Ambient    -4.122882
+Atresia:OAH-Pregnancy:Ambient      -6.345551
+Pregnancy:OAH-Atresia:Ambient      -6.323456
+Atresia:OAH-Atresia:Ambient        -8.457530
+Atresia:OAH-Pregnancy:OAH         -10.744424
+                                        upr
+Atresia:Ambient-Pregnancy:Ambient 6.0960518
+Pregnancy:OAH-Pregnancy:Ambient   8.6228819
+Atresia:OAH-Pregnancy:Ambient     2.8455505
+Pregnancy:OAH-Atresia:Ambient     5.9901222
+Atresia:OAH-Atresia:Ambient       0.1241968
+Atresia:OAH-Pregnancy:OAH         2.7444243
+                                      p adj
+Atresia:Ambient-Pregnancy:Ambient 0.2909323
+Pregnancy:OAH-Pregnancy:Ambient   0.7636964
+Atresia:OAH-Pregnancy:Ambient     0.7201662
+Pregnancy:OAH-Atresia:Ambient     0.9998445
+Atresia:OAH-Atresia:Ambient       0.0591380
+Atresia:OAH-Pregnancy:OAH         0.3764424
+
+"
+"0","sodium_primary_aov_plot2 <- simulateResiduals(fittedModel = sodium_primary_aov_int2)"
+"2","G2;H2;Warningh in checkModel(fittedModel) :
+  DHARMa: fittedModel not in class of supported models. Absolutely no guarantee that this will work!g
+"
+"0","plot(sodium_primary_aov_plot2) # Looks good"
+"2","Warning in gzfile(file, ""wb"") :
+  cannot open compressed file 'C:/Users/rmcke/OneDrive/Documents/Summer_2025_Rockfish_Research_Project/SUMR25_River_Rockfish_Proj/.Rproj.user/shared/notebooks/07A393FD-SU_25_River_Rockfish_Proj_Primary_V0.4_Summary/1/0DAB469Df2e0e822/cboso41xeuf4r_t/9d3e11ee160641628fff7ab8ad21245d.snapshot', probable reason 'No such file or directory'
+"
+"2","G1;H1;Errorh in gzfile(file, ""wb"") : cannot open the connection
+g"

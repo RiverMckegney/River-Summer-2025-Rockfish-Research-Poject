@@ -1,27 +1,41 @@
-"0","glucose_amb_fec_no_atresia_lm_sqrt <- lm(Glu..mmol.L. ~ Weight_Adjusted_Fecundity_Fecundity.Mean_Weight, data = glucose_ambient_sqrt)
-summary(glucose_amb_fec_no_atresia_lm_sqrt)
-"
+"0","# glucose"
+"0","# Linear Model"
+"0","glucose_amb_fec_no_atresia_lm <- lm(Glu..mmol.L. ~ Weight_Adjusted_Fecundity_Fecundity.Mean_Weight, data = Ambient_Samples)"
+"0","summary(glucose_amb_fec_no_atresia_lm)"
 "1","
 Call:
 lm(formula = Glu..mmol.L. ~ Weight_Adjusted_Fecundity_Fecundity.Mean_Weight, 
-    data = glucose_ambient_sqrt)
+    data = Ambient_Samples)
 
 Residuals:
      Min       1Q   Median       3Q      Max 
--0.30380 -0.13647 -0.01130  0.07862  0.42723 
+-0.71290 -0.36526 -0.05942  0.16524  1.19856 
 
 Coefficients:
-                                                 Estimate Std. Error
-(Intercept)                                     1.2241905  0.1551624
-Weight_Adjusted_Fecundity_Fecundity.Mean_Weight 0.0001917  0.0008838
-                                                t value Pr(>|t|)    
-(Intercept)                                       7.890  0.00022 ***
-Weight_Adjusted_Fecundity_Fecundity.Mean_Weight   0.217  0.83544    
+                                                 Estimate
+(Intercept)                                     1.5622030
+Weight_Adjusted_Fecundity_Fecundity.Mean_Weight 0.0003435
+                                                Std. Error
+(Intercept)                                      0.4085226
+Weight_Adjusted_Fecundity_Fecundity.Mean_Weight  0.0023269
+                                                t value
+(Intercept)                                       3.824
+Weight_Adjusted_Fecundity_Fecundity.Mean_Weight   0.148
+                                                Pr(>|t|)
+(Intercept)                                      0.00872
+Weight_Adjusted_Fecundity_Fecundity.Mean_Weight  0.88746
+                                                  
+(Intercept)                                     **
+Weight_Adjusted_Fecundity_Fecundity.Mean_Weight   
 ---
-Signif. codes:  0 ‘***’ 0.001 ‘**’ 0.01 ‘*’ 0.05 ‘.’ 0.1 ‘ ’ 1
+Signif. codes:  
+0 ‘***’ 0.001 ‘**’ 0.01 ‘*’ 0.05 ‘.’ 0.1 ‘ ’ 1
 
-Residual standard error: 0.2422 on 6 degrees of freedom
-Multiple R-squared:  0.007783,	Adjusted R-squared:  -0.1576 
-F-statistic: 0.04706 on 1 and 6 DF,  p-value: 0.8354
+Residual standard error: 0.6377 on 6 degrees of freedom
+  (13 observations deleted due to missingness)
+Multiple R-squared:  0.00362,	Adjusted R-squared:  -0.1624 
+F-statistic: 0.0218 on 1 and 6 DF,  p-value: 0.8875
 
 "
+"0","glucose_ambient_sim <- simulateResiduals(fittedModel = glucose_amb_fec_no_atresia_lm) "
+"0","plot(glucose_ambient_sim)"

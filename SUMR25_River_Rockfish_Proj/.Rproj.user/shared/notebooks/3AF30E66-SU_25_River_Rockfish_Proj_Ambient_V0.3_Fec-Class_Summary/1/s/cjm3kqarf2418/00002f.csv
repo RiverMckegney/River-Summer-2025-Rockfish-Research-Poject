@@ -1,0 +1,41 @@
+"0","# Cl-"
+"0","# Linear Model"
+"0","chloride_amb_fec_no_atresia_lm <- lm(Cl...mmol.L. ~ Weight_Adjusted_Fecundity_Fecundity.Mean_Weight, data = Ambient_Samples)"
+"0","summary(chloride_amb_fec_no_atresia_lm)"
+"1","
+Call:
+lm(formula = Cl...mmol.L. ~ Weight_Adjusted_Fecundity_Fecundity.Mean_Weight, 
+    data = Ambient_Samples)
+
+Residuals:
+    Min      1Q  Median      3Q     Max 
+-3.7216 -2.2032 -0.5783  1.8178  5.0996 
+
+Coefficients:
+                                                  Estimate
+(Intercept)                                     158.033787
+Weight_Adjusted_Fecundity_Fecundity.Mean_Weight  -0.001938
+                                                Std. Error
+(Intercept)                                       2.144241
+Weight_Adjusted_Fecundity_Fecundity.Mean_Weight   0.012213
+                                                t value
+(Intercept)                                      73.702
+Weight_Adjusted_Fecundity_Fecundity.Mean_Weight  -0.159
+                                                Pr(>|t|)
+(Intercept)                                      4.2e-10
+Weight_Adjusted_Fecundity_Fecundity.Mean_Weight    0.879
+                                                   
+(Intercept)                                     ***
+Weight_Adjusted_Fecundity_Fecundity.Mean_Weight    
+---
+Signif. codes:  
+0 ‘***’ 0.001 ‘**’ 0.01 ‘*’ 0.05 ‘.’ 0.1 ‘ ’ 1
+
+Residual standard error: 3.347 on 6 degrees of freedom
+  (13 observations deleted due to missingness)
+Multiple R-squared:  0.00418,	Adjusted R-squared:  -0.1618 
+F-statistic: 0.02519 on 1 and 6 DF,  p-value: 0.8791
+
+"
+"0","chloride_ambient_sim <- simulateResiduals(fittedModel = chloride_amb_fec_no_atresia_lm) "
+"0","plot(chloride_ambient_sim)"

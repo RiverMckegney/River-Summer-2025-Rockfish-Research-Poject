@@ -1,6 +1,7 @@
-"0","calcium_amb_fec_no_atresia_lm <- lm(Ca....mmol.L. ~ Weight_Adjusted_Fecundity_Fecundity.Mean_Weight, data = Ambient_Samples)
-summary(calcium_amb_fec_no_atresia_lm)
-"
+"0","# Ca+2"
+"0","# Linear Model"
+"0","calcium_amb_fec_no_atresia_lm <- lm(Ca....mmol.L. ~ Weight_Adjusted_Fecundity_Fecundity.Mean_Weight, data = Ambient_Samples)"
+"0","summary(calcium_amb_fec_no_atresia_lm)"
 "1","
 Call:
 lm(formula = Ca....mmol.L. ~ Weight_Adjusted_Fecundity_Fecundity.Mean_Weight, 
@@ -36,3 +37,5 @@ Multiple R-squared:  0.4713,	Adjusted R-squared:  0.3831
 F-statistic: 5.348 on 1 and 6 DF,  p-value: 0.06006
 
 "
+"0","calcium_ambient_lm_sim <- simulateResiduals(fittedModel = calcium_amb_fec_no_atresia_lm) "
+"0","plot(calcium_ambient_lm_sim)"

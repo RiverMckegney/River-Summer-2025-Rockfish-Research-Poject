@@ -778,6 +778,10 @@ summary(glucose_primary_aov_additive)
 # Parametric Post-Hoc: Tukey's HSD test
 TukeyHSD(glucose_primary_aov_int)
 
+glu_prim_lm <- lm(Glu..mmol.L. ~ Pregnant.Or.Atresia * Ambient.Or.OAH, data = Primary_Samples)
+
+summary(glu_prim_lm)
+
 ```
 
 
@@ -862,6 +866,18 @@ testOutliers(glucose_primary_aov_plot2)
 
 
 # Sodium 
+
+```{r}
+Primary_Samples %>%
+  group_by(Pregnant.Or.Atresia, Ambient.Or.OAH) %>%
+  summarize(count = n(),
+            median = round(median(Na...mmol.L.), 3),
+            mean = round(mean(Na...mmol.L.), 3),
+            sd = round(sd(Na...mmol.L.), 3),
+            cv = round(sd(Na...mmol.L.)/mean(Na...mmol.L.), 3)) %>%
+  ungroup()
+```
+
 
 Sodium Boxplot
 ```{r}
@@ -1410,7 +1426,7 @@ ggplot(data = Primary_Samples, aes(x = Pregnant.Or.Atresia, y = Ca....mmol.L., f
 ```{r}
 # Combined boxplots
 
-pH_primary <- pH_primary_boxplot <- ggplot(data = Primary_Samples, aes(x = Pregnant.Or.Atresia, y = pH, fill = Ambient.Or.OAH)) +
+pH_primary <- ggplot(data = Primary_Samples, aes(x = Pregnant.Or.Atresia, y = pH, fill = Ambient.Or.OAH)) +
   geom_boxplot(aes(x = Pregnant.Or.Atresia, y = pH, fill = Ambient.Or.OAH)) +
   geom_point(aes(color = Ambient.Or.OAH), position = position_dodge(width = 0.75), alpha = 0.3, color = "black") +
   labs(title = "Primary pH", x = "Parturition Type", y = "pH") +
@@ -1422,7 +1438,7 @@ pH_primary <- pH_primary_boxplot <- ggplot(data = Primary_Samples, aes(x = Pregn
         legend.background = element_rect(fill = "white", color = "black"))
 
 
-hct_primary <- hct_primary_boxplot <- ggplot(data = Primary_Samples, aes(x = Pregnant.Or.Atresia, y = Hct...., fill = Ambient.Or.OAH)) +
+hct_primary <- ggplot(data = Primary_Samples, aes(x = Pregnant.Or.Atresia, y = Hct...., fill = Ambient.Or.OAH)) +
   geom_boxplot(aes(x = Pregnant.Or.Atresia, y = Hct...., fill = Ambient.Or.OAH)) +
   geom_point(aes(color = Ambient.Or.OAH), position = position_dodge(width = 0.75), alpha = 0.3, color = "black") +
   labs(title = "Hematocrit", x = "Parturition Type", y = "Hematocrit (%)") +
@@ -1434,8 +1450,7 @@ hct_primary <- hct_primary_boxplot <- ggplot(data = Primary_Samples, aes(x = Pre
         legend.background = element_rect(fill = "white", color = "black"))
   
 
-glu_primary <- 
-glucose_primary_boxplot <- ggplot(data = Primary_Samples, aes(x = Pregnant.Or.Atresia, y = Glu..mmol.L., fill = Ambient.Or.OAH)) +
+glu_primary <- ggplot(data = Primary_Samples, aes(x = Pregnant.Or.Atresia, y = Glu..mmol.L., fill = Ambient.Or.OAH)) +
   geom_boxplot(aes(x = Pregnant.Or.Atresia, y = Glu..mmol.L., fill = Ambient.Or.OAH)) +
   geom_point(aes(color = Ambient.Or.OAH), position = position_dodge(width = 0.75), alpha = 0.3, color = "black") +
   labs(title = "Glucose", x = "Parturition Type", y = "Glucose (mmol/L)") +
@@ -1506,6 +1521,41 @@ param_primary_boxplots
 ```{r}
 # Simple boxplots
 
+# pCO2 parturition groups
+ggplot(data = Primary_Samples, aes(x = Pregnant.Or.Atresia, y = pCO2..mmHg.)) +
+  geom_boxplot(aes(x = Pregnant.Or.Atresia, y = pH)) +
+  geom_point(aes(color = Ambient.Or.OAH), position = position_dodge(width = 0.75), alpha = 0.3, color = "black") +
+  labs(title = "Carbon Dioxide", x = "Parturition Type", y = "pCO2 (mmHg)") +
+  theme_classic() +
+  theme(panel.background = element_rect(fill = "white"),
+        plot.background = element_rect(fill = "white"),
+        legend.background = element_rect(fill = "white", color = "black"),
+        title = element_text(size = 12),
+        plot.title = element_text(size = 30, hjust = 0.5),
+        axis.text.x = element_text(size = 10),
+        axis.text.y = element_text(size = 20),
+        axis.title.x = element_text(size = 20),
+        axis.title.y = element_text(size = 20))
+
+# pCO2 Treatment Groups
+ggplot(data = Primary_Samples, aes(x = Ambient.Or.OAH, y = pCO2..mmHg.)) +
+  geom_boxplot(aes(x = Ambient.Or.OAH, y = pCO2..mmHg., fill = Ambient.Or.OAH)) +
+  geom_point(aes(color = Ambient.Or.OAH), position = position_dodge(width = 0.75), alpha = 0.3, color = "black") +
+  labs(title = "Carbon Dioxide", x = "Treatment Type", y = "pCO2 (mmHg)") +
+  scale_fill_manual(values = c("Ambient" = "#189bff", "OAH" = "#598c78")) +
+  
+  theme_classic() +
+  theme(panel.background = element_rect(fill = "white"),
+        plot.background = element_rect(fill = "white"),
+        legend.background = element_rect(fill = "white", color = "black"),
+        legend.position = "none",
+        title = element_text(size = 12),
+        plot.title = element_text(size = 30, hjust = 0.5),
+        axis.text.x = element_text(size = 10),
+        axis.text.y = element_text(size = 20),
+        axis.title.x = element_text(size = 20),
+        axis.title.y = element_text(size = 20))
+
 # pH parturition groups
 ggplot(data = Primary_Samples, aes(x = Pregnant.Or.Atresia, y = pH)) +
   geom_boxplot(aes(x = Pregnant.Or.Atresia, y = pH)) +
@@ -1548,7 +1598,30 @@ ggplot(data = Primary_Samples, aes(x = Pregnant.Or.Atresia, y = pH)) +
   geom_boxplot(aes(x = Ambient.Or.OAH, y = pH)) +
   geom_point(aes(x = Ambient.Or.OAH), position = position_dodge(width = 0.75), alpha = 0.3, color = "black") 
 
+
 # Basic plots
+pCO2_primary_pregnancy <- ggplot(data = Primary_Samples, aes(x = Pregnant.Or.Atresia, y = pCO2..mmHg.)) +
+  geom_boxplot() +
+  geom_point(position = position_dodge(width = 0.75), alpha = 0.3, color = "black") +
+  labs(title = "Carbon Dioxide", x = "Parturition Type", y = "pCO2 (mmHg)") +
+  theme_classic() +
+  theme(panel.background = element_rect(fill = "white"),
+        plot.background = element_rect(fill = "white"),
+        legend.background = element_rect(fill = "white", color = "black"))
+
+pCO2_primary_treatment <- ggplot(data = Primary_Samples, aes(x = Ambient.Or.OAH, y = pCO2..mmHg.)) +
+  geom_boxplot() +
+  geom_point(position = position_dodge(width = 0.75), alpha = 0.3, color = "black") +
+  labs(title = "Carbon Dioxide", x = "Treatment Type", y = "pCO2 (mmHg)") +
+  theme_classic() +
+  theme(panel.background = element_rect(fill = "white"),
+        plot.background = element_rect(fill = "white"),
+        legend.background = element_rect(fill = "white", color = "black"))
+
+pCO2_primary_basic <- pCO2_primary_pregnancy + pCO2_primary_treatment + plot_layout(guides = "collect")
+
+pCO2_primary_basic
+
 pH_primary_pregnancy <- ggplot(data = Primary_Samples, aes(x = Pregnant.Or.Atresia, y = pH)) +
   geom_boxplot() +
   geom_point(position = position_dodge(width = 0.75), alpha = 0.3, color = "black") +
@@ -1717,4 +1790,5 @@ ca_primary_basic <- ca_primary_pregnancy + ca_primary_treatment + plot_layout(gu
 print(ca_primary_basic)
 
 ```
+
 

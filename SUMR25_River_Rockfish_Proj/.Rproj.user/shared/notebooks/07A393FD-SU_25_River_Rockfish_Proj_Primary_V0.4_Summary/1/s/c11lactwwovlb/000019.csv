@@ -1,0 +1,8 @@
+"0","ggplot(data = glu_outlier_removed, aes(x = Pregnant.Or.Atresia, y = Glu..mmol.L., fill = Ambient.Or.OAH)) +"
+"0","  geom_boxplot(aes(x = Pregnant.Or.Atresia, y = Glu..mmol.L., fill = Ambient.Or.OAH)) +"
+"0","  geom_point(aes(color = Ambient.Or.OAH), position = position_dodge(width = 0.75), alpha = 0.3, color = ""black"")"
+"2","Warning in gzfile(file, ""wb"") :
+  cannot open compressed file 'C:/Users/rmcke/OneDrive/Documents/Summer_2025_Rockfish_Research_Project/SUMR25_River_Rockfish_Proj/.Rproj.user/shared/notebooks/07A393FD-SU_25_River_Rockfish_Proj_Primary_V0.4_Summary/1/0DAB469Df2e0e822/c11lactwwovlb_t/3f46cae829134a22a5d79cbee12c7c87.snapshot', probable reason 'No such file or directory'
+"
+"2","G1;H1;Errorh in gzfile(file, ""wb"") : cannot open the connection
+g"

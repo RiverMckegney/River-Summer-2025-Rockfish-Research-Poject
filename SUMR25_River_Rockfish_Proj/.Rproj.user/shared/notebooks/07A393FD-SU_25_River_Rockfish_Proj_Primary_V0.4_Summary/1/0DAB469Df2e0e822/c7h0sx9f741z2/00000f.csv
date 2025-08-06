@@ -1,0 +1,49 @@
+"0","glu_prim_lm <- lm(Glu..mmol.L. ~ Pregnant.Or.Atresia * Ambient.Or.OAH, data = Primary_Samples)
+
+summary(glu_prim_lm)
+"
+"1","
+Call:
+lm(formula = Glu..mmol.L. ~ Pregnant.Or.Atresia * Ambient.Or.OAH, 
+    data = Primary_Samples)
+
+Residuals:
+    Min      1Q  Median      3Q     Max 
+-1.1500 -0.3344 -0.0400  0.2050  2.1000 
+
+Coefficients:
+"
+"1","                                       Estimate
+(Intercept)                             2.11062
+Pregnant.Or.Atresia.L                  -0.09988
+Ambient.Or.OAH.L                        0.35974
+Pregnant.Or.Atresia.L:Ambient.Or.OAH.L -0.62875
+                                       Std. Error
+(Intercept)                               0.16393
+Pregnant.Or.Atresia.L                     0.23184
+Ambient.Or.OAH.L                          0.23184
+Pregnant.Or.Atresia.L:Ambient.Or.OAH.L    0.32787
+                                       t value
+(Intercept)                             12.875
+Pregnant.Or.Atresia.L                   -0.431
+Ambient.Or.OAH.L                         1.552
+Pregnant.Or.Atresia.L:Ambient.Or.OAH.L  -1.918
+                                       Pr(>|t|)
+(Intercept)                            2.87e-12
+Pregnant.Or.Atresia.L                    0.6704
+Ambient.Or.OAH.L                         0.1338
+Pregnant.Or.Atresia.L:Ambient.Or.OAH.L   0.0671
+                                          
+(Intercept)                            ***
+Pregnant.Or.Atresia.L                     
+Ambient.Or.OAH.L                          
+Pregnant.Or.Atresia.L:Ambient.Or.OAH.L .  
+---
+Signif. codes:  
+0 ‘***’ 0.001 ‘**’ 0.01 ‘*’ 0.05 ‘.’ 0.1 ‘ ’ 1
+
+Residual standard error: 0.6905 on 24 degrees of freedom
+Multiple R-squared:  0.1765,	Adjusted R-squared:  0.07358 
+F-statistic: 1.715 on 3 and 24 DF,  p-value: 0.1907
+
+"

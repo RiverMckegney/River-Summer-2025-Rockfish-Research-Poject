@@ -1,0 +1,21 @@
+"0","testOutliers(glucose_primary_aov_plot2)"
+"2","Warning in gzfile(file, ""wb"") :
+  cannot open compressed file 'C:/Users/rmcke/OneDrive/Documents/Summer_2025_Rockfish_Research_Project/SUMR25_River_Rockfish_Proj/.Rproj.user/shared/notebooks/07A393FD-SU_25_River_Rockfish_Proj_Primary_V0.4_Summary/1/0DAB469Df2e0e822/c11lactwwovlb_t/4eb43c64785a47c4bc6c3088e97d8664.snapshot', probable reason 'No such file or directory'
+"
+"2","G1;H1;Errorh in gzfile(file, ""wb"") : cannot open the connection
+g"
+"2","G1;
+	DHARMa outlier test based on exact binomial
+	test with approximate expectations
+
+data:  glucose_primary_aov_plot2
+outliers at both margin(s) = 0, observations
+= 27, p-value = 1
+alternative hypothesis: true probability of success is not equal to 0.007968127
+95 percent confidence interval:
+ 0.0000000 0.1277029
+sample estimates:
+frequency of outliers (expected: 0.00796812749003984 ) 
+                                                     0 
+
+g"

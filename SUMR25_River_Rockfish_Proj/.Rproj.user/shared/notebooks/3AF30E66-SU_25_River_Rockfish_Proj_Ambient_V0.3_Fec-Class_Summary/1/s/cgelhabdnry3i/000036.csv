@@ -1,0 +1,11 @@
+"0",""
+"0","testDispersion(pH_ambient_fec_sim)"
+"1","
+	DHARMa nonparametric dispersion test via sd
+	of residuals fitted vs. simulated
+
+data:  simulationOutput
+dispersion = 0.91709, p-value = 0.872
+alternative hypothesis: two.sided
+
+"

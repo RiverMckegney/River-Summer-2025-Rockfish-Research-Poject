@@ -1,0 +1,6 @@
+"0",""
+"0",""
+"0","amb_fec_no_atresia_sample_size_table <- Amb_Fec_No_Atresia_Samples %>%"
+"0","  group_by(Ambient.Or.OAH, Weight_Adjusted_Fecundity_Fecundity.Mean_Weight) %>%"
+"0","  summarise(n_size = n_distinct(Patient.ID_edited), .groups = ""drop"")"
+"0","print(amb_fec_no_atresia_sample_size_table)"

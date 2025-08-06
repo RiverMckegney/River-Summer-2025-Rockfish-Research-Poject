@@ -1,50 +1,6 @@
-"0","# pCO2"
-"0","# Primary Samples"
-"0",""
-"0","# Interactive aov model"
-"0","pCO2_primary_aov_int <- aov(pCO2..mmHg. ~ Pregnant.Or.Atresia * Ambient.Or.OAH, data = Primary_Samples)"
-"0","summary(pCO2_primary_aov_int)"
-"1","                                   Df Sum Sq
-Pregnant.Or.Atresia                 1  10.73
-Ambient.Or.OAH                      1   7.09
-Pregnant.Or.Atresia:Ambient.Or.OAH  1   0.01
-Residuals                          24  61.01
-                                   Mean Sq
-Pregnant.Or.Atresia                 10.735
-Ambient.Or.OAH                       7.091
-Pregnant.Or.Atresia:Ambient.Or.OAH   0.014
-Residuals                            2.542
-                                   F value Pr(>F)
-Pregnant.Or.Atresia                  4.223 0.0509
-Ambient.Or.OAH                       2.790 0.1079
-Pregnant.Or.Atresia:Ambient.Or.OAH   0.006 0.9406
-Residuals                                        
-                                    
-Pregnant.Or.Atresia                .
-Ambient.Or.OAH                      
-Pregnant.Or.Atresia:Ambient.Or.OAH  
-Residuals                           
----
-Signif. codes:  
-0 ‘***’ 0.001 ‘**’ 0.01 ‘*’ 0.05 ‘.’ 0.1 ‘ ’ 1
+"0","# Parametric Post-Hoc: Tukey's HSD test
+TukeyHSD(pCO2_primary_aov_add)
 "
-"0","# Additive model"
-"0","pCO2_primary_aov_add <- aov(pCO2..mmHg. ~ Pregnant.Or.Atresia + Ambient.Or.OAH, data = Primary_Samples)"
-"0","summary(pCO2_primary_aov_add)"
-"1","                    Df Sum Sq Mean Sq F value
-Pregnant.Or.Atresia  1  10.73  10.735   4.398
-Ambient.Or.OAH       1   7.09   7.091   2.905
-Residuals           25  61.02   2.441        
-                    Pr(>F)  
-Pregnant.Or.Atresia 0.0463 *
-Ambient.Or.OAH      0.1007  
-Residuals                   
----
-Signif. codes:  
-0 ‘***’ 0.001 ‘**’ 0.01 ‘*’ 0.05 ‘.’ 0.1 ‘ ’ 1
-"
-"0","# Parametric Post-Hoc: Tukey's HSD test"
-"0","TukeyHSD(pCO2_primary_aov_add)"
 "1","  Tukey multiple comparisons of means
     95% family-wise confidence level
 

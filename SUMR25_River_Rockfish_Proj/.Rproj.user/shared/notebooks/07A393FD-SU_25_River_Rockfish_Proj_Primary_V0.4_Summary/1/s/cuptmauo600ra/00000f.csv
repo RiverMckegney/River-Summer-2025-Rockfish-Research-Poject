@@ -1,0 +1,10 @@
+"0","# Primary sample size table"
+"0",""
+"0","primary_n_tab <- data_frame(`Sample Size` = c(8, 13, 2, 5),`Treatment` = c(""Ambient"", ""Ambient"", ""OAH"", ""OAH""), `Parturition Type` = c(""Parturition"", ""Atresia"", ""Parturition"", ""Atresia""))"
+"2","G2;H2;Warningh: [38;5;255m`data_frame()` was deprecated in tibble 1.1.0.
+[36mℹ[38;5;255m Please use `tibble()` instead.
+[90mThis warning is displayed once every 8 hours.[38;5;255m
+[90mCall `lifecycle::last_lifecycle_]8;;ide:run:warnings()warnings()]8;;` to[38;5;255m
+[90msee where this warning was generated.[38;5;255m[39mg
+"
+"0","print(primary_n_tab)"

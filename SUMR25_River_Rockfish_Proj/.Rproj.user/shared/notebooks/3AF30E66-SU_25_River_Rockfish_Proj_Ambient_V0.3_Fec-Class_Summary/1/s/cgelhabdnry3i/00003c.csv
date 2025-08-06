@@ -1,0 +1,31 @@
+"1","No Studentized residuals with Bonferroni p < 0.05
+Largest |rstudent|:
+"
+"0","# Parametric tests"
+"0",""
+"0","# Normality"
+"0","shapiro.test(Ambient_Samples$pH)"
+"1","
+	Shapiro-Wilk normality test
+
+data:  Ambient_Samples$pH
+W = 0.98534, p-value = 0.9808
+
+"
+"0","shapiro.test(residuals(aov(pH ~ Fecundity_Class, data = Ambient_Samples)))"
+"1","
+	Shapiro-Wilk normality test
+
+data:  residuals(aov(pH ~ Fecundity_Class, data = Ambient_Samples))
+W = 0.97088, p-value = 0.7524
+
+"
+"0","# QQplot:"
+"0","pH_ambient_fec_res_qqplot <- ggqqplot(residuals(aov(pH ~ Fecundity_Class, data = Ambient_Samples))) +"
+"0","labs(title = ""Ambient pH Residual QQplot"","
+"0","     subtitle = ""residuals(aov(pH ~ Fecundity_Class, data = Ambient_Samples))"","
+"0","                               x = ""pH Theoretical Quantiles (Predicted values)"","
+"0","                               y = ""pH Sample Quantiles"") +"
+"0","  theme(plot.title = element_text(hjust = 0.5),"
+"0","        plot.subtitle = element_text(hjust = 0.5))"
+"0","print(pH_ambient_fec_res_qqplot)"

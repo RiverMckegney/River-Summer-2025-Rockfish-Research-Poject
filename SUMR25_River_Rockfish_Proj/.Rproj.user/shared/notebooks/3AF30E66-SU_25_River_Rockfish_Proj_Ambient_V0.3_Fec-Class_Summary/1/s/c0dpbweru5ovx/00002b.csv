@@ -1,0 +1,31 @@
+"1","No Studentized residuals with Bonferroni p < 0.05
+Largest |rstudent|:
+"
+"0","# Parametric tests"
+"0",""
+"0","# Normality"
+"0","shapiro.test(Ambient_Samples$Cl...mmol.L.)"
+"1","
+	Shapiro-Wilk normality test
+
+data:  Ambient_Samples$Cl...mmol.L.
+W = 0.96502, p-value = 0.6224
+
+"
+"0","shapiro.test(residuals(aov(Cl...mmol.L. ~ Fecundity_Class, data = Ambient_Samples)))"
+"1","
+	Shapiro-Wilk normality test
+
+data:  residuals(aov(Cl...mmol.L. ~ Fecundity_Class, data = Ambient_Samples))
+W = 0.96555, p-value = 0.6339
+
+"
+"0","# QQplot:"
+"0","chloride_ambient_fec_res_qqplot <- ggqqplot(residuals(aov(Cl...mmol.L. ~ Fecundity_Class, data = Ambient_Samples))) +"
+"0","labs(title = ""Ambient Chloride Residual QQplot"","
+"0","     subtitle = ""residuals(aov(Cl...mmol.L. ~ Fecundity_Class, data = Ambient_Samples))"","
+"0","                               x = ""Chloride Theoretical Quantiles (Predicted values)"","
+"0","                               y = ""Chloride Sample Quantiles"") +"
+"0","  theme(plot.title = element_text(hjust = 0.5),"
+"0","        plot.subtitle = element_text(hjust = 0.5))"
+"0","print(chloride_ambient_fec_res_qqplot)"
